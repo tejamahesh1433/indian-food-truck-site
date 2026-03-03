@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { SiteProvider } from "@/components/SiteProvider";
+import { Analytics } from "@vercel/analytics/react";
 import { prisma } from "@/lib/prisma";
 
 const geistSans = Geist({
@@ -39,6 +40,7 @@ export default async function RootLayout({
         <SiteProvider settings={settings}>
           {children}
           <Footer />
+          <Analytics />
         </SiteProvider>
       </body>
     </html>

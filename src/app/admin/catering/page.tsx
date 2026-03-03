@@ -30,9 +30,9 @@ export default function AdminCateringPage() {
     }
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchRequests();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        (async () => {
+            await fetchRequests();
+        })();
     }, []);
 
     async function updateStatus(id: string, newStatus: string) {
