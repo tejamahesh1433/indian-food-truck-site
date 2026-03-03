@@ -1,13 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthed } from "@/lib/adminAuth";
 import type { CateringRequest } from "@prisma/client";
 
 export default async function AdminCatering() {
-    const ok = await isAdminAuthed();
-    if (!ok) redirect("/admin/login");
-
     const items = await prisma.cateringRequest.findMany({
         orderBy: { createdAt: "desc" },
         take: 200,
