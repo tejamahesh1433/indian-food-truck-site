@@ -97,14 +97,14 @@ export default function Footer() {
                     <div>
                         © {new Date().getFullYear()} {site.brand.name}. All rights reserved.
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
                         <Link href="/menu" className="hover:text-white transition">
                             Menu
                         </Link>
                         <Link href="/catering" className="hover:text-white transition">
                             Catering
                         </Link>
-                        <Link href="/admin/login" className="hover:text-white transition">
+                        <Link href="/admin/login" className="hover:text-white transition underline opacity-80">
                             Owner Login
                         </Link>
                     </div>
