@@ -28,8 +28,12 @@ model MenuItem {
   priceCents  Int
   imageUrl    String?
   category    String   // Starters, Mains, Wraps, Drinks, Dessert
-  tags        String[] // ["Veg", "Spicy", "Popular"]
+  isVeg       Boolean  @default(false)
+  isSpicy     Boolean  @default(false)
+  isPopular   Boolean  @default(false)
   isAvailable Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([category, isAvailable])
 }

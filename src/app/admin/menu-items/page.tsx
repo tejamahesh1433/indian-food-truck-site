@@ -11,7 +11,9 @@ type MenuItem = {
     priceCents: number;
     imageUrl: string | null;
     category: string;
-    tags: string[];
+    isVeg: boolean;
+    isSpicy: boolean;
+    isPopular: boolean;
     isAvailable: boolean;
 };
 
@@ -29,7 +31,9 @@ export default function AdminMenuItemsPage() {
     const [price, setPrice] = useState("499");
     const [imageUrl, setImageUrl] = useState("");
     const [category, setCategory] = useState(CATEGORIES[0]);
-    const [tags, setTags] = useState<string[]>([]);
+    const [isVeg, setIsVeg] = useState(false);
+    const [isSpicy, setIsSpicy] = useState(false);
+    const [isPopular, setIsPopular] = useState(false);
     const [isAvailable, setIsAvailable] = useState(true);
 
     const router = useRouter();
@@ -58,10 +62,6 @@ export default function AdminMenuItemsPage() {
         return Number.isFinite(n) ? n : 0;
     }, [price]);
 
-    function toggleTag(t: string) {
-        setTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
-    }
-
     async function createItem() {
         setError(null);
         const res = await fetch("/api/admin/menu-items", {
@@ -73,7 +73,9 @@ export default function AdminMenuItemsPage() {
                 priceCents,
                 imageUrl,
                 category,
-                tags,
+                isVeg,
+                isSpicy,
+                isPopular,
                 isAvailable,
             }),
         });
@@ -90,7 +92,9 @@ export default function AdminMenuItemsPage() {
         setPrice("499");
         setImageUrl("");
         setCategory(CATEGORIES[0]);
-        setTags([]);
+        setIsVeg(false);
+        setIsSpicy(false);
+        setIsPopular(false);
         setIsAvailable(true);
 
         await load();
@@ -181,16 +185,18 @@ export default function AdminMenuItemsPage() {
                         </div>
 
                         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 8 }}>
-                            {TAG_OPTIONS.map((t) => (
-                                <label key={t} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={tags.includes(t)}
-                                        onChange={() => toggleTag(t)}
-                                    />
-                                    {t}
-                                </label>
-                            ))}
+                            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <input type="checkbox" checked={isVeg} onChange={(e) => setIsVeg(e.target.checked)} />
+                                Veg
+                            </label>
+                            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <input type="checkbox" checked={isSpicy} onChange={(e) => setIsSpicy(e.target.checked)} />
+                                Spicy
+                            </label>
+                            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <input type="checkbox" checked={isPopular} onChange={(e) => setIsPopular(e.target.checked)} />
+                                Popular
+                            </label>
                         </div>
 
                         {error && <p style={{ color: "red", marginTop: 10 }}>{error}</p>}
@@ -245,7 +251,9 @@ export default function AdminMenuItemsPage() {
                                                     ${(i.priceCents / 100).toFixed(2)}
                                                 </span>
                                             </div>
-                                            <div style={{ opacity: 0.6, fontSize: "0.8rem", marginTop: 8 }}>Tags: {i.tags.join(", ") || "-"}</div>
+                                            <div style={{ opacity: 0.6, fontSize: "0.8rem", marginTop: 8 }}>
+                                                Tags: {[i.isVeg && "Veg", i.isSpicy && "Spicy", i.isPopular && "Popular"].filter(Boolean).join(", ") || "-"}
+                                            </div>
                                         </div>
                                     </div>
                                     <button onClick={() => deleteItem(i.id)} style={{ padding: "8px 16px", background: "#ff4444", color: "white", borderRadius: 6, border: "none", cursor: "pointer" }}>

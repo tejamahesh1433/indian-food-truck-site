@@ -31,7 +31,9 @@ export async function POST(req: Request) {
                 priceCents: Number(body.priceCents),
                 imageUrl: body.imageUrl || null,
                 category: body.category,
-                tags: Array.isArray(body.tags) ? body.tags : [],
+                isVeg: body.isVeg || false,
+                isSpicy: body.isSpicy || false,
+                isPopular: body.isPopular || false,
                 isAvailable: body.isAvailable ?? true,
             },
         });

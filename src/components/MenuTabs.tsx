@@ -1,30 +1,49 @@
 "use client";
-"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { categories, menuItems, MenuItem, MenuTag } from "@/data/menu";
+import { categories } from "@/data/menu";
+
+// Replace the local MenuItem import with our Prisma shape
+type MenuItem = {
+    id: string;
+    name: string;
+    description: string | null;
+    priceCents: number;
+    imageUrl: string | null;
+    category: string;
+    isVeg: boolean;
+    isSpicy: boolean;
+    isPopular: boolean;
+    isAvailable: boolean;
+};
 
 function ItemCard({ item }: { item: MenuItem }) {
     return (
         <div className="group rounded-3xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/10 transition">
             <div className="relative h-44">
-                <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-cover group-hover:scale-[1.03] transition duration-300"
-                    priority={false}
-                />
+                {item.imageUrl ? (
+                    <Image
+                        src={item.imageUrl}
+                        alt={item.name}
+                        fill
+                        className="object-cover group-hover:scale-[1.03] transition duration-300"
+                        priority={false}
+                    />
+                ) : (
+                    <div className="w-full h-full bg-black/20 flex items-center justify-center">
+                        <span className="text-white/20 text-sm">No Image</span>
+                    </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
                     <div>
                         <h3 className="text-xl font-semibold">{item.name}</h3>
-                        {typeof item.price === "number" && (
+                        {item.priceCents > 0 && (
                             <div className="mt-1 text-orange-400 font-semibold">
-                                ${item.price}
+                                ${(item.priceCents / 100).toFixed(2)}
                             </div>
                         )}
                     </div>
@@ -32,11 +51,11 @@ function ItemCard({ item }: { item: MenuItem }) {
             </div>
 
             <div className="p-6">
-                <p className="text-gray-300">{item.desc}</p>
+                <p className="text-gray-300">{item.description}</p>
 
-                {!!item.tags?.length && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {item.tags.map((t) => (
+                <div className="mt-4 flex flex-wrap gap-2">
+                    {([item.isVeg && "Veg", item.isSpicy && "Spicy", item.isPopular && "Popular"].filter(Boolean) as string[])
+                        .map((t) => (
                             <span
                                 key={t}
                                 className="text-xs px-3 py-1 rounded-full bg-black/40 border border-white/10 text-gray-200"
@@ -44,8 +63,7 @@ function ItemCard({ item }: { item: MenuItem }) {
                                 {t}
                             </span>
                         ))}
-                    </div>
-                )}
+                </div>
             </div>
         </div>
     );
@@ -58,6 +76,25 @@ export default function MenuTabs() {
     const [vegOnly, setVegOnly] = useState(false);
     const [spicyOnly, setSpicyOnly] = useState(false);
 
+    // DB State
+    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchMenu() {
+            try {
+                const res = await fetch("/api/menu-items");
+                const data = await res.json();
+                setMenuItems(data.items || []);
+            } catch (err) {
+                console.error("Failed to fetch menu items", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchMenu();
+    }, []);
+
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
 
@@ -65,16 +102,14 @@ export default function MenuTabs() {
             .filter((m) => m.category === active)
             .filter((m) => {
                 if (!q) return true;
-                return (
-                    m.name.toLowerCase().includes(q) ||
-                    m.desc.toLowerCase().includes(q) ||
-                    (m.tags ?? []).some((t) => t.toLowerCase().includes(q))
-                );
+                const matchesName = m.name.toLowerCase().includes(q);
+                const matchesDesc = m.description?.toLowerCase().includes(q);
+                return matchesName || matchesDesc;
             })
-            .filter((m) => (vegOnly ? m.tags?.includes("Veg") : true))
-            .filter((m) => (spicyOnly ? m.tags?.includes("Spicy") : true))
-            .filter((m) => (popularOnly ? m.tags?.includes("Popular") : true));
-    }, [active, query, vegOnly, spicyOnly, popularOnly]);
+            .filter((m) => (vegOnly ? m.isVeg : true))
+            .filter((m) => (spicyOnly ? m.isSpicy : true))
+            .filter((m) => (popularOnly ? m.isPopular : true));
+    }, [active, query, vegOnly, spicyOnly, popularOnly, menuItems]);
 
     return (
         <section className="px-6 md:px-20 py-12">
@@ -178,13 +213,15 @@ export default function MenuTabs() {
                         transition={{ duration: 0.25 }}
                         className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                     >
-                        {filtered.map((item) => (
+                        {loading ? (
+                            <div className="col-span-full py-20 text-center text-gray-400">Loading menu...</div>
+                        ) : filtered.map((item) => (
                             <ItemCard key={item.id} item={item} />
                         ))}
                     </motion.div>
                 </AnimatePresence>
 
-                {filtered.length === 0 && (
+                {!loading && filtered.length === 0 && (
                     <div className="mt-10 card p-10 text-center text-gray-300">
                         No matches. Try a different search or clear filters.
                     </div>
