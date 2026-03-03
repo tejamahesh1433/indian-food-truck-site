@@ -1,19 +1,37 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { site } from "@/config/site";
 
 export default function AdminDashboardPage() {
+    const router = useRouter();
+
+    async function handleLogout() {
+        await fetch("/api/admin/logout", { method: "POST" });
+        router.push("/admin/login");
+    }
+
     return (
         <main className="mx-auto max-w-4xl px-6 py-12">
-            <div className="flex items-center gap-4 mb-10 border-b border-white/10 pb-6">
-                <div className="h-12 w-12 rounded-2xl bg-orange-500/90 text-black font-bold flex items-center justify-center shadow-[0_12px_40px_rgba(255,140,0,0.22)]">
-                    {site.brand.short}
+            <div className="flex items-start justify-between mb-10 border-b border-white/10 pb-6">
+                <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-orange-500/90 text-black font-bold flex items-center justify-center shadow-[0_12px_40px_rgba(255,140,0,0.22)]">
+                        {site.brand.short}
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-semibold">Admin Dashboard</h1>
+                        <p className="mt-1 text-sm text-gray-400">
+                            Manage menu items, catering requests, and site settings.
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-3xl font-semibold">Admin Dashboard</h1>
-                    <p className="mt-1 text-sm text-gray-400">
-                        Manage menu items, catering requests, and site settings.
-                    </p>
-                </div>
+                <button
+                    onClick={handleLogout}
+                    className="text-sm font-medium border border-white/20 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl transition text-gray-300 hover:text-white"
+                >
+                    Logout
+                </button>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
