@@ -7,6 +7,7 @@ export async function proxy(req: NextRequest) {
 
     // Allow login endpoint
     if (pathname === "/api/admin/login") return NextResponse.next();
+    if (pathname === "/admin/login") return NextResponse.next();
 
     const isAdminPath = pathname.startsWith("/admin");
     const isAdminApi = pathname.startsWith("/api/admin");
