@@ -1,14 +1,26 @@
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 
 const COOKIE_NAME = "admin_token";
 
-export function signAdminToken() {
-    return jwt.sign({ role: "admin" }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+function getSecret() {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error("Missing JWT_SECRET");
+    return new TextEncoder().encode(secret);
 }
 
-export function verifyAdminToken(token: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return jwt.verify(token, process.env.JWT_SECRET!) as any;
+export async function signAdminToken() {
+    const secret = getSecret();
+    return await new SignJWT({ role: "admin" })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("7d")
+        .sign(secret);
+}
+
+export async function verifyAdminToken(token: string) {
+    const secret = getSecret();
+    const { payload } = await jwtVerify(token, secret);
+    return payload?.role === "admin";
 }
 
 export function getAdminCookieName() {

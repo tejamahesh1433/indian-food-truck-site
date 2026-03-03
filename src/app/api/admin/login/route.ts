@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: false, error: "Wrong password" }, { status: 401 });
     }
 
-    const token = signAdminToken();
+    const token = await signAdminToken();
 
     const res = NextResponse.json({ ok: true });
     res.cookies.set(getAdminCookieName(), token, {
