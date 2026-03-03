@@ -19,6 +19,7 @@ export default function CateringPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    website: data.get("website"),
                     name: data.get("name"),
                     phone: data.get("phone"),
                     email: data.get("email"),
@@ -58,6 +59,16 @@ export default function CateringPage() {
                             <h2 className="text-xl font-semibold">Request a quote</h2>
 
                             <form onSubmit={onSubmit} className="mt-6 space-y-4">
+                                {/* Honeypot field for bot spam */}
+                                <input
+                                    type="text"
+                                    name="website"
+                                    className="hidden"
+                                    aria-hidden="true"
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                />
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <input
                                         name="name"
