@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
             return;
         }
 
-        router.push("/admin/menu-items");
+        router.push("/admin");
     }
 
     return (
