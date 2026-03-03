@@ -1,7 +1,8 @@
 import Reveal from "@/components/Reveal";
-import { site } from "@/config/site";
+import { useSite } from "@/components/SiteProvider";
 
 export default function Location() {
+    const site = useSite();
     return (
         <section id="location" className="section-shell">
             <Reveal>

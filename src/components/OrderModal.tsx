@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { site } from "@/config/site";
+import { useSite } from "@/components/SiteProvider";
 
 export default function OrderModal({
     open,
@@ -11,6 +11,7 @@ export default function OrderModal({
     open: boolean;
     onClose: () => void;
 }) {
+    const site = useSite();
     return (
         <AnimatePresence>
             {open && (

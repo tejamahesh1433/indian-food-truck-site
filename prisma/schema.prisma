@@ -37,3 +37,12 @@ model MenuItem {
 
   @@index([category, isAvailable])
 }
+
+model SiteSettings {
+  id           String   @id @default("global")
+  phone        String   @default("")
+  instagramUrl String   @default("")
+  truckToday   String   @default("")
+  truckNext    String   @default("")
+  updatedAt    DateTime @updatedAt
+}

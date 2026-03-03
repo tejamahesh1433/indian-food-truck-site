@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { site } from "@/config/site";
+import { useSite } from "@/components/SiteProvider";
 import OrderModal from "@/components/OrderModal";
 
 export default function Navbar() {
     const [atLocation, setAtLocation] = useState(false);
     const [orderOpen, setOrderOpen] = useState(false);
+    const site = useSite();
 
     useEffect(() => {
         const el = document.getElementById("location");

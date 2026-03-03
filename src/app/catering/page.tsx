@@ -2,7 +2,6 @@
 
 import Navbar from "@/components/Navbar";
 import { useState } from "react";
-import { site } from "@/config/site";
 
 export default function CateringPage() {
     const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");

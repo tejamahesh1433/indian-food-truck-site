@@ -1,6 +1,7 @@
-import { site } from "@/config/site";
+import { useSite } from "@/components/SiteProvider";
 
 export default function InstagramGrid() {
+    const site = useSite();
     const images: string[] = []; // empty for now
 
     return (

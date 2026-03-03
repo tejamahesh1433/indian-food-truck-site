@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import { site } from "@/config/site";
+import { useSite } from "@/components/SiteProvider";
 
 export default function Footer() {
+    const site = useSite();
+
     return (
         <footer className="mt-10 border-t border-white/10 bg-black/30">
             <div className="container-shell py-14">

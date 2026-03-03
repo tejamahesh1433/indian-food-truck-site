@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import { SiteProvider } from "@/components/SiteProvider";
+import { prisma } from "@/lib/prisma";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,18 +21,25 @@ export const metadata: Metadata = {
     "Authentic Indian street food on wheels in Hartford, CT. View the menu, find today’s location, and book catering.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let settings = null;
+  try {
+    settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
+  } catch { }
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Footer />
+        <SiteProvider settings={settings}>
+          {children}
+          <Footer />
+        </SiteProvider>
       </body>
     </html>
   );

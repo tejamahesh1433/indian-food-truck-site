@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { site } from "@/config/site";
+import { useSite } from "@/components/SiteProvider";
 
 export default function AdminDashboardPage() {
+    const site = useSite();
     const router = useRouter();
 
     async function handleLogout() {
@@ -67,35 +68,37 @@ export default function AdminDashboardPage() {
                     </div>
                 </Link>
 
-                <div
-                    className="rounded-2xl border border-white/10 bg-black/40 p-6 opacity-60 cursor-not-allowed"
+                <Link
+                    href="/admin/locations"
+                    className="group rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10 transition"
                 >
-                    <div className="flex items-center justify-between mb-4 grayscale">
+                    <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center border border-green-500/20">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         </div>
-                        <span className="text-xs font-semibold bg-white/10 px-2 py-1 rounded text-white/50 uppercase tracking-wide">Coming Soon</span>
+                        <span className="text-white/30 group-hover:text-white/60 transition group-hover:translate-x-1 duration-300">→</span>
                     </div>
                     <div className="font-semibold text-lg text-white">Truck Schedule</div>
                     <div className="mt-2 text-sm text-gray-400">
                         Update today&apos;s location and the next upcoming stop.
                     </div>
-                </div>
+                </Link>
 
-                <div
-                    className="rounded-2xl border border-white/10 bg-black/40 p-6 opacity-60 cursor-not-allowed"
+                <Link
+                    href="/admin/settings"
+                    className="group rounded-2xl border border-white/10 bg-white/5 p-6 hover:bg-white/10 transition"
                 >
-                    <div className="flex items-center justify-between mb-4 grayscale">
+                    <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-full bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         </div>
-                        <span className="text-xs font-semibold bg-white/10 px-2 py-1 rounded text-white/50 uppercase tracking-wide">Coming Soon</span>
+                        <span className="text-white/30 group-hover:text-white/60 transition group-hover:translate-x-1 duration-300">→</span>
                     </div>
                     <div className="font-semibold text-lg text-white">Site Settings</div>
                     <div className="mt-2 text-sm text-gray-400">
                         Manage phone numbers, Instagram links, and global configuration.
                     </div>
-                </div>
+                </Link>
             </div>
         </main>
     );

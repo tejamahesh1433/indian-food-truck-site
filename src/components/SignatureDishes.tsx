@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Reveal from "@/components/Reveal";
+import { useSite } from "@/components/SiteProvider";
 
 const dishes = [
     {
