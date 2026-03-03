@@ -1,29 +1,72 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+function bad(msg: string, status = 400) {
+    return NextResponse.json({ ok: false, error: msg }, { status });
+}
+
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+
+    const q = (searchParams.get("q") ?? "").trim();
+    const category = searchParams.get("category") ?? "All";
+    const veg = searchParams.get("veg") === "1";
+    const spicy = searchParams.get("spicy") === "1";
+    const popular = searchParams.get("popular") === "1";
+    const available = searchParams.get("available"); // "1" | "0" | null
+
     const items = await prisma.menuItem.findMany({
-        orderBy: [{ updatedAt: "desc" }],
+        where: {
+            ...(q
+                ? {
+                    OR: [
+                        { name: { contains: q, mode: "insensitive" } },
+                        { description: { contains: q, mode: "insensitive" } },
+                    ],
+                }
+                : {}),
+            ...(category !== "All" ? { category } : {}),
+            ...(veg ? { isVeg: true } : {}),
+            ...(spicy ? { isSpicy: true } : {}),
+            ...(popular ? { isPopular: true } : {}),
+            ...(available === "1" ? { isAvailable: true } : {}),
+            ...(available === "0" ? { isAvailable: false } : {}),
+        },
+        orderBy: [{ category: "asc" }, { name: "asc" }],
     });
-    return NextResponse.json({ items });
+
+    return NextResponse.json({ ok: true, items });
 }
 
 export async function POST(req: Request) {
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body) return bad("Invalid JSON body");
 
-    const item = await prisma.menuItem.create({
+    const name = String(body.name ?? "").trim();
+    const category = String(body.category ?? "").trim();
+    const price = Number(body.price ?? NaN);
+    const description = String(body.description ?? "").trim();
+    const imageUrl = body.imageUrl ? String(body.imageUrl).trim() : null;
+
+    if (!name) return bad("Name is required");
+    if (!category) return bad("Category is required");
+    if (!Number.isFinite(price) || price < 0) return bad("Price must be a number >= 0");
+
+    const priceCents = Math.round(price * 100);
+
+    const created = await prisma.menuItem.create({
         data: {
-            name: body.name,
-            description: body.description ?? null,
-            priceCents: Number(body.priceCents),
-            category: body.category,
+            name,
+            category,
+            description,
+            priceCents,
+            imageUrl,
             isVeg: !!body.isVeg,
             isSpicy: !!body.isSpicy,
             isPopular: !!body.isPopular,
             isAvailable: body.isAvailable !== false,
-            imageUrl: body.imageUrl ?? null,
         },
     });
 
-    return NextResponse.json({ item }, { status: 201 });
+    return NextResponse.json({ ok: true, item: created }, { status: 201 });
 }
