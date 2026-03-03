@@ -2,8 +2,10 @@
 
 import Navbar from "@/components/Navbar";
 import { useState } from "react";
+import { useSite } from "@/components/SiteProvider";
 
 export default function CateringPage() {
+    const site = useSite();
     const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {

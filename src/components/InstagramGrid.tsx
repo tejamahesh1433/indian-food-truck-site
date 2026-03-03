@@ -1,3 +1,5 @@
+"use client";
+
 import { useSite } from "@/components/SiteProvider";
 
 export default function InstagramGrid() {
