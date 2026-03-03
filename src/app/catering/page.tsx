@@ -15,10 +15,18 @@ export default function CateringPage() {
         const data = new FormData(form);
 
         try {
-            const res = await fetch("https://formspree.io/f/YOUR_FORM_ID", {
+            const res = await fetch("/api/catering", {
                 method: "POST",
-                body: data,
-                headers: { Accept: "application/json" },
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: data.get("name"),
+                    phone: data.get("phone"),
+                    email: data.get("email"),
+                    eventDate: data.get("date"),
+                    guests: data.get("guests"),
+                    location: data.get("location"),
+                    notes: data.get("notes"),
+                }),
             });
 
             if (res.ok) {

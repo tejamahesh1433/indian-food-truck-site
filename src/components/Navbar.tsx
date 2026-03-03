@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { site } from "@/config/site";
+import OrderModal from "@/components/OrderModal";
 
 export default function Navbar() {
     const [atLocation, setAtLocation] = useState(false);
+    const [orderOpen, setOrderOpen] = useState(false);
 
     useEffect(() => {
         const el = document.getElementById("location");
@@ -49,6 +51,13 @@ export default function Navbar() {
                         Find the Truck
                     </a>
 
+                    <button
+                        onClick={() => setOrderOpen(true)}
+                        className="border border-white/15 bg-white/5 px-4 py-2 rounded-full hover:border-white/40 transition"
+                    >
+                        Order Now
+                    </button>
+
                     <a
                         href={`tel:${site.contact.phoneE164}`}
                         className="bg-orange-500 text-black px-4 py-2 rounded-full font-semibold hover:bg-orange-400 transition"
@@ -64,6 +73,8 @@ export default function Navbar() {
                     Call
                 </a>
             </div>
+
+            <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} />
         </header>
     );
 }
