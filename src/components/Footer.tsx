@@ -104,6 +104,9 @@ export default function Footer() {
                         <Link href="/catering" className="hover:text-white transition">
                             Catering
                         </Link>
+                        <Link href="/admin/login" className="hover:text-white transition">
+                            Owner Login
+                        </Link>
                     </div>
                 </div>
             </div>
