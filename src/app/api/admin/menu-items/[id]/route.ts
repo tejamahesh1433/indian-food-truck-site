@@ -9,13 +9,14 @@ function requireAdmin(req: Request) {
     verifyAdminToken(match[1]);
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         requireAdmin(req);
         const body = await req.json();
+        const resolvedParams = await params;
 
         const item = await prisma.menuItem.update({
-            where: { id: params.id },
+            where: { id: resolvedParams.id },
             data: {
                 name: body.name,
                 description: body.description || null,
@@ -37,10 +38,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         requireAdmin(req);
-        await prisma.menuItem.delete({ where: { id: params.id } });
+        const resolvedParams = await params;
+        await prisma.menuItem.delete({ where: { id: resolvedParams.id } });
         return NextResponse.json({ ok: true });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
