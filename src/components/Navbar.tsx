@@ -47,9 +47,9 @@ export default function Navbar() {
                         Catering
                     </Link>
 
-                    <a href="/#location" className={atLocation ? pill : base}>
+                    <Link href="/#location" className={atLocation ? pill : base}>
                         Find the Truck
-                    </a>
+                    </Link>
 
                     <button
                         onClick={() => setOrderOpen(true)}

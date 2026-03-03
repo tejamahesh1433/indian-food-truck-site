@@ -21,3 +21,16 @@ model CateringRequest {
   status    String   @default("NEW") // NEW, CONTACTED, DONE
   createdAt DateTime @default(now())
 }
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  priceCents  Int
+  imageUrl    String?
+  category    String   // Starters, Mains, Wraps, Drinks, Dessert
+  tags        String[] // ["Veg", "Spicy", "Popular"]
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

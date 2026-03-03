@@ -1,8 +1,10 @@
 "use client";
+"use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
 import { categories, menuItems, MenuItem, MenuTag } from "@/data/menu";
 
 function ItemCard({ item }: { item: MenuItem }) {
@@ -84,12 +86,12 @@ export default function MenuTabs() {
                             Street classics, cooked fresh. Prices can be updated anytime.
                         </p>
                     </div>
-                    <a
+                    <Link
                         href="/#location"
                         className="hidden md:inline-flex border border-white/15 px-5 py-3 rounded-full hover:border-white/40 transition"
                     >
                         Find the Truck
-                    </a>
+                    </Link>
                 </div>
 
                 <div className="mt-8 flex gap-3 flex-wrap">

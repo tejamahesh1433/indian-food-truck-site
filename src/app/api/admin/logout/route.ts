@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
-import { clearAdminCookie } from "@/lib/adminAuth";
+import { getAdminCookieName } from "@/lib/adminAuth";
 
 export async function POST() {
-    clearAdminCookie();
-    return NextResponse.json({ ok: true });
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set(getAdminCookieName(), "", {
+        httpOnly: true,
+        expires: new Date(0),
+        path: "/",
+    });
+    return res;
 }
