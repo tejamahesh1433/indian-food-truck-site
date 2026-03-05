@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CateringRequest } from "@prisma/client";
 import FiltersBar, { FiltersState } from "./FiltersBar";
 import CateringRequestCard from "./CateringRequestCard";
@@ -18,6 +19,15 @@ export default function CateringClient({ initialRequests }: Props) {
     });
 
     const [selected, setSelected] = useState<CateringRequest | null>(null);
+    const router = useRouter();
+
+    // Auto-refresh the server payload every 30 seconds to catch new incoming requests
+    useEffect(() => {
+        const interval = setInterval(() => {
+            router.refresh();
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [router]);
 
     const filtered = useMemo(() => {
         const q = filters.q.trim().toLowerCase();
