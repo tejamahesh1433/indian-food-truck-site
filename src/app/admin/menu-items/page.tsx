@@ -72,9 +72,16 @@ export default function AdminMenuItemsPage() {
         if (fAvailability === "unavailable") params.set("available", "0");
         params.set("orderBy", sortBy);
 
-        const res = await fetch(`/api/admin/menu-items?${params.toString()}`, { cache: "no-store" });
-        const data = await res.json();
-        setItems(data.items ?? []);
+        const res = await fetch(`/api/admin/menu-items?${params.toString()}`, { cache: "no-store", headers: { 'Accept': 'application/json' } });
+        try {
+            const data = await res.json();
+            setItems(data.items ?? []);
+        } catch (e) {
+            console.error("Failed to parse JSON response. Status:", res.status);
+            const text = await res.text();
+            console.error("Raw Response Text:", text);
+            showToast("Server returned an invalid JSON block. Check console.", "error");
+        }
         setLoading(false);
     }
 

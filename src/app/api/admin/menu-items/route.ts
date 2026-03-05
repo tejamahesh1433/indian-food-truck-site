@@ -14,28 +14,40 @@ export async function GET(req: Request) {
     const spicy = searchParams.get("spicy") === "1";
     const popular = searchParams.get("popular") === "1";
     const available = searchParams.get("available"); // "1" | "0" | null
+    const orderByParam = searchParams.get("orderBy") ?? "sortOrder";
 
-    const items = await prisma.menuItem.findMany({
-        where: {
-            ...(q
-                ? {
-                    OR: [
-                        { name: { contains: q, mode: "insensitive" } },
-                        { description: { contains: q, mode: "insensitive" } },
-                    ],
-                }
-                : {}),
-            ...(category !== "All" ? { category } : {}),
-            ...(veg ? { isVeg: true } : {}),
-            ...(spicy ? { isSpicy: true } : {}),
-            ...(popular ? { isPopular: true } : {}),
-            ...(available === "1" ? { isAvailable: true } : {}),
-            ...(available === "0" ? { isAvailable: false } : {}),
-        },
-        orderBy: [{ category: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
-    });
+    let orderBy: any = [{ sortOrder: "asc" }, { name: "asc" }];
+    if (orderByParam === "priceCents") orderBy = [{ priceCents: "asc" }];
+    else if (orderByParam === "name") orderBy = [{ name: "asc" }];
+    else if (orderByParam === "updatedAt") orderBy = [{ updatedAt: "desc" }];
+    else if (orderByParam === "sortOrder") orderBy = [{ category: "asc" }, { sortOrder: "asc" }, { name: "asc" }];
 
-    return NextResponse.json({ ok: true, items });
+    try {
+        const items = await prisma.menuItem.findMany({
+            where: {
+                ...(q
+                    ? {
+                        OR: [
+                            { name: { contains: q, mode: "insensitive" } },
+                            { description: { contains: q, mode: "insensitive" } },
+                        ],
+                    }
+                    : {}),
+                ...(category !== "All" ? { category } : {}),
+                ...(veg ? { isVeg: true } : {}),
+                ...(spicy ? { isSpicy: true } : {}),
+                ...(popular ? { isPopular: true } : {}),
+                ...(available === "1" ? { isAvailable: true } : {}),
+                ...(available === "0" ? { isAvailable: false } : {}),
+            },
+            orderBy,
+        });
+
+        return NextResponse.json({ ok: true, items });
+    } catch (err: any) {
+        console.error("API Error:", err);
+        return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
+    }
 }
 
 export async function POST(req: Request) {
