@@ -27,7 +27,7 @@ model MenuItem {
   description String?
   priceCents  Int
   imageUrl    String?
-  category    String   // Starters, Mains, Wraps, Drinks, Dessert
+  category    String // Starters, Mains, Wraps, Drinks, Dessert
   isVeg       Boolean  @default(false)
   isSpicy     Boolean  @default(false)
   isPopular   Boolean  @default(false)
@@ -38,6 +38,13 @@ model MenuItem {
   updatedAt   DateTime @updatedAt
 
   @@index([category, isAvailable, sortOrder])
+}
+
+model MenuCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
 }
 
 model SiteSettings {

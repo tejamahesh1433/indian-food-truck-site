@@ -18,7 +18,11 @@ type MenuItem = {
     imageUrl: string | null;
 };
 
-const CATEGORIES = ["Starters", "Mains", "Wraps", "Drinks", "Dessert"] as const;
+type Category = {
+    id: string;
+    name: string;
+    sortOrder: number;
+};
 
 function money(cents: number) {
     return `$${(cents / 100).toFixed(2)}`;
@@ -43,7 +47,13 @@ export default function AdminMenuItemsPage() {
 
     // list state
     const [items, setItems] = useState<MenuItem[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // category manager state
+    const [isCatModalOpen, setIsCatModalOpen] = useState(false);
+    const [newCatName, setNewCatName] = useState("");
+    const [isSavingCat, setIsSavingCat] = useState(false);
 
     // filters
     const [q, setQ] = useState("");
@@ -125,8 +135,19 @@ export default function AdminMenuItemsPage() {
         setLoading(false);
     }
 
+    async function fetchCategories() {
+        try {
+            const res = await fetch("/api/admin/menu-categories");
+            const data = await res.json();
+            if (data.ok) setCategories(data.categories || []);
+        } catch (e) {
+            console.error("Failed to fetch categories");
+        }
+    }
+
     useEffect(() => {
         (async () => {
+            await fetchCategories();
             await fetchItems();
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -316,6 +337,45 @@ export default function AdminMenuItemsPage() {
         fetchItems();
     }
 
+    async function addCategory(e: React.FormEvent) {
+        e.preventDefault();
+        if (!newCatName.trim()) return;
+        setIsSavingCat(true);
+        try {
+            const res = await fetch("/api/admin/menu-categories", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: newCatName }),
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            setNewCatName("");
+            fetchCategories();
+            showToast("Category added", "success");
+        } catch (err: any) {
+            showToast(err.message || "Failed to add category", "error");
+        }
+        setIsSavingCat(false);
+    }
+
+    async function deleteCategory(id: string, name: string) {
+        const count = items.filter(i => i.category === name).length;
+        if (count > 0) return showToast(`${count} items still use this category. You must reassign them first!`, "error");
+
+        if (!window.confirm(`Delete category "${name}"?`)) return;
+        setIsSavingCat(true);
+        try {
+            const res = await fetch(`/api/admin/menu-categories/${id}`, { method: "DELETE" });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            showToast("Category deleted", "success");
+            fetchCategories();
+        } catch (err: any) {
+            showToast(err.message || "Failed to delete", "error");
+        }
+        setIsSavingCat(false);
+    }
+
     return (
         <main className="mx-auto max-w-7xl px-4 py-12 text-white relative">
             {toast && (
@@ -361,16 +421,19 @@ export default function AdminMenuItemsPage() {
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-gray-300">Category</label>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-medium text-gray-300">Category</label>
+                                    <button type="button" onClick={() => setIsCatModalOpen(true)} className="text-xs text-orange-400 hover:text-orange-300 transition underline">Manage</button>
+                                </div>
                                 <select
-                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                     value={category}
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     onChange={(e) => setCategory(e.target.value as any)}
                                 >
-                                    {CATEGORIES.map((c) => (
-                                        <option key={c} value={c} className="bg-neutral-900">
-                                            {c}
+                                    {categories.map((c) => (
+                                        <option key={c.id} value={c.name} className="bg-neutral-900">
+                                            {c.name}
                                         </option>
                                     ))}
                                 </select>
@@ -508,14 +571,14 @@ export default function AdminMenuItemsPage() {
                             <div>
                                 <label className="text-sm font-medium text-gray-300">Category</label>
                                 <select
-                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                     value={fCategory}
                                     onChange={(e) => setFCategory(e.target.value)}
                                 >
                                     <option value="All" className="bg-neutral-900">All Categories</option>
-                                    {CATEGORIES.map((c) => (
-                                        <option key={c} value={c} className="bg-neutral-900">
-                                            {c}
+                                    {categories.map((c) => (
+                                        <option key={c.id} value={c.name} className="bg-neutral-900">
+                                            {c.name}
                                         </option>
                                     ))}
                                 </select>
@@ -760,14 +823,17 @@ export default function AdminMenuItemsPage() {
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-medium text-gray-300">Category</label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">Category</label>
+                                        <button type="button" onClick={() => setIsCatModalOpen(true)} className="text-xs text-orange-400 hover:text-orange-300 transition underline">Manage</button>
+                                    </div>
                                     <select
-                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                         value={(editDraft.category as string) ?? "Starters"}
                                         onChange={(e) => setEditDraft((d) => ({ ...d, category: e.target.value }))}
                                     >
-                                        {CATEGORIES.map((c) => (
-                                            <option key={c} value={c} className="bg-neutral-900">{c}</option>
+                                        {categories.map((c) => (
+                                            <option key={c.id} value={c.name} className="bg-neutral-900">{c.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -863,6 +929,67 @@ export default function AdminMenuItemsPage() {
                                 >
                                     {isSaving ? "Saving..." : "Save Changes"}
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Category Manager Modal Overlay */}
+            {isCatModalOpen && (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+                            <h2 className="text-xl font-semibold">Manage Categories</h2>
+                            <button onClick={() => setIsCatModalOpen(false)} className="text-gray-400 hover:text-white transition">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-y-auto">
+                            <form onSubmit={addCategory} className="flex gap-3 mb-6">
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="New category name..."
+                                    className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-white/30 transition placeholder-gray-600 text-sm"
+                                    value={newCatName}
+                                    onChange={(e) => setNewCatName(e.target.value)}
+                                />
+                                <button
+                                    disabled={isSavingCat || !newCatName.trim()}
+                                    className="bg-orange-500 hover:bg-orange-400 disabled:opacity-50 text-black px-4 py-2 rounded-xl text-sm font-semibold transition"
+                                >
+                                    Add
+                                </button>
+                            </form>
+
+                            <div className="space-y-2 border border-white/10 rounded-xl overflow-hidden bg-black/20">
+                                {categories.map((c) => (
+                                    <div key={c.id} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.02] border-b border-white/5 last:border-0 transition text-sm group">
+                                        <div className="font-medium">{c.name}</div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-xs text-gray-500">
+                                                {items.filter(i => i.category === c.name).length} items
+                                            </div>
+                                            <button
+                                                onClick={() => deleteCategory(c.id, c.name)}
+                                                className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition px-2 py-0.5"
+                                                title="Delete category"
+                                                disabled={isSavingCat}
+                                            >
+                                                &times;
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {categories.length === 0 && (
+                                    <div className="px-4 py-8 text-center text-sm text-gray-500">
+                                        No categories found. Add one above.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
