@@ -20,7 +20,7 @@ export async function sendChatLinkEmail({
     try {
         console.log(`Attempting to send catering email to: ${email}`);
         const { data, error } = await resend.emails.send({
-            from: "Indian Food Truck <contact@send.tejainfo.xyz>",
+            from: "Indian Food Truck <contact@tejainfo.xyz>",
             to: email,
             subject: "Your Catering Chat Link - Indian Food Truck",
             html: `
