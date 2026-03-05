@@ -215,7 +215,7 @@ export default function AdminMenuItemsPage() {
     }
 
     return (
-        <main className="mx-auto max-w-6xl px-4 py-12 text-white relative">
+        <main className="mx-auto max-w-7xl px-4 py-12 text-white relative">
             {toast && (
                 <div className={`fixed top-4 center left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-lg text-sm font-semibold transition animate-fade-in ${toast.type === "error" ? "bg-red-500 text-white" : "bg-green-500 text-black"
                     }`}>
@@ -236,373 +236,390 @@ export default function AdminMenuItemsPage() {
                 </div>
             </div>
 
-            {/* Add form */}
-            <form onSubmit={addItem} className="rounded-2xl border border-white/10 bg-white/5 p-6 mb-8 text-sm shadow-xl">
-                <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-xl font-medium">Add New Menu Item</h2>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+                {/* Add form */}
+                <div className="xl:col-span-1">
+                    <form onSubmit={addItem} className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm shadow-xl">
+                        <div className="mb-6 flex items-center justify-between">
+                            <h2 className="text-xl font-medium">Add New Menu Item</h2>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-4">
+                            <div className="md:col-span-2">
+                                <label className="text-sm font-medium text-gray-300">Name</label>
+                                <input
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="e.g. Garlic Naan"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-300">Category</label>
+                                <select
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
+                                    value={category}
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    onChange={(e) => setCategory(e.target.value as any)}
+                                >
+                                    {CATEGORIES.map((c) => (
+                                        <option key={c} value={c} className="bg-neutral-900">
+                                            {c}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-300">Price ($)</label>
+                                <input
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    inputMode="decimal"
+                                    placeholder="e.g. 5.99"
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="text-sm font-medium text-gray-300">Image URL</label>
+                                <input
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                    value={imageUrl}
+                                    onChange={(e) => setImageUrl(e.target.value)}
+                                    placeholder="/images/menu/naan.png"
+                                />
+                                {imageUrl && (
+                                    <div className="mt-3 flex items-center gap-3 animate-fade-in">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={imageUrl}
+                                            alt="Preview"
+                                            className="h-14 w-14 rounded-lg border border-white/10 object-cover bg-black/50"
+                                            onError={(e) => ((e.currentTarget.style.display = "none"))}
+                                        />
+                                        <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">Preview</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="md:col-span-4">
+                                <label className="text-sm font-medium text-gray-300">Description</label>
+                                <textarea
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    rows={2}
+                                    placeholder="Freshly baked in our tandoor oven, brushed with garlic..."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap gap-6 text-sm">
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" checked={isVeg} onChange={(e) => setIsVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                <span className="text-gray-300 group-hover:text-white transition">Veg</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" checked={isSpicy} onChange={(e) => setIsSpicy(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                <span className="text-gray-300 group-hover:text-white transition">Spicy</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" checked={isPopular} onChange={(e) => setIsPopular(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                <span className="text-gray-300 group-hover:text-white transition">Popular</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                <span className="text-gray-300 group-hover:text-white transition">Website Availability</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" checked={inPos} onChange={(e) => setInPos(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                <span className="text-gray-300 group-hover:text-white transition" title="Shows on POS screen but can still be hidden on website">In POS</span>
+                            </label>
+                        </div>
+
+                        <button disabled={isSaving} className="w-full rounded-xl bg-orange-500 hover:bg-orange-400 transition text-black font-semibold px-4 py-3 disabled:opacity-50">
+                            {isSaving ? "Saving..." : "Save & Add Another"}
+                        </button>
+                    </form>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-4">
-                    <div className="md:col-span-2">
-                        <label className="text-sm font-medium text-gray-300">Name</label>
-                        <input
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. Garlic Naan"
-                        />
+                {/* Right Column: Filters and Table */}
+                <div className="xl:col-span-2 space-y-6 min-w-0">
+                    {/* Filters */}
+                    <div className="rounded-2xl border border-white/10 bg-black/50 p-6">
+                        <div className="grid gap-4 md:grid-cols-5">
+                            <div className="md:col-span-2">
+                                <label className="text-sm font-medium text-gray-300">Search</label>
+                                <input
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                    value={q}
+                                    onChange={(e) => setQ(e.target.value)}
+                                    placeholder="Search by meal or ingredient..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-300">Category</label>
+                                <select
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
+                                    value={fCategory}
+                                    onChange={(e) => setFCategory(e.target.value)}
+                                >
+                                    <option value="All" className="bg-neutral-900">All Categories</option>
+                                    {CATEGORIES.map((c) => (
+                                        <option key={c} value={c} className="bg-neutral-900">
+                                            {c}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-300">Availability</label>
+                                <select
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
+                                    value={fAvailability}
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    onChange={(e) => setFAvailability(e.target.value as any)}
+                                >
+                                    <option value="all" className="bg-neutral-900">All Statuses</option>
+                                    <option value="available" className="bg-neutral-900">In Stock</option>
+                                    <option value="unavailable" className="bg-neutral-900">Out of Stock</option>
+                                </select>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-4 mt-[30px]">
+                                <label className="flex items-center gap-2 text-sm cursor-pointer group">
+                                    <input type="checkbox" checked={fVeg} onChange={(e) => setFVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                    <span className="text-gray-300 group-hover:text-white transition">Veg</span>
+                                </label>
+                                <label className="flex items-center gap-2 text-sm cursor-pointer group">
+                                    <input type="checkbox" checked={fSpicy} onChange={(e) => setFSpicy(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                    <span className="text-gray-300 group-hover:text-white transition">Spicy</span>
+                                </label>
+                                <label className="flex items-center gap-2 text-sm cursor-pointer group">
+                                    <input type="checkbox" checked={fPopular} onChange={(e) => setFPopular(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                    <span className="text-gray-300 group-hover:text-white transition">Popular</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="text-sm font-medium text-gray-300">Category</label>
-                        <select
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
-                            value={category}
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            onChange={(e) => setCategory(e.target.value as any)}
-                        >
-                            {CATEGORIES.map((c) => (
-                                <option key={c} value={c} className="bg-neutral-900">
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {/* Table */}
+                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20 shadow-xl">
+                        <div className="border-b border-white/10 px-6 py-4 bg-white/[0.02]">
+                            <h2 className="text-lg font-medium">All Database Entries</h2>
+                        </div>
 
-                    <div>
-                        <label className="text-sm font-medium text-gray-300">Price ($)</label>
-                        <input
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            inputMode="decimal"
-                            placeholder="e.g. 5.99"
-                        />
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <label className="text-sm font-medium text-gray-300">Image URL</label>
-                        <input
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                            value={imageUrl}
-                            onChange={(e) => setImageUrl(e.target.value)}
-                            placeholder="/images/menu/naan.png"
-                        />
-                    </div>
-
-                    <div className="md:col-span-4">
-                        <label className="text-sm font-medium text-gray-300">Description</label>
-                        <textarea
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows={2}
-                            placeholder="Freshly baked in our tandoor oven, brushed with garlic..."
-                        />
-                    </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-6 text-sm">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" checked={isVeg} onChange={(e) => setIsVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                        <span className="text-gray-300 group-hover:text-white transition">Veg</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" checked={isSpicy} onChange={(e) => setIsSpicy(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                        <span className="text-gray-300 group-hover:text-white transition">Spicy</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" checked={isPopular} onChange={(e) => setIsPopular(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                        <span className="text-gray-300 group-hover:text-white transition">Popular</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                        <span className="text-gray-300 group-hover:text-white transition">Website Availability</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" checked={inPos} onChange={(e) => setInPos(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                        <span className="text-gray-300 group-hover:text-white transition" title="Shows on POS screen but can still be hidden on website">In POS</span>
-                    </label>
-                </div>
-
-                <div className="mt-6 flex items-center justify-end">
-                    <button disabled={isSaving} className="rounded-xl bg-orange-500 hover:bg-orange-400 transition text-black font-semibold px-6 py-2.5 disabled:opacity-50">
-                        {isSaving ? "Saving..." : "Save & Add Another"}
-                    </button>
-                </div>
-            </form>
-
-            {/* Filters */}
-            <div className="mt-8 rounded-2xl border border-white/10 bg-black/50 p-6 mb-6">
-                <div className="grid gap-4 md:grid-cols-5">
-                    <div className="md:col-span-2">
-                        <label className="text-sm font-medium text-gray-300">Search</label>
-                        <input
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                            value={q}
-                            onChange={(e) => setQ(e.target.value)}
-                            placeholder="Search by meal or ingredient..."
-                        />
-                    </div>
-
-                    <div>
-                        <label className="text-sm font-medium text-gray-300">Category</label>
-                        <select
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
-                            value={fCategory}
-                            onChange={(e) => setFCategory(e.target.value)}
-                        >
-                            <option value="All" className="bg-neutral-900">All Categories</option>
-                            {CATEGORIES.map((c) => (
-                                <option key={c} value={c} className="bg-neutral-900">
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="text-sm font-medium text-gray-300">Availability</label>
-                        <select
-                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
-                            value={fAvailability}
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            onChange={(e) => setFAvailability(e.target.value as any)}
-                        >
-                            <option value="all" className="bg-neutral-900">All Statuses</option>
-                            <option value="available" className="bg-neutral-900">In Stock</option>
-                            <option value="unavailable" className="bg-neutral-900">Out of Stock</option>
-                        </select>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 mt-[30px]">
-                        <label className="flex items-center gap-2 text-sm cursor-pointer group">
-                            <input type="checkbox" checked={fVeg} onChange={(e) => setFVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                            <span className="text-gray-300 group-hover:text-white transition">Veg</span>
-                        </label>
-                        <label className="flex items-center gap-2 text-sm cursor-pointer group">
-                            <input type="checkbox" checked={fSpicy} onChange={(e) => setFSpicy(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                            <span className="text-gray-300 group-hover:text-white transition">Spicy</span>
-                        </label>
-                        <label className="flex items-center gap-2 text-sm cursor-pointer group">
-                            <input type="checkbox" checked={fPopular} onChange={(e) => setFPopular(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                            <span className="text-gray-300 group-hover:text-white transition">Popular</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20 shadow-xl">
-                <div className="border-b border-white/10 px-6 py-4 bg-white/[0.02]">
-                    <h2 className="text-lg font-medium">All Database Entries</h2>
-                </div>
-
-                {loading ? (
-                    <div className="p-10 text-center text-sm text-gray-500">Syncing with POS...</div>
-                ) : items.length === 0 ? (
-                    <div className="p-10 text-center text-sm text-gray-500">No menu items matched your query.</div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm whitespace-nowrap">
-                            <thead className="bg-white/5 text-gray-400 border-b border-white/10">
-                                <tr>
-                                    <th className="px-6 py-4 font-medium w-16">Photo</th>
-                                    <th className="px-6 py-4 font-medium">Name & Desc</th>
-                                    <th className="px-6 py-4 font-medium">Category</th>
-                                    <th className="px-6 py-4 font-medium">Price</th>
-                                    <th className="px-6 py-4 font-medium">Tags</th>
-                                    <th className="px-6 py-4 font-medium text-center">Visibility</th>
-                                    <th className="px-6 py-4 font-medium">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                                {items.map((it) => {
-                                    const isEditing = editingId === it.id;
-                                    return (
-                                        <tr key={it.id} className="hover:bg-white/[0.02] transition">
-                                            <td className="px-6 py-4">
-                                                {it.imageUrl ? (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img src={it.imageUrl} alt={it.name} className="w-12 h-12 object-cover rounded-lg bg-neutral-900 border border-white/10" />
-                                                ) : (
-                                                    <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 text-xs text-center leading-tight">
-                                                        No<br />Img
-                                                    </div>
-                                                )}
-                                            </td>
-
-                                            <td className="px-6 py-4">
-                                                {isEditing ? (
-                                                    <input
-                                                        className="w-full min-w-[200px] bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none mb-2"
-                                                        value={(editDraft.name as string) ?? ""}
-                                                        onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
-                                                    />
-                                                ) : (
-                                                    <div className="font-semibold text-white mb-1">{it.name}</div>
-                                                )}
-                                                <div className="text-xs text-gray-500 max-w-[250px] truncate whitespace-normal break-words line-clamp-2">
-                                                    {isEditing ? (
-                                                        <textarea
-                                                            className="w-full min-w-[200px] bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none"
-                                                            value={(editDraft.description as string) ?? ""}
-                                                            onChange={(e) =>
-                                                                setEditDraft((d) => ({ ...d, description: e.target.value }))
-                                                            }
-                                                            rows={2}
-                                                        />
-                                                    ) : (
-                                                        it.description
-                                                    )}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-6 py-4 text-gray-300">
-                                                {isEditing ? (
-                                                    <select
-                                                        className="w-32 bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none"
-                                                        value={(editDraft.category as string) ?? ""}
-                                                        onChange={(e) =>
-                                                            setEditDraft((d) => ({ ...d, category: e.target.value }))
-                                                        }
-                                                    >
-                                                        {CATEGORIES.map((c) => (
-                                                            <option key={c} value={c} className="bg-neutral-900">{c}</option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    it.category
-                                                )}
-                                            </td>
-
-                                            <td className="px-6 py-4 font-medium text-green-400">
-                                                {isEditing ? (
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-gray-400">$</span>
-                                                        <input
-                                                            className="w-20 bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none text-white"
-                                                            value={String(((editDraft.priceCents as number) ?? it.priceCents) / 100)}
-                                                            onChange={(e) => {
-                                                                const val = Number(e.target.value);
-                                                                setEditDraft((d) => ({
-                                                                    ...d,
-                                                                    priceCents: Number.isFinite(val) ? Math.round(val * 100) : it.priceCents,
-                                                                }));
-                                                            }}
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    money(it.priceCents)
-                                                )}
-                                            </td>
-
-                                            <td className="px-6 py-4 w-40">
-                                                <div className="flex flex-wrap gap-2">
-                                                    {["Veg", "Spicy", "Popular"].map((t) => {
-                                                        const key =
-                                                            t === "Veg" ? "isVeg" : t === "Spicy" ? "isSpicy" : "isPopular";
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                        const val = (isEditing ? (editDraft as any)[key] : (it as any)[key]) as boolean;
-
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                        const toggle = () => setEditDraft((d) => ({ ...d, [key]: !val })) as any;
-
-                                                        const activeColors = t === 'Veg' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                            t === 'Spicy' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                                                'bg-orange-500/10 text-orange-400 border-orange-500/20';
-
-                                                        const inactiveColors = 'bg-white/5 text-gray-500 border-white/10';
-
-                                                        return (
-                                                            <button
-                                                                key={t}
-                                                                type="button"
-                                                                className={`rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide transition ${val ? activeColors : inactiveColors
-                                                                    } ${!isEditing && !val ? 'opacity-40' : ''}`}
-                                                                onClick={isEditing ? toggle : undefined}
-                                                                disabled={!isEditing}
-                                                                title={isEditing ? "Click to toggle" : ""}
-                                                            >
-                                                                {t}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-6 py-4 w-32">
-                                                <div className="flex flex-col gap-2">
-                                                    <button
-                                                        type="button"
-                                                        className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.isAvailable ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
-                                                            }`}
-                                                        onClick={() => toggleAvailability(it)}
-                                                        title="Toggle visibility on website"
-                                                    >
-                                                        {it.isAvailable ? "Web: On" : "Web: Off"}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.inPos ? "bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
-                                                            }`}
-                                                        onClick={() => togglePos(it)}
-                                                        title="Toggle visibility on POS screen"
-                                                    >
-                                                        {it.inPos ? "POS: Sync" : "POS: Hide"}
-                                                    </button>
-                                                </div>
-                                            </td>
-
-                                            <td className="px-6 py-4 w-32">
-                                                <div className="flex flex-col gap-3">
-                                                    {isEditing ? (
-                                                        <>
-                                                            <button
-                                                                type="button"
-                                                                className="bg-orange-500 hover:bg-orange-400 text-black px-4 py-1.5 rounded-lg font-semibold transition text-center"
-                                                                onClick={() => saveEdit(it.id)}
-                                                            >
-                                                                Save
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="text-gray-400 hover:text-white transition font-medium text-left px-1"
-                                                                onClick={() => {
-                                                                    setEditingId(null);
-                                                                    setEditDraft({});
-                                                                }}
-                                                            >
-                                                                Cancel
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <button
-                                                                type="button"
-                                                                className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg font-medium transition text-center border border-white/5"
-                                                                onClick={() => beginEdit(it)}
-                                                            >
-                                                                Edit
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="text-red-400/70 hover:text-red-300 transition font-medium text-left px-1"
-                                                                onClick={() => removeItem(it.id)}
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
+                        {loading ? (
+                            <div className="p-10 text-center text-sm text-gray-500">Syncing with POS...</div>
+                        ) : items.length === 0 ? (
+                            <div className="p-10 text-center text-sm text-gray-500">No menu items matched your query.</div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                    <thead className="bg-white/5 text-gray-400 border-b border-white/10">
+                                        <tr>
+                                            <th className="px-6 py-4 font-medium w-16">Photo</th>
+                                            <th className="px-6 py-4 font-medium">Name & Desc</th>
+                                            <th className="px-6 py-4 font-medium">Category</th>
+                                            <th className="px-6 py-4 font-medium">Price</th>
+                                            <th className="px-6 py-4 font-medium">Tags</th>
+                                            <th className="px-6 py-4 font-medium text-center">Visibility</th>
+                                            <th className="px-6 py-4 font-medium">Actions</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {items.map((it) => {
+                                            const isEditing = editingId === it.id;
+                                            return (
+                                                <tr key={it.id} className="hover:bg-white/[0.02] transition">
+                                                    <td className="px-6 py-4">
+                                                        {it.imageUrl ? (
+                                                            // eslint-disable-next-line @next/next/no-img-element
+                                                            <img src={it.imageUrl} alt={it.name} className="w-12 h-12 object-cover rounded-lg bg-neutral-900 border border-white/10" />
+                                                        ) : (
+                                                            <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 text-xs text-center leading-tight">
+                                                                No<br />Img
+                                                            </div>
+                                                        )}
+                                                    </td>
+
+                                                    <td className="px-6 py-4">
+                                                        {isEditing ? (
+                                                            <input
+                                                                className="w-full min-w-[200px] bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none mb-2"
+                                                                value={(editDraft.name as string) ?? ""}
+                                                                onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
+                                                            />
+                                                        ) : (
+                                                            <div className="font-semibold text-white mb-1">{it.name}</div>
+                                                        )}
+                                                        <div className="text-xs text-gray-500 max-w-[250px] truncate whitespace-normal break-words line-clamp-2">
+                                                            {isEditing ? (
+                                                                <textarea
+                                                                    className="w-full min-w-[200px] bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none"
+                                                                    value={(editDraft.description as string) ?? ""}
+                                                                    onChange={(e) =>
+                                                                        setEditDraft((d) => ({ ...d, description: e.target.value }))
+                                                                    }
+                                                                    rows={2}
+                                                                />
+                                                            ) : (
+                                                                it.description
+                                                            )}
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-6 py-4 text-gray-300">
+                                                        {isEditing ? (
+                                                            <select
+                                                                className="w-32 bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none"
+                                                                value={(editDraft.category as string) ?? ""}
+                                                                onChange={(e) =>
+                                                                    setEditDraft((d) => ({ ...d, category: e.target.value }))
+                                                                }
+                                                            >
+                                                                {CATEGORIES.map((c) => (
+                                                                    <option key={c} value={c} className="bg-neutral-900">{c}</option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            it.category
+                                                        )}
+                                                    </td>
+
+                                                    <td className="px-6 py-4 font-medium text-green-400">
+                                                        {isEditing ? (
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="text-gray-400">$</span>
+                                                                <input
+                                                                    className="w-20 bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none text-white"
+                                                                    value={String(((editDraft.priceCents as number) ?? it.priceCents) / 100)}
+                                                                    onChange={(e) => {
+                                                                        const val = Number(e.target.value);
+                                                                        setEditDraft((d) => ({
+                                                                            ...d,
+                                                                            priceCents: Number.isFinite(val) ? Math.round(val * 100) : it.priceCents,
+                                                                        }));
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            money(it.priceCents)
+                                                        )}
+                                                    </td>
+
+                                                    <td className="px-6 py-4 w-40">
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {["Veg", "Spicy", "Popular"].map((t) => {
+                                                                const key =
+                                                                    t === "Veg" ? "isVeg" : t === "Spicy" ? "isSpicy" : "isPopular";
+                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                                const val = (isEditing ? (editDraft as any)[key] : (it as any)[key]) as boolean;
+
+                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                                const toggle = () => setEditDraft((d) => ({ ...d, [key]: !val })) as any;
+
+                                                                const activeColors = t === 'Veg' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                                    t === 'Spicy' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                                                        'bg-orange-500/10 text-orange-400 border-orange-500/20';
+
+                                                                const inactiveColors = 'bg-white/5 text-gray-500 border-white/10';
+
+                                                                return (
+                                                                    <button
+                                                                        key={t}
+                                                                        type="button"
+                                                                        className={`rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide transition ${val ? activeColors : inactiveColors
+                                                                            } ${!isEditing && !val ? 'opacity-40' : ''}`}
+                                                                        onClick={isEditing ? toggle : undefined}
+                                                                        disabled={!isEditing}
+                                                                        title={isEditing ? "Click to toggle" : ""}
+                                                                    >
+                                                                        {t}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-6 py-4 w-32">
+                                                        <div className="flex flex-col gap-2">
+                                                            <button
+                                                                type="button"
+                                                                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.isAvailable ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
+                                                                    }`}
+                                                                onClick={() => toggleAvailability(it)}
+                                                                title="Toggle visibility on website"
+                                                            >
+                                                                {it.isAvailable ? "Web: On" : "Web: Off"}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.inPos ? "bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
+                                                                    }`}
+                                                                onClick={() => togglePos(it)}
+                                                                title="Toggle visibility on POS screen"
+                                                            >
+                                                                {it.inPos ? "POS: Sync" : "POS: Hide"}
+                                                            </button>
+                                                        </div>
+                                                    </td>
+
+                                                    <td className="px-6 py-4 w-32">
+                                                        <div className="flex flex-col gap-3">
+                                                            {isEditing ? (
+                                                                <>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="bg-orange-500 hover:bg-orange-400 text-black px-4 py-1.5 rounded-lg font-semibold transition text-center"
+                                                                        onClick={() => saveEdit(it.id)}
+                                                                    >
+                                                                        Save
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="text-gray-400 hover:text-white transition font-medium text-left px-1"
+                                                                        onClick={() => {
+                                                                            setEditingId(null);
+                                                                            setEditDraft({});
+                                                                        }}
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg font-medium transition text-center border border-white/5"
+                                                                        onClick={() => beginEdit(it)}
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="text-red-400/70 hover:text-red-300 transition font-medium text-left px-1"
+                                                                        onClick={() => removeItem(it.id)}
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </main>
     );
