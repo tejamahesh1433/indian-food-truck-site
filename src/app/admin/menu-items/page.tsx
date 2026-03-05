@@ -55,6 +55,10 @@ export default function AdminMenuItemsPage() {
     const [newCatName, setNewCatName] = useState("");
     const [isSavingCat, setIsSavingCat] = useState(false);
 
+    // bulk actions state
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [isBulkLoading, setIsBulkLoading] = useState(false);
+
     // filters
     const [q, setQ] = useState("");
     const [fCategory, setFCategory] = useState<string>("All");
@@ -126,6 +130,7 @@ export default function AdminMenuItemsPage() {
         try {
             const data = await res.json();
             setItems(data.items ?? []);
+            setSelectedIds([]); // reset selection on new data
         } catch (e) {
             console.error("Failed to parse JSON response. Status:", res.status);
             const text = await res.text();
@@ -376,6 +381,49 @@ export default function AdminMenuItemsPage() {
         setIsSavingCat(false);
     }
 
+    async function handleBulkAction(action: "available" | "unavailable" | "pos_on" | "pos_off" | "delete") {
+        if (selectedIds.length === 0) return;
+
+        if (action === "delete") {
+            const confirm = window.confirm(`Are you sure you want to permanently delete ${selectedIds.length} items?`);
+            if (!confirm) return;
+        }
+
+        setIsBulkLoading(true);
+
+        try {
+            const res = await fetch("/api/admin/menu-items/bulk", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ids: selectedIds, action }),
+            });
+            const data = await res.json();
+
+            if (!data.ok) throw new Error(data.error);
+            showToast(`Bulk action successful (${selectedIds.length} items)`, "success");
+            setSelectedIds([]);
+            fetchItems();
+        } catch (err: any) {
+            showToast(err.message || "Bulk action failed", "error");
+        }
+
+        setIsBulkLoading(false);
+    }
+
+    function toggleSelectAll() {
+        if (selectedIds.length === items.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(items.map((i) => i.id));
+        }
+    }
+
+    function toggleSelect(id: string) {
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+        );
+    }
+
     return (
         <main className="mx-auto max-w-7xl px-4 py-12 text-white relative">
             {toast && (
@@ -616,7 +664,55 @@ export default function AdminMenuItemsPage() {
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20 shadow-xl">
+                    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20 shadow-xl relative">
+                        {/* Bulk Action Header Override */}
+                        {selectedIds.length > 0 && (
+                            <div className="absolute top-0 left-0 right-0 h-[61px] bg-orange-500/10 border-b border-orange-500/30 flex items-center justify-between px-6 z-10 animate-fade-in backdrop-blur-md">
+                                <span className="text-orange-400 font-semibold text-sm">
+                                    {selectedIds.length} item{selectedIds.length > 1 ? "s" : ""} selected
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        disabled={isBulkLoading}
+                                        onClick={() => handleBulkAction("available")}
+                                        className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 text-xs font-semibold rounded-lg transition disabled:opacity-50"
+                                    >
+                                        Set In Stock
+                                    </button>
+                                    <button
+                                        disabled={isBulkLoading}
+                                        onClick={() => handleBulkAction("unavailable")}
+                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-lg transition disabled:opacity-50"
+                                    >
+                                        Set Out of Stock
+                                    </button>
+                                    <div className="w-px h-6 bg-white/10 self-center mx-1"></div>
+                                    <button
+                                        disabled={isBulkLoading}
+                                        onClick={() => handleBulkAction("pos_on")}
+                                        className="px-3 py-1.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 text-xs font-semibold rounded-lg transition disabled:opacity-50"
+                                    >
+                                        POS On
+                                    </button>
+                                    <button
+                                        disabled={isBulkLoading}
+                                        onClick={() => handleBulkAction("pos_off")}
+                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-lg transition disabled:opacity-50"
+                                    >
+                                        POS Off
+                                    </button>
+                                    <div className="w-px h-6 bg-white/10 self-center mx-1"></div>
+                                    <button
+                                        disabled={isBulkLoading}
+                                        onClick={() => handleBulkAction("delete")}
+                                        className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-500 text-xs font-semibold rounded-lg transition disabled:opacity-50"
+                                    >
+                                        Delete Selected
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="border-b border-white/10 px-6 py-4 bg-white/[0.02]">
                             <h2 className="text-lg font-medium">All Database Entries</h2>
                         </div>
@@ -654,6 +750,14 @@ export default function AdminMenuItemsPage() {
                                 <table className="w-full text-left text-sm whitespace-nowrap">
                                     <thead className="bg-white/5 text-gray-400 border-b border-white/10">
                                         <tr>
+                                            <th className="px-6 py-4 font-medium w-10">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded border-white/10 bg-black/40 cursor-pointer accent-orange-500"
+                                                    onChange={toggleSelectAll}
+                                                    checked={items.length > 0 && selectedIds.length === items.length}
+                                                />
+                                            </th>
                                             <th className="px-6 py-4 font-medium w-16">Photo</th>
                                             <th className="px-6 py-4 font-medium">Name & Desc</th>
                                             <th className="px-6 py-4 font-medium">Category</th>
@@ -680,8 +784,16 @@ export default function AdminMenuItemsPage() {
                                                     onDragLeave={() => setDragOverItemId(null)}
                                                     onDrop={() => handleDrop(it.id)}
                                                     className={`transition ${isDragging ? "opacity-30 bg-white/10" : "hover:bg-white/[0.02]"
-                                                        } ${isOver ? "border-t-2 border-orange-500 bg-orange-500/10" : ""}`}
+                                                        } ${isOver ? "border-t-2 border-orange-500 bg-orange-500/10" : ""} ${selectedIds.includes(it.id) ? "bg-orange-500/[0.02]" : ""}`}
                                                 >
+                                                    <td className="px-6 py-4">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="w-4 h-4 rounded border-white/10 bg-black/40 cursor-pointer accent-orange-500"
+                                                            checked={selectedIds.includes(it.id)}
+                                                            onChange={() => toggleSelect(it.id)}
+                                                        />
+                                                    </td>
                                                     <td className="py-3">
                                                         <div className="h-10 w-10 overflow-hidden rounded-lg border border-white/10 bg-black/40 flex items-center justify-center">
                                                             {it.imageUrl ? (

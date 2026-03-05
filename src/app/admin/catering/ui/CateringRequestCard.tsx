@@ -6,9 +6,11 @@ import { updateCateringStatus } from "../actions";
 export default function CateringRequestCard({
     request,
     onOpen,
+    onChat,
 }: {
     request: CateringRequest;
     onOpen: () => void;
+    onChat: () => void;
 }) {
     const isNew = request.status === "NEW";
     const isContacted = request.status === "CONTACTED";
@@ -83,6 +85,15 @@ export default function CateringRequestCard({
                                 Mark Done
                             </button>
                         )}
+                        <button
+                            onClick={onChat}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/20 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white transition flex items-center gap-1.5"
+                        >
+                            <svg className="w-3.5 h-3.5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            Live Chat
+                        </button>
                     </div>
                 </div>
             </div>

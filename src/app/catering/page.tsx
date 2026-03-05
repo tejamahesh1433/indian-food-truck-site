@@ -2,11 +2,14 @@
 
 import Navbar from "@/components/Navbar";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
 
 export default function CateringPage() {
     const site = useSite();
+    const router = useRouter();
     const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+    const [errorMsg, setErrorMsg] = useState("");
     const [phoneStr, setPhoneStr] = useState("");
 
     function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -44,12 +47,19 @@ export default function CateringPage() {
             });
 
             if (res.ok) {
+                const json = await res.json();
                 setStatus("sent");
                 form.reset();
+                if (json.chatToken) {
+                    router.push(`/catering/chat/${json.chatToken}`);
+                }
             } else {
+                const json = await res.json().catch(() => ({}));
+                setErrorMsg(json.error || "Something went wrong. Try again.");
                 setStatus("error");
             }
-        } catch {
+        } catch (err: any) {
+            setErrorMsg(err.message || "Network error. Try again.");
             setStatus("error");
         }
     }
@@ -137,17 +147,17 @@ export default function CateringPage() {
                                 />
 
                                 <button
-                                    disabled={status === "sending"}
+                                    disabled={status === "sending" || status === "sent"}
                                     className="w-full bg-orange-500 text-black px-6 py-3 rounded-full font-semibold hover:bg-orange-400 transition disabled:opacity-60"
                                 >
-                                    {status === "sending" ? "Sending..." : "Send request"}
+                                    {status === "sending" ? "Sending..." : status === "sent" ? "Redirecting to Chat..." : "Send request"}
                                 </button>
 
                                 {status === "sent" && (
                                     <p className="text-green-300 text-sm">Sent! We’ll get back to you soon.</p>
                                 )}
                                 {status === "error" && (
-                                    <p className="text-red-300 text-sm">Something went wrong. Try again.</p>
+                                    <p className="text-red-300 text-sm">{errorMsg}</p>
                                 )}
                             </form>
                         </div>

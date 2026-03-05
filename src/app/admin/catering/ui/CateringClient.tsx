@@ -6,6 +6,7 @@ import { CateringRequest } from "@prisma/client";
 import FiltersBar, { FiltersState } from "./FiltersBar";
 import CateringRequestCard from "./CateringRequestCard";
 import CateringDetailsDrawer from "./CateringDetailsDrawer";
+import AdminChatDrawer from "./AdminChatDrawer";
 
 type Props = {
     initialRequests: CateringRequest[];
@@ -19,6 +20,9 @@ export default function CateringClient({ initialRequests }: Props) {
     });
 
     const [selected, setSelected] = useState<CateringRequest | null>(null);
+    const [chatOpen, setChatOpen] = useState(false);
+    const [chatTarget, setChatTarget] = useState<{ id: string; name: string; email: string } | null>(null);
+
     const router = useRouter();
 
     // Auto-refresh the server payload every 30 seconds to catch new incoming requests
@@ -77,6 +81,10 @@ export default function CateringClient({ initialRequests }: Props) {
                             key={r.id}
                             request={r}
                             onOpen={() => setSelected(r)}
+                            onChat={() => {
+                                setChatTarget({ id: r.id, name: r.name, email: r.email });
+                                setChatOpen(true);
+                            }}
                         />
                     ))
                 )}
@@ -85,6 +93,17 @@ export default function CateringClient({ initialRequests }: Props) {
             <CateringDetailsDrawer
                 request={selected}
                 onClose={() => setSelected(null)}
+            />
+
+            <AdminChatDrawer
+                requestId={chatTarget?.id ?? null}
+                customerName={chatTarget?.name}
+                customerEmail={chatTarget?.email}
+                open={chatOpen}
+                onClose={() => {
+                    setChatOpen(false);
+                    setChatTarget(null);
+                }}
             />
         </div>
     );

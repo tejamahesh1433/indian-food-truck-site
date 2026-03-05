@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { makeChatToken } from "@/lib/tokens";
+import { sendChatLinkEmail } from "@/lib/mail";
 
 const Schema = z.object({
     name: z.string().min(1),
@@ -48,7 +50,9 @@ export async function POST(req: Request) {
     }
 
     const ip = req.headers.get("x-forwarded-for") || "unknown";
-    if (!applyRateLimit(ip)) {
+    const isDev = process.env.NODE_ENV !== "production";
+
+    if (!isDev && !applyRateLimit(ip)) {
         return NextResponse.json(
             { ok: false, error: "Too many requests. Please wait before submitting again." },
             { status: 429 }
@@ -61,17 +65,36 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
     }
 
-    const created = await prisma.cateringRequest.create({
-        data: {
-            name: parsed.data.name,
-            phone: parsed.data.phone,
-            email: parsed.data.email,
-            eventDate: parsed.data.eventDate || null,
-            guests: parsed.data.guests || null,
-            location: parsed.data.location || null,
-            notes: parsed.data.notes || null,
-        },
-    });
+    try {
+        const created = await prisma.cateringRequest.create({
+            data: {
+                name: parsed.data.name,
+                phone: parsed.data.phone,
+                email: parsed.data.email,
+                eventDate: parsed.data.eventDate || null,
+                guests: parsed.data.guests || null,
+                location: parsed.data.location || "TBD",
+                notes: parsed.data.notes || null,
+                chatToken: makeChatToken(),
+            },
+        });
 
-    return NextResponse.json({ ok: true, id: created.id });
+        // Send email notification asynchronously (don't block the response)
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.headers.get("origin") || "http://localhost:3000";
+        const chatLink = `${baseUrl}/catering/chat/${created.chatToken}`;
+
+        sendChatLinkEmail({
+            email: created.email,
+            name: created.name,
+            chatLink: chatLink,
+        }).catch(e => console.error("EMAIL_SEND_BG_ERROR:", e));
+
+        return NextResponse.json({ ok: true, chatToken: created.chatToken });
+    } catch (err: any) {
+        console.error("CATERING_SUBMIT_ERROR:", err);
+        return NextResponse.json(
+            { ok: false, error: err.message || "Database error" },
+            { status: 500 }
+        );
+    }
 }

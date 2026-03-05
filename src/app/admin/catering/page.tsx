@@ -1,3 +1,4 @@
+// Forced reload to sync Prisma schema
 import { prisma } from "@/lib/prisma";
 import CateringClient from "./ui/CateringClient";
 

@@ -2,6 +2,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum ChatSender {
+  CUSTOMER
+  ADMIN
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -20,8 +25,26 @@ model CateringRequest {
   internalNotes String?
   status        String   @default("NEW") // NEW, CONTACTED, DONE
   isArchived    Boolean        @default(false)
+
+  // Chat capability
+  chatToken     String        @unique @default(cuid())
+  chatEnabled   Boolean       @default(true)
+  messages      CateringMessage[]
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
+}
+
+model CateringMessage {
+  id        String     @id @default(cuid())
+  requestId String
+  request   CateringRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  sender    ChatSender
+  text      String
+  createdAt DateTime   @default(now())
+
+  @@index([requestId, createdAt])
 }
 
 model MenuItem {
