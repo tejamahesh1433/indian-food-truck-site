@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
 
 export default function Footer() {
     const site = useSite();
+    const pathname = usePathname();
+
+    if (pathname.startsWith("/admin")) return null;
 
     return (
         <footer className="mt-10 border-t border-white/10 bg-black/30">

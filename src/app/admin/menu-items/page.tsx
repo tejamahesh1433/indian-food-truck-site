@@ -650,6 +650,13 @@ export default function AdminMenuItemsPage() {
                                                         >
                                                             Edit
                                                         </button>
+                                                        <button
+                                                            type="button"
+                                                            className="mt-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 px-4 py-1.5 rounded-lg font-medium transition text-center border border-red-500/10 w-full"
+                                                            onClick={() => removeItem(it.id)}
+                                                        >
+                                                            Delete
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             );
