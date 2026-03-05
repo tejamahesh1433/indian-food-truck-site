@@ -216,6 +216,36 @@ export default function AdminMenuItemsPage() {
         if (!data.ok) return showToast(data.error || "Failed to delete item", "error");
 
         showToast("Item deleted", "success");
+        setEditingId(null);
+        fetchItems();
+    }
+
+    async function duplicateItem() {
+        if (!editDraft) return;
+        setIsSaving(true);
+        const res = await fetch("/api/admin/menu-items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: (editDraft.name || "New Item") + " (Copy)",
+                category: editDraft.category || "Starters",
+                price: (editDraft.priceCents || 0) / 100,
+                description: editDraft.description || "",
+                imageUrl: editDraft.imageUrl || "",
+                isVeg: editDraft.isVeg || false,
+                isSpicy: editDraft.isSpicy || false,
+                isPopular: editDraft.isPopular || false,
+                isAvailable: editDraft.isAvailable ?? true,
+                inPos: editDraft.inPos ?? true,
+            }),
+        });
+        const data = await res.json();
+        setIsSaving(false);
+        if (!data.ok) return showToast(data.error || "Failed to duplicate item", "error");
+
+        showToast("Item duplicated successfully!", "success");
+        setEditingId(null);
+        setEditDraft({});
         fetchItems();
     }
 
@@ -530,78 +560,36 @@ export default function AdminMenuItemsPage() {
                                                 <tr key={it.id} className="hover:bg-white/[0.02] transition">
                                                     <td className="px-6 py-4">
                                                         {it.imageUrl ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
-                                                            <img src={it.imageUrl} alt={it.name} className="w-12 h-12 object-cover rounded-lg bg-neutral-900 border border-white/10" />
+                                                            <div className="relative group cursor-pointer inline-block">
+                                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                <img src={it.imageUrl} alt={it.name} className="w-12 h-12 object-cover rounded-lg bg-neutral-900 border border-white/10" />
+                                                                <div className="absolute left-16 top-1/2 -translate-y-1/2 z-[100] hidden group-hover:block w-48 h-48 bg-black rounded-xl border border-white/10 overflow-hidden shadow-2xl animate-fade-in pointer-events-none">
+                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                    <img src={it.imageUrl} alt={it.name} className="w-full h-full object-cover" />
+                                                                </div>
+                                                            </div>
                                                         ) : (
-                                                            <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 text-xs text-center leading-tight">
-                                                                No<br />Img
+                                                            <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-500">
+                                                                <svg className="w-5 h-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
                                                             </div>
                                                         )}
                                                     </td>
 
                                                     <td className="px-6 py-4">
-                                                        {isEditing ? (
-                                                            <input
-                                                                className="w-full min-w-[200px] bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none mb-2"
-                                                                value={(editDraft.name as string) ?? ""}
-                                                                onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
-                                                            />
-                                                        ) : (
-                                                            <div className="font-semibold text-white mb-1">{it.name}</div>
-                                                        )}
+                                                        <div className="font-semibold text-white mb-1">{it.name}</div>
                                                         <div className="text-xs text-gray-500 max-w-[250px] truncate whitespace-normal break-words line-clamp-2">
-                                                            {isEditing ? (
-                                                                <textarea
-                                                                    className="w-full min-w-[200px] bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none"
-                                                                    value={(editDraft.description as string) ?? ""}
-                                                                    onChange={(e) =>
-                                                                        setEditDraft((d) => ({ ...d, description: e.target.value }))
-                                                                    }
-                                                                    rows={2}
-                                                                />
-                                                            ) : (
-                                                                it.description
-                                                            )}
+                                                            {it.description}
                                                         </div>
                                                     </td>
 
                                                     <td className="px-6 py-4 text-gray-300">
-                                                        {isEditing ? (
-                                                            <select
-                                                                className="w-32 bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none"
-                                                                value={(editDraft.category as string) ?? ""}
-                                                                onChange={(e) =>
-                                                                    setEditDraft((d) => ({ ...d, category: e.target.value }))
-                                                                }
-                                                            >
-                                                                {CATEGORIES.map((c) => (
-                                                                    <option key={c} value={c} className="bg-neutral-900">{c}</option>
-                                                                ))}
-                                                            </select>
-                                                        ) : (
-                                                            it.category
-                                                        )}
+                                                        {it.category}
                                                     </td>
 
                                                     <td className="px-6 py-4 font-medium text-green-400">
-                                                        {isEditing ? (
-                                                            <div className="flex items-center gap-1">
-                                                                <span className="text-gray-400">$</span>
-                                                                <input
-                                                                    className="w-20 bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none text-white"
-                                                                    value={String(((editDraft.priceCents as number) ?? it.priceCents) / 100)}
-                                                                    onChange={(e) => {
-                                                                        const val = Number(e.target.value);
-                                                                        setEditDraft((d) => ({
-                                                                            ...d,
-                                                                            priceCents: Number.isFinite(val) ? Math.round(val * 100) : it.priceCents,
-                                                                        }));
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            money(it.priceCents)
-                                                        )}
+                                                        {money(it.priceCents)}
                                                     </td>
 
                                                     <td className="px-6 py-4 w-40">
@@ -610,10 +598,7 @@ export default function AdminMenuItemsPage() {
                                                                 const key =
                                                                     t === "Veg" ? "isVeg" : t === "Spicy" ? "isSpicy" : "isPopular";
                                                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                                const val = (isEditing ? (editDraft as any)[key] : (it as any)[key]) as boolean;
-
-                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                                const toggle = () => setEditDraft((d) => ({ ...d, [key]: !val })) as any;
+                                                                const val = (it as any)[key] as boolean;
 
                                                                 const activeColors = t === 'Veg' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                                                                     t === 'Spicy' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
@@ -622,86 +607,42 @@ export default function AdminMenuItemsPage() {
                                                                 const inactiveColors = 'bg-white/5 text-gray-500 border-white/10';
 
                                                                 return (
-                                                                    <button
+                                                                    <span
                                                                         key={t}
-                                                                        type="button"
                                                                         className={`rounded-full border px-2.5 py-1 text-xs font-semibold tracking-wide transition ${val ? activeColors : inactiveColors
-                                                                            } ${!isEditing && !val ? 'opacity-40' : ''}`}
-                                                                        onClick={isEditing ? toggle : undefined}
-                                                                        disabled={!isEditing}
-                                                                        title={isEditing ? "Click to toggle" : ""}
+                                                                            } ${!val ? 'opacity-40' : ''}`}
                                                                     >
                                                                         {t}
-                                                                    </button>
+                                                                    </span>
                                                                 );
                                                             })}
                                                         </div>
                                                     </td>
 
-                                                    <td className="px-6 py-4 w-32">
-                                                        <div className="flex flex-col gap-2">
-                                                            <button
-                                                                type="button"
-                                                                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.isAvailable ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
-                                                                    }`}
-                                                                onClick={() => toggleAvailability(it)}
-                                                                title="Toggle visibility on website"
-                                                            >
-                                                                {it.isAvailable ? "Web: On" : "Web: Off"}
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.inPos ? "bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
-                                                                    }`}
-                                                                onClick={() => togglePos(it)}
-                                                                title="Toggle visibility on POS screen"
-                                                            >
-                                                                {it.inPos ? "POS: Sync" : "POS: Hide"}
-                                                            </button>
+                                                    <td className="px-6 py-4 w-40">
+                                                        <div className="flex flex-col gap-3">
+                                                            <label className="relative flex items-center cursor-pointer group">
+                                                                <input type="checkbox" className="sr-only peer" checked={it.isAvailable} onChange={() => toggleAvailability(it)} />
+                                                                <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500 group-hover:bg-white/20 transition-colors"></div>
+                                                                <span className="ml-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">{it.isAvailable ? "Web: On" : "Web: Off"}</span>
+                                                            </label>
+
+                                                            <label className="relative flex items-center cursor-pointer group">
+                                                                <input type="checkbox" className="sr-only peer" checked={it.inPos} onChange={() => togglePos(it)} />
+                                                                <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500 group-hover:bg-white/20 transition-colors"></div>
+                                                                <span className="ml-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">{it.isAvailable ? "POS: On" : "POS: Off"}</span>
+                                                            </label>
                                                         </div>
                                                     </td>
 
-                                                    <td className="px-6 py-4 w-32">
-                                                        <div className="flex flex-col gap-3">
-                                                            {isEditing ? (
-                                                                <>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="bg-orange-500 hover:bg-orange-400 text-black px-4 py-1.5 rounded-lg font-semibold transition text-center"
-                                                                        onClick={() => saveEdit(it.id)}
-                                                                    >
-                                                                        Save
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="text-gray-400 hover:text-white transition font-medium text-left px-1"
-                                                                        onClick={() => {
-                                                                            setEditingId(null);
-                                                                            setEditDraft({});
-                                                                        }}
-                                                                    >
-                                                                        Cancel
-                                                                    </button>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg font-medium transition text-center border border-white/5"
-                                                                        onClick={() => beginEdit(it)}
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="text-red-400/70 hover:text-red-300 transition font-medium text-left px-1"
-                                                                        onClick={() => removeItem(it.id)}
-                                                                    >
-                                                                        Delete
-                                                                    </button>
-                                                                </>
-                                                            )}
-                                                        </div>
+                                                    <td className="px-6 py-4 w-28 text-right">
+                                                        <button
+                                                            type="button"
+                                                            className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg font-medium transition text-center border border-white/5 w-full"
+                                                            onClick={() => beginEdit(it)}
+                                                        >
+                                                            Edit
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             );
@@ -713,6 +654,141 @@ export default function AdminMenuItemsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Edit Modal Overlay */}
+            {editingId && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+                            <h2 className="text-xl font-semibold">Edit Menu Item</h2>
+                            <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-white transition">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-y-auto">
+                            <div className="grid gap-4 md:grid-cols-4">
+                                <div className="md:col-span-2">
+                                    <label className="text-sm font-medium text-gray-300">Name <span className="text-red-400">*</span></label>
+                                    <input
+                                        required
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                        value={(editDraft.name as string) ?? ""}
+                                        onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium text-gray-300">Category</label>
+                                    <select
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
+                                        value={(editDraft.category as string) ?? "Starters"}
+                                        onChange={(e) => setEditDraft((d) => ({ ...d, category: e.target.value }))}
+                                    >
+                                        {CATEGORIES.map((c) => (
+                                            <option key={c} value={c} className="bg-neutral-900">{c}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium text-gray-300">Price ($) <span className="text-red-400">*</span></label>
+                                    <input
+                                        required
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                        value={editDraft.priceCents ? (editDraft.priceCents / 100).toString() : ""}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            setEditDraft((d) => ({ ...d, priceCents: Number.isFinite(val) ? Math.round(val * 100) : 0 }));
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="text-sm font-medium text-gray-300">Image URL</label>
+                                    <input
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                        value={(editDraft.imageUrl as string) ?? ""}
+                                        onChange={(e) => setEditDraft((d) => ({ ...d, imageUrl: e.target.value }))}
+                                    />
+                                    {editDraft.imageUrl && (
+                                        <div className="mt-3 flex items-center gap-3 animate-fade-in">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={editDraft.imageUrl}
+                                                alt="Preview"
+                                                className="h-14 w-14 rounded-lg border border-white/10 object-cover bg-black/50"
+                                                onError={(e) => ((e.currentTarget.style.display = "none"))}
+                                            />
+                                            <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">Preview</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="md:col-span-4">
+                                    <label className="text-sm font-medium text-gray-300">Description</label>
+                                    <textarea
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                        value={(editDraft.description as string) ?? ""}
+                                        onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))}
+                                        rows={2}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-6 flex flex-wrap gap-6 text-sm">
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" checked={editDraft.isVeg ?? false} onChange={(e) => setEditDraft((d) => ({ ...d, isVeg: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                    <span className="text-gray-300 group-hover:text-white transition">Veg</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" checked={editDraft.isSpicy ?? false} onChange={(e) => setEditDraft((d) => ({ ...d, isSpicy: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                    <span className="text-gray-300 group-hover:text-white transition">Spicy</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" checked={editDraft.isPopular ?? false} onChange={(e) => setEditDraft((d) => ({ ...d, isPopular: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                    <span className="text-gray-300 group-hover:text-white transition">Popular</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-4 border-t border-white/10 bg-black/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    className="text-sm text-red-400 hover:text-red-300 transition font-medium underline"
+                                    onClick={() => removeItem(editingId)}
+                                >
+                                    Delete Item
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition w-full sm:w-auto"
+                                    onClick={duplicateItem}
+                                    disabled={isSaving}
+                                >
+                                    Duplicate
+                                </button>
+                                <button
+                                    type="button"
+                                    className="px-6 py-2 rounded-xl bg-orange-500 hover:bg-orange-400 text-black font-semibold transition disabled:opacity-50 min-w-[120px] w-full sm:w-auto"
+                                    onClick={() => saveEdit(editingId)}
+                                    disabled={isSaving}
+                                >
+                                    {isSaving ? "Saving..." : "Save Changes"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }
