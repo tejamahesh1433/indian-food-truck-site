@@ -25,6 +25,16 @@ export default function CateringRequestCard({
                             {new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                     </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2 text-sm text-gray-400">
+                        <a href={`mailto:${request.email}`} className="hover:text-white transition flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                            <span>✉️</span> {request.email}
+                        </a>
+                        {request.phone && (
+                            <a href={`tel:${request.phone}`} className="hover:text-white transition flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                                <span>📞</span> {request.phone}
+                            </a>
+                        )}
+                    </div>
 
                     <div className="grid sm:grid-cols-3 gap-y-2 gap-x-4 mt-4">
                         <div className="text-sm">
