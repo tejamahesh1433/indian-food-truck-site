@@ -57,6 +57,9 @@ export default function AdminMenuItemsPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editDraft, setEditDraft] = useState<Partial<MenuItem>>({});
 
+    // sorting
+    const [sortBy, setSortBy] = useState<"updatedAt" | "priceCents" | "name" | "sortOrder">("sortOrder");
+
     async function fetchItems() {
         setLoading(true);
         const params = new URLSearchParams();
@@ -67,6 +70,7 @@ export default function AdminMenuItemsPage() {
         if (fPopular) params.set("popular", "1");
         if (fAvailability === "available") params.set("available", "1");
         if (fAvailability === "unavailable") params.set("available", "0");
+        params.set("orderBy", sortBy);
 
         const res = await fetch(`/api/admin/menu-items?${params.toString()}`, { cache: "no-store" });
         const data = await res.json();
@@ -85,7 +89,28 @@ export default function AdminMenuItemsPage() {
         const t = setTimeout(() => fetchItems(), 250);
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability, sortBy]);
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (q) count++;
+        if (fCategory !== "All") count++;
+        if (fVeg) count++;
+        if (fSpicy) count++;
+        if (fPopular) count++;
+        if (fAvailability !== "all") count++;
+        return count;
     }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability]);
+
+    function resetFilters() {
+        setQ("");
+        setFCategory("All");
+        setFVeg(false);
+        setFSpicy(false);
+        setFPopular(false);
+        setFAvailability("all");
+        setSortBy("sortOrder");
+    }
 
     const totals = useMemo(() => {
         const total = items.length;
@@ -231,7 +256,9 @@ export default function AdminMenuItemsPage() {
                 <div>
                     <h1 className="text-3xl font-semibold mb-2">Menu Management</h1>
                     <p className="text-sm text-gray-400">
-                        Total items: {totals.total} • Available: {totals.available}
+                        {activeFiltersCount > 0
+                            ? `Showing ${items.length} of ${totals.total} items (Filters active)`
+                            : `Total items: ${totals.total} • Available: ${totals.available}`}
                     </p>
                 </div>
             </div>
@@ -246,8 +273,9 @@ export default function AdminMenuItemsPage() {
 
                         <div className="grid gap-4 md:grid-cols-4">
                             <div className="md:col-span-2">
-                                <label className="text-sm font-medium text-gray-300">Name</label>
+                                <label className="text-sm font-medium text-gray-300">Name <span className="text-red-400">*</span></label>
                                 <input
+                                    required
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
@@ -272,12 +300,15 @@ export default function AdminMenuItemsPage() {
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium text-gray-300">Price ($)</label>
+                                <label className="text-sm font-medium text-gray-300">Price ($) <span className="text-red-400">*</span></label>
                                 <input
+                                    required
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                     value={price}
                                     onChange={(e) => setPrice(e.target.value)}
-                                    inputMode="decimal"
                                     placeholder="e.g. 5.99"
                                 />
                             </div>
@@ -347,7 +378,44 @@ export default function AdminMenuItemsPage() {
 
                 {/* Right Column: Filters and Table */}
                 <div className="xl:col-span-2 space-y-6 min-w-0">
-                    {/* Filters */}
+                    {/* Filters Header */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-black/50 border border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-3 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+                            <span className="text-sm font-medium text-gray-400 shrink-0">Filters:</span>
+                            {activeFiltersCount === 0 ? (
+                                <span className="text-sm text-gray-500 italic shrink-0">None active</span>
+                            ) : (
+                                <>
+                                    {fCategory !== "All" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fCategory} <button onClick={() => setFCategory("All")} className="hover:text-red-400">&times;</button></span>}
+                                    {fAvailability !== "all" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fAvailability === "available" ? "In Stock" : "Out of Stock"} <button onClick={() => setFAvailability("all")} className="hover:text-red-400">&times;</button></span>}
+                                    {fVeg && <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Veg <button onClick={() => setFVeg(false)} className="hover:text-white">&times;</button></span>}
+                                    {fSpicy && <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Spicy <button onClick={() => setFSpicy(false)} className="hover:text-white">&times;</button></span>}
+                                    {fPopular && <span className="px-3 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Popular <button onClick={() => setFPopular(false)} className="hover:text-white">&times;</button></span>}
+                                </>
+                            )}
+                            {activeFiltersCount > 0 && (
+                                <button onClick={resetFilters} className="text-xs text-orange-400 hover:text-orange-300 transition font-medium underline shrink-0 ml-2">
+                                    Reset All
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="shrink-0">
+                            <select
+                                className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-white/30 transition text-white"
+                                value={sortBy}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                onChange={(e) => setSortBy(e.target.value as any)}
+                            >
+                                <option value="sortOrder">Sort: Custom Order</option>
+                                <option value="updatedAt">Sort: Recently Updated</option>
+                                <option value="priceCents">Sort: Price (Low to High)</option>
+                                <option value="name">Sort: Name (A-Z)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Filters Controls */}
                     <div className="rounded-2xl border border-white/10 bg-black/50 p-6">
                         <div className="grid gap-4 md:grid-cols-5">
                             <div className="md:col-span-2">
@@ -414,11 +482,35 @@ export default function AdminMenuItemsPage() {
                         </div>
 
                         {loading ? (
-                            <div className="p-10 text-center text-sm text-gray-500">Syncing with POS...</div>
+                            <div className="p-16 flex flex-col items-center justify-center text-center">
+                                <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin mb-4" />
+                                <p className="text-gray-400 font-medium">Syncing database...</p>
+                            </div>
+                        ) : totals.total === 0 ? (
+                            <div className="p-16 flex flex-col items-center justify-center text-center">
+                                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+                                    <svg className="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2">No items yet</h3>
+                                <p className="text-gray-400 max-w-sm">Your menu is currently empty. Use the form on the left to add your first menu item.</p>
+                            </div>
                         ) : items.length === 0 ? (
-                            <div className="p-10 text-center text-sm text-gray-500">No menu items matched your query.</div>
+                            <div className="p-16 flex flex-col items-center justify-center text-center">
+                                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+                                    <svg className="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2">No matches found</h3>
+                                <p className="text-gray-400 mb-6">We couldn&apos;t find any items matching your current filters.</p>
+                                <button onClick={resetFilters} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition text-sm">
+                                    Clear all filters
+                                </button>
+                            </div>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto min-h-[400px]">
                                 <table className="w-full text-left text-sm whitespace-nowrap">
                                     <thead className="bg-white/5 text-gray-400 border-b border-white/10">
                                         <tr>
