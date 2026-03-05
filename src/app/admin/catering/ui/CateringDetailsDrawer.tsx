@@ -1,0 +1,157 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { CateringRequest } from "@prisma/client";
+import { updateInternalNotes, deleteCateringRequest, updateCateringStatus } from "../actions";
+
+export default function CateringDetailsDrawer({
+    request,
+    onClose,
+}: {
+    request: CateringRequest | null;
+    onClose: () => void;
+}) {
+    const [internalNotes, setInternalNotes] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (request) {
+            setInternalNotes(request.internalNotes || "");
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "unset";
+        }
+        return () => {
+            document.body.style.overflow = "unset";
+        };
+    }, [request]);
+
+    if (!request) return null;
+
+    const handleSaveNotes = async () => {
+        if (internalNotes === request.internalNotes) return;
+        setIsSaving(true);
+        await updateInternalNotes(request.id, internalNotes);
+        setIsSaving(false);
+    };
+
+    const handleDelete = async () => {
+        if (confirm("Are you sure you want to completely delete this catering request? This cannot be undone.")) {
+            await deleteCateringRequest(request.id);
+            onClose();
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[200] flex justify-end">
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                onClick={onClose}
+            ></div>
+
+            <div className="relative w-full max-w-lg bg-neutral-900 h-full overflow-y-auto border-l border-white/10 shadow-2xl flex flex-col animate-slide-left">
+                <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0 sticky top-0 bg-neutral-900/90 backdrop-blur z-10">
+                    <h2 className="text-xl font-bold text-white">Request Details</h2>
+                    <button
+                        onClick={onClose}
+                        className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div className="p-6 flex-1 space-y-8">
+                    {/* Header Info */}
+                    <div>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-2xl font-bold text-white">{request.name}</h3>
+                            <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                                {new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                            </span>
+                        </div>
+
+                        <div className="flex gap-3 mb-6">
+                            <a href={`mailto:${request.email}`} className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-xl text-sm font-medium transition text-gray-300 hover:text-white">
+                                <span>✉️</span> Email
+                            </a>
+                            <a href={`tel:${request.phone}`} className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 py-2.5 rounded-xl text-sm font-medium transition text-gray-300 hover:text-white">
+                                <span>📞</span> Call
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Quick Info Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-black/30 p-4 rounded-xl border border-white/5">
+                            <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Event Date</div>
+                            <div className="text-sm text-gray-200">{request.eventDate ? new Date(request.eventDate + "T12:00:00Z").toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Not Specified"}</div>
+                        </div>
+                        <div className="bg-black/30 p-4 rounded-xl border border-white/5">
+                            <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Guests</div>
+                            <div className="text-sm text-gray-200">{request.guests || "Not Specified"}</div>
+                        </div>
+                        <div className="col-span-2 bg-black/30 p-4 rounded-xl border border-white/5">
+                            <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Location</div>
+                            <div className="text-sm text-gray-200">{request.location || "Not Specified"}</div>
+                        </div>
+                    </div>
+
+                    {/* Customer Notes */}
+                    <div className="bg-black/30 p-5 rounded-xl border border-white/5">
+                        <div className="text-xs text-blue-400 uppercase tracking-wider font-bold mb-2 flex items-center gap-2">
+                            <span>💬</span> Customer Message
+                        </div>
+                        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+                            {request.notes || <span className="text-gray-600 italic">No additional notes provided.</span>}
+                        </p>
+                    </div>
+
+                    <div className="h-px bg-white/10 my-4" />
+
+                    {/* Internal Operations */}
+                    <div className="space-y-6">
+                        <h4 className="text-lg font-semibold text-white">Internal Operations</h4>
+
+                        <div>
+                            <label className="block text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">Update Status</label>
+                            <select
+                                value={request.status}
+                                onChange={(e) => updateCateringStatus(request.id, e.target.value)}
+                                className="w-full appearance-none px-4 py-3 rounded-xl border border-white/10 bg-black/40 font-semibold text-sm outline-none cursor-pointer focus:border-orange-500 text-white"
+                            >
+                                <option value="NEW" className="bg-neutral-900 text-white">🔴 NEW</option>
+                                <option value="CONTACTED" className="bg-neutral-900 text-white">🟠 CONTACTED</option>
+                                <option value="DONE" className="bg-neutral-900 text-white">🟢 DONE</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-xs text-gray-500 uppercase tracking-wider font-semibold">Private Notes</label>
+                                {isSaving && <span className="text-xs text-orange-400 font-medium animate-pulse">Saving...</span>}
+                            </div>
+                            <textarea
+                                value={internalNotes}
+                                onChange={(e) => setInternalNotes(e.target.value)}
+                                onBlur={handleSaveNotes}
+                                placeholder="Add private notes about this request here. The customer will never see this."
+                                className="w-full h-32 rounded-xl border border-white/10 bg-black/40 p-4 text-sm text-white placeholder:text-gray-600 focus:border-orange-500 focus:outline-none resize-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6 border-t border-white/10 shrink-0 bg-black/20">
+                    <button
+                        onClick={handleDelete}
+                        className="w-full flex items-center justify-center gap-2 text-red-500 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/20 hover:border-red-500 py-3 rounded-xl text-sm font-bold transition"
+                    >
+                        Delete Request Permanently
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

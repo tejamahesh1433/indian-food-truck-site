@@ -682,23 +682,23 @@ export default function AdminMenuItemsPage() {
                                                     className={`transition ${isDragging ? "opacity-30 bg-white/10" : "hover:bg-white/[0.02]"
                                                         } ${isOver ? "border-t-2 border-orange-500 bg-orange-500/10" : ""}`}
                                                 >
-                                                    <td className="px-6 py-4">
-                                                        {it.imageUrl ? (
-                                                            <div className="relative group cursor-pointer inline-block">
-                                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                <img src={it.imageUrl} alt={it.name} className="w-12 h-12 object-cover rounded-lg bg-neutral-900 border border-white/10" />
-                                                                <div className="absolute left-16 top-1/2 -translate-y-1/2 z-[100] hidden group-hover:block w-48 h-48 bg-black rounded-xl border border-white/10 overflow-hidden shadow-2xl animate-fade-in pointer-events-none">
-                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                    <img src={it.imageUrl} alt={it.name} className="w-full h-full object-cover" />
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-500">
-                                                                <svg className="w-5 h-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                                </svg>
-                                                            </div>
-                                                        )}
+                                                    <td className="py-3">
+                                                        <div className="h-10 w-10 overflow-hidden rounded-lg border border-white/10 bg-black/40 flex items-center justify-center">
+                                                            {it.imageUrl ? (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img
+                                                                    src={it.imageUrl}
+                                                                    alt={it.name}
+                                                                    className="h-full w-full object-cover"
+                                                                    onError={(e) => {
+                                                                        // fallback to placeholder if image fails
+                                                                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-gray-300 text-lg">🍛</span>
+                                                            )}
+                                                        </div>
                                                     </td>
 
                                                     <td className="px-6 py-4">

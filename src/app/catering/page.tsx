@@ -7,6 +7,18 @@ import { useSite } from "@/components/SiteProvider";
 export default function CateringPage() {
     const site = useSite();
     const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+    const [phoneStr, setPhoneStr] = useState("");
+
+    function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const val = e.target.value.replace(/\D/g, "");
+        let formatted = val;
+        if (val.length > 3 && val.length <= 6) {
+            formatted = `(${val.slice(0, 3)}) ${val.slice(3)}`;
+        } else if (val.length > 6) {
+            formatted = `(${val.slice(0, 3)}) ${val.slice(3, 6)}-${val.slice(6, 10)}`;
+        }
+        setPhoneStr(formatted);
+    }
 
     async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -80,6 +92,10 @@ export default function CateringPage() {
                                     <input
                                         name="phone"
                                         required
+                                        type="tel"
+                                        value={phoneStr}
+                                        onChange={handlePhoneChange}
+                                        maxLength={14}
                                         placeholder="Phone number"
                                         className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 outline-none focus:border-white/30"
                                     />
@@ -96,8 +112,9 @@ export default function CateringPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <input
                                         name="date"
-                                        placeholder="Event date"
-                                        className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 outline-none focus:border-white/30"
+                                        type="date"
+                                        required
+                                        className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
                                     />
                                     <input
                                         name="guests"

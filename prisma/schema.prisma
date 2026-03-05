@@ -16,9 +16,11 @@ model CateringRequest {
   eventDate String?
   guests    String?
   location  String?
-  notes     String?
-  status    String   @default("NEW") // NEW, CONTACTED, DONE
-  createdAt DateTime @default(now())
+  notes         String?
+  internalNotes String?
+  status        String   @default("NEW") // NEW, CONTACTED, DONE
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 }
 
 model MenuItem {
