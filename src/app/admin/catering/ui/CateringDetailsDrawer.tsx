@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CateringRequest } from "@prisma/client";
-import { updateInternalNotes, deleteCateringRequest, updateCateringStatus } from "../actions";
+import { updateInternalNotes, deleteCateringRequest, updateCateringStatus, archiveCateringRequest } from "../actions";
 
 export default function CateringDetailsDrawer({
     request,
@@ -35,11 +35,25 @@ export default function CateringDetailsDrawer({
         setIsSaving(false);
     };
 
-    const handleDelete = async () => {
-        if (confirm("Are you sure you want to completely delete this catering request? This cannot be undone.")) {
-            await deleteCateringRequest(request.id);
+    const handleArchive = async () => {
+        if (confirm("Are you sure you want to archive this catering request? It will be safely removed from your active inbox.")) {
+            setIsSaving(true);
+            await archiveCateringRequest(request.id);
+            setIsSaving(false);
             onClose();
         }
+    };
+
+    const handleCopyDetails = () => {
+        const details = `Name: ${request.name}
+Event Date: ${request.eventDate || "TBD"}
+Guests: ${request.guests || "TBD"}
+Location: ${request.location || "TBD"}
+Email: ${request.email}
+Phone: ${request.phone || "N/A"}`;
+
+        navigator.clipboard.writeText(details);
+        alert("Details copied to clipboard!");
     };
 
     return (
@@ -67,9 +81,17 @@ export default function CateringDetailsDrawer({
                     <div>
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-2xl font-bold text-white">{request.name}</h3>
-                            <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                                {new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <button onClick={handleCopyDetails} className="text-xs text-gray-400 hover:text-white flex items-center gap-1.5 transition bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full border border-white/10" title="Copy Request Details">
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    Copy Details
+                                </button>
+                                <span className="text-xs text-gray-500 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                                    {new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="flex gap-3 mb-6">
@@ -145,10 +167,11 @@ export default function CateringDetailsDrawer({
 
                 <div className="p-6 border-t border-white/10 shrink-0 bg-black/20">
                     <button
-                        onClick={handleDelete}
-                        className="w-full flex items-center justify-center gap-2 text-red-500 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/20 hover:border-red-500 py-3 rounded-xl text-sm font-bold transition"
+                        disabled={isSaving}
+                        onClick={handleArchive}
+                        className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 py-3 rounded-xl text-sm font-bold transition disabled:opacity-50"
                     >
-                        Delete Request Permanently
+                        Archive Request
                     </button>
                 </div>
             </div>

@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CateringInboxPage() {
     const requests = await prisma.cateringRequest.findMany({
+        where: { isArchived: false },
         orderBy: { createdAt: "desc" },
     });
 

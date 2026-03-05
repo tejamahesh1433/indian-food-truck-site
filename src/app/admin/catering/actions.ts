@@ -19,6 +19,14 @@ export async function updateInternalNotes(id: string, internalNotes: string) {
     revalidatePath("/admin/catering");
 }
 
+export async function archiveCateringRequest(id: string) {
+    await prisma.cateringRequest.update({
+        where: { id },
+        data: { isArchived: true },
+    });
+    revalidatePath("/admin/catering");
+}
+
 export async function deleteCateringRequest(id: string) {
     await prisma.cateringRequest.delete({ where: { id } });
     revalidatePath("/admin/catering");

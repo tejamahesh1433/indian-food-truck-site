@@ -52,7 +52,7 @@ export default function CateringRequestCard({
                     </div>
                 </div>
 
-                <div className="shrink-0 pt-1" onClick={(e) => e.stopPropagation()}>
+                <div className="shrink-0 pt-1 flex flex-col md:items-end gap-2" onClick={(e) => e.stopPropagation()}>
                     <select
                         value={request.status}
                         onChange={(e) => updateCateringStatus(request.id, e.target.value)}
@@ -65,6 +65,25 @@ export default function CateringRequestCard({
                         <option value="CONTACTED" className="bg-neutral-900 text-white">Status: CONTACTED</option>
                         <option value="DONE" className="bg-neutral-900 text-white">Status: DONE</option>
                     </select>
+
+                    <div className="flex gap-2">
+                        {isNew && (
+                            <button
+                                onClick={() => updateCateringStatus(request.id, "CONTACTED")}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-orange-500/20 bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-white transition"
+                            >
+                                Mark Contacted
+                            </button>
+                        )}
+                        {!isDone && (
+                            <button
+                                onClick={() => updateCateringStatus(request.id, "DONE")}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-green-500/20 bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition"
+                            >
+                                Mark Done
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
