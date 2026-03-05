@@ -13,6 +13,8 @@ type MenuItem = {
     isSpicy: boolean;
     isPopular: boolean;
     isAvailable: boolean;
+    inPos: boolean;
+    sortOrder: number;
     imageUrl: string | null;
 };
 
@@ -34,6 +36,10 @@ export default function AdminMenuItemsPage() {
     const [isSpicy, setIsSpicy] = useState(false);
     const [isPopular, setIsPopular] = useState(false);
     const [isAvailable, setIsAvailable] = useState(true);
+    const [inPos, setInPos] = useState(true);
+
+    const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     // list state
     const [items, setItems] = useState<MenuItem[]>([]);
@@ -91,9 +97,10 @@ export default function AdminMenuItemsPage() {
         e.preventDefault();
 
         const p = Number(price);
-        if (!name.trim()) return alert("Name is required");
-        if (!Number.isFinite(p) || p < 0) return alert("Price must be a number >= 0");
+        if (!name.trim()) return showToast("Name is required", "error");
+        if (!Number.isFinite(p) || p < 0) return showToast("Price must be a number >= 0", "error");
 
+        setIsSaving(true);
         const res = await fetch("/api/admin/menu-items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -107,11 +114,15 @@ export default function AdminMenuItemsPage() {
                 isSpicy,
                 isPopular,
                 isAvailable,
+                inPos,
             }),
         });
 
         const data = await res.json();
-        if (!data.ok) return alert(data.error || "Failed to add item");
+        setIsSaving(false);
+        if (!data.ok) return showToast(data.error || "Failed to add item", "error");
+
+        showToast("Item added successfully!", "success");
 
         // reset
         setName("");
@@ -122,8 +133,14 @@ export default function AdminMenuItemsPage() {
         setIsSpicy(false);
         setIsPopular(false);
         setIsAvailable(true);
+        setInPos(true);
 
         fetchItems();
+    }
+
+    function showToast(msg: string, type: "success" | "error" = "success") {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 3000);
     }
 
     function beginEdit(item: MenuItem) {
@@ -138,6 +155,7 @@ export default function AdminMenuItemsPage() {
             isSpicy: item.isSpicy,
             isPopular: item.isPopular,
             isAvailable: item.isAvailable,
+            inPos: item.inPos,
         });
     }
 
@@ -157,8 +175,9 @@ export default function AdminMenuItemsPage() {
             body: JSON.stringify(payload),
         });
         const data = await res.json();
-        if (!data.ok) return alert(data.error || "Failed to update item");
+        if (!data.ok) return showToast(data.error || "Failed to update item", "error");
 
+        showToast("Item updated successfully!", "success");
         setEditingId(null);
         setEditDraft({});
         fetchItems();
@@ -169,7 +188,9 @@ export default function AdminMenuItemsPage() {
         if (!perform) return;
         const res = await fetch(`/api/admin/menu-items/${id}`, { method: "DELETE" });
         const data = await res.json();
-        if (!data.ok) return alert(data.error || "Failed to delete item");
+        if (!data.ok) return showToast(data.error || "Failed to delete item", "error");
+
+        showToast("Item deleted", "success");
         fetchItems();
     }
 
@@ -179,11 +200,29 @@ export default function AdminMenuItemsPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...item, isAvailable: !item.isAvailable }),
         });
+        showToast("Website availability updated", "success");
+        fetchItems();
+    }
+
+    async function togglePos(item: MenuItem) {
+        await fetch(`/api/admin/menu-items/${item.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...item, inPos: !item.inPos }),
+        });
+        showToast("POS Sync status updated", "success");
         fetchItems();
     }
 
     return (
-        <main className="mx-auto max-w-6xl px-4 py-12 text-white">
+        <main className="mx-auto max-w-6xl px-4 py-12 text-white relative">
+            {toast && (
+                <div className={`fixed top-4 center left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-lg text-sm font-semibold transition animate-fade-in ${toast.type === "error" ? "bg-red-500 text-white" : "bg-green-500 text-black"
+                    }`}>
+                    {toast.msg}
+                </div>
+            )}
+
             <Link href="/admin" className="text-sm font-medium text-gray-400 hover:text-white mb-8 inline-block transition">
                 ← Back to Dashboard
             </Link>
@@ -278,12 +317,18 @@ export default function AdminMenuItemsPage() {
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer group">
                         <input type="checkbox" checked={isAvailable} onChange={(e) => setIsAvailable(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                        <span className="text-gray-300 group-hover:text-white transition">Available in POS</span>
+                        <span className="text-gray-300 group-hover:text-white transition">Website Availability</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" checked={inPos} onChange={(e) => setInPos(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                        <span className="text-gray-300 group-hover:text-white transition" title="Shows on POS screen but can still be hidden on website">In POS</span>
                     </label>
                 </div>
 
                 <div className="mt-6 flex items-center justify-end">
-                    <button className="rounded-xl bg-orange-500 hover:bg-orange-400 transition text-black font-semibold px-6 py-2.5">Add to Menu</button>
+                    <button disabled={isSaving} className="rounded-xl bg-orange-500 hover:bg-orange-400 transition text-black font-semibold px-6 py-2.5 disabled:opacity-50">
+                        {isSaving ? "Saving..." : "Save & Add Another"}
+                    </button>
                 </div>
             </form>
 
@@ -362,12 +407,12 @@ export default function AdminMenuItemsPage() {
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-white/5 text-gray-400 border-b border-white/10">
                                 <tr>
+                                    <th className="px-6 py-4 font-medium w-16">Photo</th>
                                     <th className="px-6 py-4 font-medium">Name & Desc</th>
-                                    <th className="px-6 py-4 font-medium">Image URL</th>
                                     <th className="px-6 py-4 font-medium">Category</th>
                                     <th className="px-6 py-4 font-medium">Price</th>
                                     <th className="px-6 py-4 font-medium">Tags</th>
-                                    <th className="px-6 py-4 font-medium">POS Sync</th>
+                                    <th className="px-6 py-4 font-medium text-center">Visibility</th>
                                     <th className="px-6 py-4 font-medium">Actions</th>
                                 </tr>
                             </thead>
@@ -376,6 +421,17 @@ export default function AdminMenuItemsPage() {
                                     const isEditing = editingId === it.id;
                                     return (
                                         <tr key={it.id} className="hover:bg-white/[0.02] transition">
+                                            <td className="px-6 py-4">
+                                                {it.imageUrl ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={it.imageUrl} alt={it.name} className="w-12 h-12 object-cover rounded-lg bg-neutral-900 border border-white/10" />
+                                                ) : (
+                                                    <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 text-xs text-center leading-tight">
+                                                        No<br />Img
+                                                    </div>
+                                                )}
+                                            </td>
+
                                             <td className="px-6 py-4">
                                                 {isEditing ? (
                                                     <input
@@ -400,22 +456,6 @@ export default function AdminMenuItemsPage() {
                                                         it.description
                                                     )}
                                                 </div>
-                                            </td>
-
-                                            <td className="px-6 py-4">
-                                                {isEditing ? (
-                                                    <input
-                                                        className="w-32 bg-black/40 border border-orange-500/50 rounded-lg px-3 py-1.5 outline-none"
-                                                        value={(editDraft.imageUrl as string) ?? ""}
-                                                        onChange={(e) =>
-                                                            setEditDraft((d) => ({ ...d, imageUrl: e.target.value }))
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <span className="text-gray-400 text-xs truncate max-w-[120px] inline-block" title={it.imageUrl || "None"}>
-                                                        {it.imageUrl || "-"}
-                                                    </span>
-                                                )}
                                             </td>
 
                                             <td className="px-6 py-4 text-gray-300">
@@ -491,24 +531,43 @@ export default function AdminMenuItemsPage() {
                                                 </div>
                                             </td>
 
-                                            <td className="px-6 py-4">
-                                                <button
-                                                    type="button"
-                                                    className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.isAvailable ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20" : "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
-                                                        }`}
-                                                    onClick={() => toggleAvailability(it)}
-                                                >
-                                                    {it.isAvailable ? "In Stock" : "Hidden"}
-                                                </button>
+                                            <td className="px-6 py-4 w-32">
+                                                <div className="flex flex-col gap-2">
+                                                    <button
+                                                        type="button"
+                                                        className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.isAvailable ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
+                                                            }`}
+                                                        onClick={() => toggleAvailability(it)}
+                                                        title="Toggle visibility on website"
+                                                    >
+                                                        {it.isAvailable ? "Web: On" : "Web: Off"}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${it.inPos ? "bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20" : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20"
+                                                            }`}
+                                                        onClick={() => togglePos(it)}
+                                                        title="Toggle visibility on POS screen"
+                                                    >
+                                                        {it.inPos ? "POS: Sync" : "POS: Hide"}
+                                                    </button>
+                                                </div>
                                             </td>
 
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
+                                            <td className="px-6 py-4 w-32">
+                                                <div className="flex flex-col gap-3">
                                                     {isEditing ? (
                                                         <>
                                                             <button
                                                                 type="button"
-                                                                className="text-gray-400 hover:text-white transition font-medium"
+                                                                className="bg-orange-500 hover:bg-orange-400 text-black px-4 py-1.5 rounded-lg font-semibold transition text-center"
+                                                                onClick={() => saveEdit(it.id)}
+                                                            >
+                                                                Save
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="text-gray-400 hover:text-white transition font-medium text-left px-1"
                                                                 onClick={() => {
                                                                     setEditingId(null);
                                                                     setEditDraft({});
@@ -516,26 +575,19 @@ export default function AdminMenuItemsPage() {
                                                             >
                                                                 Cancel
                                                             </button>
-                                                            <button
-                                                                type="button"
-                                                                className="bg-orange-500 hover:bg-orange-400 text-black px-4 py-1.5 rounded-lg font-semibold transition"
-                                                                onClick={() => saveEdit(it.id)}
-                                                            >
-                                                                Save Changes
-                                                            </button>
                                                         </>
                                                     ) : (
                                                         <>
                                                             <button
                                                                 type="button"
-                                                                className="text-gray-400 hover:text-white transition font-medium"
+                                                                className="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg font-medium transition text-center border border-white/5"
                                                                 onClick={() => beginEdit(it)}
                                                             >
-                                                                Edit Item
+                                                                Edit
                                                             </button>
                                                             <button
                                                                 type="button"
-                                                                className="text-red-400/70 hover:text-red-300 transition font-medium"
+                                                                className="text-red-400/70 hover:text-red-300 transition font-medium text-left px-1"
                                                                 onClick={() => removeItem(it.id)}
                                                             >
                                                                 Delete

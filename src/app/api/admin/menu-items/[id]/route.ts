@@ -32,6 +32,8 @@ export async function PATCH(
     if (body.isSpicy !== undefined) data.isSpicy = !!body.isSpicy;
     if (body.isPopular !== undefined) data.isPopular = !!body.isPopular;
     if (body.isAvailable !== undefined) data.isAvailable = !!body.isAvailable;
+    if (body.inPos !== undefined) data.inPos = !!body.inPos;
+    if (body.sortOrder !== undefined) data.sortOrder = Number(body.sortOrder);
 
     const updated = await prisma.menuItem.update({
         where: { id },

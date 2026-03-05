@@ -32,7 +32,7 @@ export async function GET(req: Request) {
             ...(available === "1" ? { isAvailable: true } : {}),
             ...(available === "0" ? { isAvailable: false } : {}),
         },
-        orderBy: [{ category: "asc" }, { name: "asc" }],
+        orderBy: [{ category: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
     });
 
     return NextResponse.json({ ok: true, items });
@@ -54,6 +54,12 @@ export async function POST(req: Request) {
 
     const priceCents = Math.round(price * 100);
 
+    const last = await prisma.menuItem.findFirst({
+        where: { category },
+        orderBy: { sortOrder: "desc" },
+        select: { sortOrder: true },
+    });
+
     const created = await prisma.menuItem.create({
         data: {
             name,
@@ -65,6 +71,8 @@ export async function POST(req: Request) {
             isSpicy: !!body.isSpicy,
             isPopular: !!body.isPopular,
             isAvailable: body.isAvailable !== false,
+            inPos: body.inPos !== false,
+            sortOrder: (last?.sortOrder ?? 0) + 1,
         },
     });
 
