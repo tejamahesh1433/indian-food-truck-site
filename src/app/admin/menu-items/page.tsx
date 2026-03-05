@@ -60,6 +60,46 @@ export default function AdminMenuItemsPage() {
     // sorting
     const [sortBy, setSortBy] = useState<"updatedAt" | "priceCents" | "name" | "sortOrder">("sortOrder");
 
+    // drag to reorder
+    const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+    const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
+
+    async function handleDrop(targetId: string) {
+        if (!draggedItemId || draggedItemId === targetId) {
+            setDraggedItemId(null);
+            setDragOverItemId(null);
+            return;
+        }
+
+        const sourceIndex = items.findIndex((i) => i.id === draggedItemId);
+        const targetIndex = items.findIndex((i) => i.id === targetId);
+        if (sourceIndex === -1 || targetIndex === -1) return;
+
+        const newItems = [...items];
+        const [removed] = newItems.splice(sourceIndex, 1);
+        newItems.splice(targetIndex, 0, removed);
+
+        setItems(newItems);
+
+        const itemIds = newItems.map((i) => i.id);
+        try {
+            const res = await fetch("/api/admin/menu-items/reorder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ itemIds }),
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            showToast("Menu order saved", "success");
+        } catch (e: any) {
+            showToast("Failed to save reordering", "error");
+            fetchItems();
+        }
+
+        setDraggedItemId(null);
+        setDragOverItemId(null);
+    }
+
     async function fetchItems() {
         setLoading(true);
         const params = new URLSearchParams();
@@ -563,8 +603,22 @@ export default function AdminMenuItemsPage() {
                                     <tbody className="divide-y divide-white/5">
                                         {items.map((it) => {
                                             const isEditing = editingId === it.id;
+                                            const isDragging = draggedItemId === it.id;
+                                            const isOver = dragOverItemId === it.id && !isDragging;
                                             return (
-                                                <tr key={it.id} className="hover:bg-white/[0.02] transition">
+                                                <tr
+                                                    key={it.id}
+                                                    draggable={sortBy === "sortOrder" && !q && fCategory === "All"}
+                                                    onDragStart={() => setDraggedItemId(it.id)}
+                                                    onDragOver={(e) => {
+                                                        e.preventDefault();
+                                                        setDragOverItemId(it.id);
+                                                    }}
+                                                    onDragLeave={() => setDragOverItemId(null)}
+                                                    onDrop={() => handleDrop(it.id)}
+                                                    className={`transition ${isDragging ? "opacity-30 bg-white/10" : "hover:bg-white/[0.02]"
+                                                        } ${isOver ? "border-t-2 border-orange-500 bg-orange-500/10" : ""}`}
+                                                >
                                                     <td className="px-6 py-4">
                                                         {it.imageUrl ? (
                                                             <div className="relative group cursor-pointer inline-block">
@@ -585,9 +639,20 @@ export default function AdminMenuItemsPage() {
                                                     </td>
 
                                                     <td className="px-6 py-4">
-                                                        <div className="font-semibold text-white mb-1">{it.name}</div>
-                                                        <div className="text-xs text-gray-500 max-w-[250px] truncate whitespace-normal break-words line-clamp-2">
-                                                            {it.description}
+                                                        <div className="flex items-center gap-3">
+                                                            {(sortBy === "sortOrder" && !q && fCategory === "All") && (
+                                                                <div className="cursor-grab text-gray-500 hover:text-white transition active:cursor-grabbing">
+                                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8h16M4 16h16" />
+                                                                    </svg>
+                                                                </div>
+                                                            )}
+                                                            <div>
+                                                                <div className="font-semibold text-white mb-1">{it.name}</div>
+                                                                <div className="text-xs text-gray-500 max-w-[250px] truncate whitespace-normal break-words line-clamp-2">
+                                                                    {it.description}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </td>
 
