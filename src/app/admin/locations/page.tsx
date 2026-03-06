@@ -101,8 +101,8 @@ export default function AdminLocationsPage() {
         }
 
         if (form.nextLocation) {
-            if (!form.nextDate) {
-                alert("Please set a Date for the Next stop.");
+            if (!form.nextDate || !form.nextStart || !form.nextEnd) {
+                alert("Please set Date, Start, and End times for the Next stop.");
                 return;
             }
             const todayStr = new Date().toISOString().split('T')[0];
@@ -110,7 +110,7 @@ export default function AdminLocationsPage() {
                 alert("Next stop date cannot be in the past.");
                 return;
             }
-            if (form.nextStart && form.nextEnd && form.nextEnd <= form.nextStart) {
+            if (form.nextEnd <= form.nextStart) {
                 alert("Next stop End time must be after Start time.");
                 return;
             }
@@ -215,9 +215,35 @@ export default function AdminLocationsPage() {
         else setForm({ ...form, nextStart: times.start, nextEnd: times.end });
     };
 
+    const handleDiscard = () => {
+        if (initialForm && confirm("Discard all unsaved changes?")) {
+            setForm(initialForm);
+        }
+    };
+
+    const formatTime = (timeStr: string) => {
+        if (!timeStr) return "";
+        try {
+            return new Date(`2000-01-01T${timeStr}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        } catch (e) {
+            return timeStr;
+        }
+    };
+
+    const getHelperText = () => {
+        if (form.todayStatus === 'SERVING' && form.todayEnd) {
+            return `Serving until ${formatTime(form.todayEnd)}`;
+        }
+        if (form.todayStatus === 'ON_THE_WAY' && form.todayStart) {
+            return `Arriving around ${formatTime(form.todayStart)}`;
+        }
+        return null;
+    };
+
     if (loading) return <div className="p-10 text-white text-center">Loading Schedule...</div>;
 
     const mapBase = site.brand.city;
+    const helperText = getHelperText();
 
     return (
         <main className="mx-auto max-w-6xl px-6 py-12 text-white">
@@ -296,6 +322,7 @@ export default function AdminLocationsPage() {
                                         value={form.todayStart}
                                         onChange={e => setForm({ ...form, todayStart: e.target.value })}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                                        required={!!form.todayLocation}
                                     />
                                 </div>
                                 <div>
@@ -305,6 +332,7 @@ export default function AdminLocationsPage() {
                                         value={form.todayEnd}
                                         onChange={e => setForm({ ...form, todayEnd: e.target.value })}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                                        required={!!form.todayLocation}
                                     />
                                 </div>
                                 <div>
@@ -314,7 +342,7 @@ export default function AdminLocationsPage() {
                                         onChange={e => {
                                             const s = e.target.value;
                                             if (s === 'CLOSED') {
-                                                setForm({ ...form, todayStatus: s, todayStart: '', todayEnd: '' });
+                                                setForm({ ...form, todayStatus: s, todayStart: '', todayEnd: '', todayLocation: '' });
                                             } else {
                                                 setForm({ ...form, todayStatus: s });
                                             }
@@ -395,6 +423,7 @@ export default function AdminLocationsPage() {
                                         value={form.nextDate}
                                         onChange={e => setForm({ ...form, nextDate: e.target.value })}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                                        required={!!form.nextLocation}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
@@ -407,6 +436,7 @@ export default function AdminLocationsPage() {
                                             value={form.nextStart}
                                             onChange={e => setForm({ ...form, nextStart: e.target.value })}
                                             className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                                            required={!!form.nextLocation}
                                         />
                                     </div>
                                     <div>
@@ -416,6 +446,7 @@ export default function AdminLocationsPage() {
                                             value={form.nextEnd}
                                             onChange={e => setForm({ ...form, nextEnd: e.target.value })}
                                             className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                                            required={!!form.nextLocation}
                                         />
                                     </div>
                                 </div>
@@ -439,6 +470,15 @@ export default function AdminLocationsPage() {
                                 {saving ? "Saving Changes..." : "Publish Schedule"}
                                 {!saving && hasChanges && <span className="w-2 h-2 rounded-full bg-black animate-pulse" />}
                             </button>
+                            {hasChanges && (
+                                <button
+                                    type="button"
+                                    onClick={handleDiscard}
+                                    className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition text-sm font-bold text-gray-400"
+                                >
+                                    Discard Changes
+                                </button>
+                            )}
                             {status === "saved" && <span className="text-green-400 text-sm font-medium animate-bounce">Published to Website!</span>}
                             {status === "error" && <span className="text-red-400 text-sm font-medium">Failed to save.</span>}
                         </div>
@@ -472,8 +512,8 @@ export default function AdminLocationsPage() {
                                                 {form.todayLocation || "Unscheduled"}
                                                 <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                             </a>
-                                            <div className="text-xs text-orange-400/80 font-medium">
-                                                {form.todayStart && form.todayEnd ? `${new Date(`2000-01-01T${form.todayStart}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${new Date(`2000-01-01T${form.todayEnd}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : '--'}
+                                            <div className="mt-1 text-[10px] text-orange-400/80 font-bold uppercase tracking-tight">
+                                                {helperText || (form.todayStart && form.todayEnd ? `${formatTime(form.todayStart)} – ${formatTime(form.todayEnd)}` : '--')}
                                             </div>
                                         </>
                                     )}
@@ -496,7 +536,7 @@ export default function AdminLocationsPage() {
                                         </a>
                                         <div className="text-[10px] text-gray-500">
                                             {form.nextDate ? new Date(form.nextDate + 'T00:00:00').toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
-                                            {form.nextStart ? ` · ${new Date(`2000-01-01T${form.nextStart}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}
+                                            {form.nextStart ? ` · ${formatTime(form.nextStart)}` : ''}
                                         </div>
                                     </>
                                 )}
