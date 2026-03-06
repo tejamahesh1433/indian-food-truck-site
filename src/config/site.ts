@@ -1,4 +1,5 @@
 export const site = {
+    cateringEnabled: true,
     brand: {
         // temporary until final truck name
         name: "Indian Food Truck",
