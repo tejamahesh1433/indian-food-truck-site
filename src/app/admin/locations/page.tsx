@@ -183,8 +183,8 @@ export default function AdminLocationsPage() {
 
                     <form onSubmit={handleSave} className="space-y-10">
                         {/* Section: Today */}
-                        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 relative">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 rounded-l-3xl" />
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-bold flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
@@ -274,8 +274,8 @@ export default function AdminLocationsPage() {
                         </div>
 
                         {/* Section: Next */}
-                        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 relative overflow-hidden opacity-80 hover:opacity-100 transition">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 relative opacity-80 hover:opacity-100 transition">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-3xl" />
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-bold flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-blue-500" />
