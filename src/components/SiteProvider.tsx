@@ -6,29 +6,29 @@ import { site as defaultSite } from "@/config/site";
 export type DbSettings = {
     phone: string;
     instagramUrl: string;
-    publicEmail?: string;
-    businessName?: string;
-    cityState?: string;
-    footerMessage?: string;
-    bannerEnabled?: boolean;
-    bannerText?: string;
+    publicEmail?: string | null;
+    businessName?: string | null;
+    cityState?: string | null;
+    footerMessage?: string | null;
+    bannerEnabled?: boolean | null;
+    bannerText?: string | null;
 
     truckToday: string;
     truckNext: string;
 
     // Advanced Today
-    todayLocation?: string;
-    todayStart?: string;
-    todayEnd?: string;
-    todayStatus?: string;
-    todayNotes?: string;
+    todayLocation?: string | null;
+    todayStart?: string | null;
+    todayEnd?: string | null;
+    todayStatus?: string | null;
+    todayNotes?: string | null;
 
     // Advanced Next
-    nextLocation?: string;
-    nextDate?: string;
-    nextStart?: string;
-    nextEnd?: string;
-    nextNotes?: string;
+    nextLocation?: string | null;
+    nextDate?: string | null;
+    nextStart?: string | null;
+    nextEnd?: string | null;
+    nextNotes?: string | null;
 };
 
 const SiteContext = createContext<DbSettings | null>(null);
