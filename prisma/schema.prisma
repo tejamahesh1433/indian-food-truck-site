@@ -77,6 +77,12 @@ model SiteSettings {
   id           String   @id @default("global")
   phone        String   @default("")
   instagramUrl String   @default("")
+  publicEmail   String? @default("")
+  businessName  String? @default("Indian Food Truck")
+  cityState     String? @default("Hartford, CT")
+  footerMessage String? @default("")
+  bannerEnabled Boolean @default(false)
+  bannerText    String? @default("")
 
   // Advanced Schedule Today
   todayLocation String @default("")

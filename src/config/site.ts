@@ -14,6 +14,15 @@ export const site = {
         email: "hello@example.com", // optional
     },
 
+    banner: {
+        enabled: false,
+        text: "",
+    },
+
+    footer: {
+        message: "",
+    },
+
     truck: {
         today: {
             label: "Downtown Hartford",

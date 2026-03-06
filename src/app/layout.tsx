@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { SiteProvider } from "@/components/SiteProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { prisma } from "@/lib/prisma";
@@ -38,6 +39,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SiteProvider settings={settings}>
+          <AnnouncementBanner />
           {children}
           <Footer />
           <Analytics />

@@ -103,7 +103,9 @@ export default function Footer() {
 
                 <div className="mt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-sm text-gray-400">
                     <div>
-                        © {new Date().getFullYear()} {site.brand.name}. All rights reserved.
+                        {site.footer.message || (
+                            <>© {new Date().getFullYear()} {site.brand.name}. All rights reserved.</>
+                        )}
                     </div>
                     <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
                         <Link href="/menu" className="hover:text-white transition">

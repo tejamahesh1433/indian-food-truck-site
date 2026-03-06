@@ -6,6 +6,13 @@ import { site as defaultSite } from "@/config/site";
 export type DbSettings = {
     phone: string;
     instagramUrl: string;
+    publicEmail?: string;
+    businessName?: string;
+    cityState?: string;
+    footerMessage?: string;
+    bannerEnabled?: boolean;
+    bannerText?: string;
+
     truckToday: string;
     truckNext: string;
 
@@ -37,11 +44,24 @@ export function useSite() {
 
     return {
         ...defaultSite,
+        brand: {
+            ...defaultSite.brand,
+            name: dbSettings.businessName || defaultSite.brand.name,
+            city: dbSettings.cityState || defaultSite.brand.city,
+        },
         contact: {
             ...defaultSite.contact,
             phoneE164: dbSettings.phone || defaultSite.contact.phoneE164,
             phoneDisplay: dbSettings.phone || defaultSite.contact.phoneDisplay,
             instagramUrl: dbSettings.instagramUrl || defaultSite.contact.instagramUrl,
+            email: dbSettings.publicEmail || defaultSite.contact.email,
+        },
+        banner: {
+            enabled: dbSettings.bannerEnabled ?? false,
+            text: dbSettings.bannerText || "",
+        },
+        footer: {
+            message: dbSettings.footerMessage || "",
         },
         truck: {
             ...defaultSite.truck,

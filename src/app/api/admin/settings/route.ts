@@ -24,6 +24,13 @@ export async function PUT(req: Request) {
         update: {
             phone: body.phone,
             instagramUrl: body.instagramUrl,
+            publicEmail: body.publicEmail,
+            businessName: body.businessName,
+            cityState: body.cityState,
+            footerMessage: body.footerMessage,
+            bannerEnabled: body.bannerEnabled,
+            bannerText: body.bannerText,
+
             truckToday: body.truckToday,
             truckNext: body.truckNext,
 
@@ -43,6 +50,13 @@ export async function PUT(req: Request) {
             id: "global",
             phone: body.phone || "",
             instagramUrl: body.instagramUrl || "",
+            publicEmail: body.publicEmail || "",
+            businessName: body.businessName || "Indian Food Truck",
+            cityState: body.cityState || "Hartford, CT",
+            footerMessage: body.footerMessage || "",
+            bannerEnabled: body.bannerEnabled || false,
+            bannerText: body.bannerText || "",
+
             truckToday: body.truckToday || "",
             truckNext: body.truckNext || "",
 
