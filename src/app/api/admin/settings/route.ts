@@ -19,17 +19,32 @@ export async function GET() {
 
 export async function PUT(req: Request) {
     const body = await req.json().catch(() => ({}));
+
+    // Server-side validation
+    if (body.bannerEnabled && !body.bannerText?.trim()) {
+        return NextResponse.json({ ok: false, error: "Banner text is required when enabled." }, { status: 400 });
+    }
+
+    if (body.publicEmail && !body.publicEmail.includes("@")) {
+        return NextResponse.json({ ok: false, error: "Invalid email format." }, { status: 400 });
+    }
+
+    if (body.instagramUrl && !body.instagramUrl.includes("instagram.com")) {
+        return NextResponse.json({ ok: false, error: "Must be a valid Instagram URL." }, { status: 400 });
+    }
+
     const settings = await prisma.siteSettings.upsert({
         where: { id: "global" },
         update: {
-            phone: body.phone,
-            instagramUrl: body.instagramUrl,
-            publicEmail: body.publicEmail,
-            businessName: body.businessName,
-            cityState: body.cityState,
-            footerMessage: body.footerMessage,
+            phone: body.phone?.trim() || "",
+            instagramUrl: body.instagramUrl?.trim() || "",
+            publicEmail: body.publicEmail?.trim() || "",
+            businessName: body.businessName?.trim() || "",
+            cityState: body.cityState?.trim() || "",
+            footerMessage: body.footerMessage?.trim() || "",
             bannerEnabled: body.bannerEnabled,
-            bannerText: body.bannerText,
+            bannerText: body.bannerText?.trim() || "",
+            logoUrl: body.logoUrl?.trim() || "",
 
             truckToday: body.truckToday,
             truckNext: body.truckNext,
@@ -48,14 +63,15 @@ export async function PUT(req: Request) {
         },
         create: {
             id: "global",
-            phone: body.phone || "",
-            instagramUrl: body.instagramUrl || "",
-            publicEmail: body.publicEmail || "",
-            businessName: body.businessName || "Indian Food Truck",
-            cityState: body.cityState || "Hartford, CT",
-            footerMessage: body.footerMessage || "",
+            phone: body.phone?.trim() || "",
+            instagramUrl: body.instagramUrl?.trim() || "",
+            publicEmail: body.publicEmail?.trim() || "",
+            businessName: body.businessName?.trim() || "Indian Food Truck",
+            cityState: body.cityState?.trim() || "Hartford, CT",
+            footerMessage: body.footerMessage?.trim() || "",
             bannerEnabled: body.bannerEnabled || false,
-            bannerText: body.bannerText || "",
+            bannerText: body.bannerText?.trim() || "",
+            logoUrl: body.logoUrl?.trim() || "",
 
             truckToday: body.truckToday || "",
             truckNext: body.truckNext || "",

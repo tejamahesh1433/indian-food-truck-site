@@ -83,6 +83,7 @@ model SiteSettings {
   footerMessage String? @default("")
   bannerEnabled Boolean @default(false)
   bannerText    String? @default("")
+  logoUrl       String? @default("")
 
   // Advanced Schedule Today
   todayLocation String @default("")

@@ -2,9 +2,10 @@ export const site = {
     brand: {
         // temporary until final truck name
         name: "Indian Food Truck",
-        short: "IF",
+        short: "IFT",
         city: "Hartford, CT",
-        tagline: "Authentic Indian Street Food",
+        tagline: "Authentic Indian street food on wheels",
+        logoUrl: "",
     },
 
     contact: {

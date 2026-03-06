@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useSite } from "@/components/SiteProvider";
 
 export default function Hero() {
+    const site = useSite();
+
     return (
         <section className="min-h-[92vh] flex items-center">
             <div className="container-shell">
@@ -15,7 +18,7 @@ export default function Hero() {
                         className="inline-flex items-center gap-2 pill"
                     >
                         <span className="h-2 w-2 rounded-full bg-orange-500" />
-                        Hartford, CT • Indian Street Food
+                        {site.brand.city} • Indian Street Food
                     </motion.div>
 
                     <motion.h1
@@ -26,7 +29,7 @@ export default function Hero() {
                     >
                         Authentic Indian Street Food
                         <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-red-400">
-                            On Wheels in Hartford
+                            On Wheels in {site.brand.city.split(',')[0]}
                         </span>
                     </motion.h1>
 

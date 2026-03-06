@@ -12,6 +12,7 @@ export type DbSettings = {
     footerMessage?: string | null;
     bannerEnabled?: boolean | null;
     bannerText?: string | null;
+    logoUrl?: string | null;
 
     truckToday: string;
     truckNext: string;
@@ -48,6 +49,7 @@ export function useSite() {
             ...defaultSite.brand,
             name: dbSettings.businessName || defaultSite.brand.name,
             city: dbSettings.cityState || defaultSite.brand.city,
+            logoUrl: dbSettings.logoUrl || "",
         },
         contact: {
             ...defaultSite.contact,

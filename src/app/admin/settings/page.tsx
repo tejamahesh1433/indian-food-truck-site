@@ -12,12 +12,14 @@ type SettingsForm = {
     footerMessage: string;
     bannerEnabled: boolean;
     bannerText: string;
+    logoUrl: string;
 };
 
 export default function AdminSettingsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
+    const [lastSaved, setLastSaved] = useState<string | null>(null);
     const [initialForm, setInitialForm] = useState<SettingsForm | null>(null);
     const [form, setForm] = useState<SettingsForm>({
         phone: "",
@@ -28,6 +30,7 @@ export default function AdminSettingsPage() {
         footerMessage: "",
         bannerEnabled: false,
         bannerText: "",
+        logoUrl: "",
     });
 
     useEffect(() => {
@@ -45,9 +48,13 @@ export default function AdminSettingsPage() {
                         footerMessage: data.footerMessage || "",
                         bannerEnabled: data.bannerEnabled ?? false,
                         bannerText: data.bannerText || "",
+                        logoUrl: data.logoUrl || "",
                     };
                     setForm(f);
                     setInitialForm(f);
+                    if (data.updatedAt) {
+                        setLastSaved(new Date(data.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    }
                 }
             } finally {
                 setLoading(false);
@@ -61,7 +68,10 @@ export default function AdminSettingsPage() {
 
     const isValid = useMemo(() => {
         if (form.publicEmail && !form.publicEmail.includes("@")) return false;
-        if (form.instagramUrl && !form.instagramUrl.includes("instagram.com")) return false;
+        // Require instagram.com/<handle>
+        if (form.instagramUrl && (!form.instagramUrl.includes("instagram.com/") || form.instagramUrl.endsWith("instagram.com/"))) return false;
+        // Prevent saving banner enabled with empty message
+        if (form.bannerEnabled && !form.bannerText.trim()) return false;
         return true;
     }, [form]);
 
@@ -72,14 +82,25 @@ export default function AdminSettingsPage() {
         setSaving(true);
         setStatus("idle");
         try {
+            // Trim inputs
+            const sanitizedForm = {
+                ...form,
+                phone: form.phone.trim(),
+                publicEmail: form.publicEmail.trim(),
+                instagramUrl: form.instagramUrl.trim(),
+                businessName: form.businessName.trim(),
+                bannerText: form.bannerText.trim(),
+            };
+
             const res = await fetch("/api/admin/settings", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form)
+                body: JSON.stringify(sanitizedForm)
             });
             if (res.ok) {
                 setStatus("saved");
-                setInitialForm(form);
+                setInitialForm(sanitizedForm);
+                setLastSaved(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
             } else {
                 setStatus("error");
             }
@@ -90,19 +111,40 @@ export default function AdminSettingsPage() {
         setTimeout(() => setStatus("idle"), 3000);
     }
 
+    function handleReset() {
+        if (initialForm) {
+            setForm(initialForm);
+        }
+    }
+
     if (loading) return <div className="p-10 text-white text-center">Loading Settings...</div>;
 
     return (
         <main className="mx-auto max-w-6xl px-6 py-12 text-white">
-            <Link href="/admin" className="text-sm font-medium text-gray-400 hover:text-white mb-8 inline-block transition">
-                ← Back to Dashboard
-            </Link>
+            <div className="flex items-center justify-between mb-8">
+                <Link href="/admin" className="text-sm font-medium text-gray-400 hover:text-white transition">
+                    ← Back to Dashboard
+                </Link>
+                {lastSaved && (
+                    <span className="text-xs text-gray-500 italic">Last saved: {lastSaved}</span>
+                )}
+            </div>
 
             <div className="flex flex-col lg:flex-row gap-12">
                 <div className="flex-1">
-                    <header className="mb-10">
-                        <h1 className="text-3xl font-semibold mb-2">Site Settings</h1>
-                        <p className="text-gray-400 text-sm">Manage global branding, contact info, and site-wide alerts.</p>
+                    <header className="mb-10 flex items-end justify-between">
+                        <div>
+                            <h1 className="text-3xl font-semibold mb-2">Site Settings</h1>
+                            <p className="text-gray-400 text-sm">Manage global branding, contact info, and site-wide alerts.</p>
+                        </div>
+                        {hasChanges && (
+                            <button
+                                onClick={handleReset}
+                                className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition pb-1 border-b border-white/10"
+                            >
+                                Reset to Defaults
+                            </button>
+                        )}
                     </header>
 
                     <form onSubmit={handleSave} className="space-y-10">
@@ -130,6 +172,15 @@ export default function AdminSettingsPage() {
                                         onChange={e => setForm({ ...form, cityState: e.target.value })}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500/50 transition"
                                         placeholder="e.g. Hartford, CT"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Logo URL (Optional)</label>
+                                    <input
+                                        value={form.logoUrl}
+                                        onChange={e => setForm({ ...form, logoUrl: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500/50 transition"
+                                        placeholder="https://example.com/logo.png"
                                     />
                                 </div>
                                 <div className="md:col-span-2">
@@ -174,14 +225,14 @@ export default function AdminSettingsPage() {
                                 <div className="md:col-span-2">
                                     <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 flex items-center justify-between">
                                         Instagram URL
-                                        {form.instagramUrl && !form.instagramUrl.includes("instagram.com") && (
-                                            <span className="text-red-400 text-[10px]">Must be a valid Instagram URL</span>
+                                        {form.instagramUrl && (!form.instagramUrl.includes("instagram.com/") || form.instagramUrl.endsWith("instagram.com/")) && (
+                                            <span className="text-red-400 text-[10px]">Provide full profile URL (e.g. instagram.com/handle)</span>
                                         )}
                                     </label>
                                     <input
                                         value={form.instagramUrl}
                                         onChange={e => setForm({ ...form, instagramUrl: e.target.value })}
-                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 outline-none transition ${form.instagramUrl && !form.instagramUrl.includes("instagram.com") ? 'border-red-500/50' : 'border-white/10 focus:border-blue-500/50'}`}
+                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 outline-none transition ${form.instagramUrl && (!form.instagramUrl.includes("instagram.com/") || form.instagramUrl.endsWith("instagram.com/")) ? 'border-red-500/50' : 'border-white/10 focus:border-blue-500/50'}`}
                                         placeholder="https://instagram.com/yourhandle"
                                     />
                                 </div>
@@ -205,11 +256,16 @@ export default function AdminSettingsPage() {
                             </div>
 
                             <div className={`transition-all duration-300 ${form.bannerEnabled ? 'opacity-100 max-h-40' : 'opacity-30 max-h-40 pointer-events-none'}`}>
-                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Banner Message</label>
+                                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 flex items-center justify-between">
+                                    Banner Message
+                                    {form.bannerEnabled && !form.bannerText.trim() && (
+                                        <span className="text-red-400 text-[10px]">Message required when enabled</span>
+                                    )}
+                                </label>
                                 <textarea
                                     value={form.bannerText}
                                     onChange={e => setForm({ ...form, bannerText: e.target.value })}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-orange-500/50 transition h-24 resize-none"
+                                    className={`w-full bg-black/40 border rounded-xl px-4 py-3 outline-none transition h-24 resize-none ${form.bannerEnabled && !form.bannerText.trim() ? 'border-red-500/50' : 'border-white/10 focus:border-orange-500/50'}`}
                                     placeholder="e.g. Custom catering now available for weddings!"
                                 />
                             </div>
@@ -237,10 +293,19 @@ export default function AdminSettingsPage() {
 
                             <div className="space-y-8 text-center sm:text-left">
                                 {/* Branding Preview */}
-                                <div className="space-y-1">
-                                    <div className="text-[9px] font-bold uppercase text-gray-600 mb-2">Public Branding</div>
-                                    <div className="text-2xl font-bold">{form.businessName || "Indian Food Truck"}</div>
-                                    <div className="text-sm text-gray-400">{form.cityState || "Hartford, CT"}</div>
+                                <div className="space-y-3">
+                                    <div className="text-[9px] font-bold uppercase text-gray-600 mb-1">Public Branding</div>
+                                    <div className="flex items-center gap-3">
+                                        {form.logoUrl ? (
+                                            <img src={form.logoUrl} className="h-10 w-10 rounded-xl object-contain bg-white/5 p-1" alt="Logo" />
+                                        ) : (
+                                            <div className="h-10 w-10 rounded-xl bg-orange-500 flex items-center justify-center font-bold text-black text-xs">IFT</div>
+                                        )}
+                                        <div className="text-left">
+                                            <div className="text-lg font-bold">{form.businessName || "Indian Food Truck"}</div>
+                                            <div className="text-[10px] text-gray-400">{form.cityState || "Hartford, CT"}</div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Contact Link Previews */}
@@ -261,20 +326,24 @@ export default function AdminSettingsPage() {
                                 </div>
 
                                 {/* Banner Preview */}
-                                {form.bannerEnabled && form.bannerText && (
-                                    <div className="space-y-2">
-                                        <div className="text-[9px] font-bold uppercase text-gray-600 mb-1">Banner Bar</div>
-                                        <div className="bg-orange-500 text-black px-4 py-2 rounded-xl text-[10px] font-bold text-center">
-                                            {form.bannerText}
+                                <div className="space-y-2">
+                                    <div className="text-[9px] font-bold uppercase text-gray-600 mb-1">Banner State</div>
+                                    {form.bannerEnabled ? (
+                                        <div className="bg-orange-500 text-black px-4 py-3 rounded-xl text-[10px] font-bold text-center animate-pulse">
+                                            {form.bannerText || "Placeholder Text..."}
                                         </div>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div className="bg-white/5 border border-dashed border-white/10 text-gray-500 py-3 rounded-xl text-[10px] font-bold text-center">
+                                            Banner Disabled
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Footer Preview */}
                                 <div className="space-y-1 opacity-60">
                                     <div className="text-[9px] font-bold uppercase text-gray-600 mb-1">Footer Text</div>
-                                    <div className="text-[10px] text-gray-400 leading-relaxed italic border-l border-white/10 pl-3">
-                                        {form.footerMessage || "© 2024 Indian Food Truck. All rights reserved."}
+                                    <div className="text-[10px] text-gray-400 leading-relaxed italic border-l border-white/10 pl-3 text-left">
+                                        {form.footerMessage || `© ${new Date().getFullYear()} ${form.businessName}. All rights reserved.`}
                                     </div>
                                 </div>
                             </div>
@@ -283,8 +352,8 @@ export default function AdminSettingsPage() {
                         <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4">
                             <div className="flex gap-3">
                                 <svg className="w-5 h-5 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <div className="text-xs text-blue-300 leading-relaxed">
-                                    <strong>Tip:</strong> These settings are global. Updating the Business Name or Phone will update the header, footer, and catering pages immediately.
+                                <div className="text-[11px] text-blue-300 leading-relaxed">
+                                    <strong>Admin Panel Secure:</strong> Changes are rate-limited and logged. Only authorized admins can update global site parameters.
                                 </div>
                             </div>
                         </div>

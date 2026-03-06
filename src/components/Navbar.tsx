@@ -31,9 +31,13 @@ export default function Navbar() {
         <header className="sticky top-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur-xl">
             <div className="mx-auto max-w-6xl px-6 md:px-20 py-4 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-2xl bg-orange-500/90 text-black font-bold flex items-center justify-center shadow-[0_12px_40px_rgba(255,140,0,0.25)]">
-                        {site.brand.short}
-                    </div>
+                    {site.brand.logoUrl ? (
+                        <img src={site.brand.logoUrl} className="h-10 w-10 object-contain" alt={site.brand.name} />
+                    ) : (
+                        <div className="h-10 w-10 rounded-2xl bg-orange-500/90 text-black font-bold flex items-center justify-center shadow-[0_12px_40px_rgba(255,140,0,0.25)]">
+                            {site.brand.short}
+                        </div>
+                    )}
                     <div className="leading-tight">
                         <div className="font-semibold">{site.brand.name}</div>
                         <div className="text-xs text-gray-400">{site.brand.city}</div>
