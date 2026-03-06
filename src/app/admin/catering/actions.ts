@@ -31,3 +31,13 @@ export async function deleteCateringRequest(id: string) {
     await prisma.cateringRequest.delete({ where: { id } });
     revalidatePath("/admin/catering");
 }
+
+export async function updateCateringEnabled(enabled: boolean) {
+    await prisma.siteSettings.upsert({
+        where: { id: "global" },
+        update: { cateringEnabled: enabled },
+        create: { id: "global", cateringEnabled: enabled },
+    });
+    revalidatePath("/admin/catering");
+    revalidatePath("/catering");
+}

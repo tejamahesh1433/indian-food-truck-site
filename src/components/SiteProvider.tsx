@@ -30,6 +30,8 @@ export type DbSettings = {
     nextStart?: string | null;
     nextEnd?: string | null;
     nextNotes?: string | null;
+
+    cateringEnabled?: boolean | null;
 };
 
 const SiteContext = createContext<DbSettings | null>(null);
@@ -45,6 +47,7 @@ export function useSite() {
 
     return {
         ...defaultSite,
+        cateringEnabled: dbSettings.cateringEnabled ?? true,
         brand: {
             ...defaultSite.brand,
             name: dbSettings.businessName || defaultSite.brand.name,

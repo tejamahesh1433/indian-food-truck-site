@@ -151,7 +151,19 @@ export default function CateringPage() {
                         </div>
                     )}
 
-                    <CateringPrintedMenu onSelectItem={setDrawerItem} />
+                    {!site.cateringEnabled && (
+                        <div className="mt-8 p-6 rounded-3xl border border-red-500/20 bg-red-500/5 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center shrink-0 text-2xl">
+                                ⏳
+                            </div>
+                            <div>
+                                <p className="font-bold text-red-50 text-lg tracking-tight">Catering Currently Unavailable</p>
+                                <p className="text-red-200/40 text-sm font-medium">We are not accepting new catering requests at this time. Please check back later or call us for urgent inquiries.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <CateringPrintedMenu onSelectItem={site.cateringEnabled ? setDrawerItem : undefined} />
 
                     <CateringItemDrawer
                         item={drawerItem}

@@ -85,6 +85,7 @@ model SiteSettings {
   bannerEnabled Boolean @default(false)
   bannerText    String? @default("")
   logoUrl       String? @default("")
+  cateringEnabled Boolean @default(true)
 
   // Advanced Schedule Today
   todayLocation String @default("")

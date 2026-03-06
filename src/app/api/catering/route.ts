@@ -53,6 +53,18 @@ export async function POST(req: Request) {
     const ip = req.headers.get("x-forwarded-for") || "unknown";
     const isDev = process.env.NODE_ENV !== "production";
 
+    // 1. Availability Check
+    const settings = await prisma.siteSettings.findUnique({
+        where: { id: "global" },
+        select: { cateringEnabled: true }
+    });
+    if (settings && settings.cateringEnabled === false) {
+        return NextResponse.json(
+            { ok: false, error: "Catering submissions are currently paused. Please try again later." },
+            { status: 503 }
+        );
+    }
+
     if (!isDev && !applyRateLimit(ip)) {
         return NextResponse.json(
             { ok: false, error: "Too many requests. Please wait before submitting again." },

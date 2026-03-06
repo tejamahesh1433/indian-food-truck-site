@@ -1,14 +1,22 @@
-// Forced reload to sync Prisma schema
 import { prisma } from "@/lib/prisma";
 import CateringClient from "./ui/CateringClient";
+import CateringAvailabilityToggle from "./ui/CateringAvailabilityToggle";
 
 export const dynamic = "force-dynamic";
 
 export default async function CateringInboxPage() {
-    const requests = await prisma.cateringRequest.findMany({
-        where: { isArchived: false },
-        orderBy: { createdAt: "desc" },
-    });
+    const [requests, settings] = await Promise.all([
+        prisma.cateringRequest.findMany({
+            where: { isArchived: false },
+            orderBy: { createdAt: "desc" },
+        }),
+        prisma.siteSettings.findUnique({
+            where: { id: "global" },
+            select: { cateringEnabled: true }
+        })
+    ]);
+
+    const cateringEnabled = settings?.cateringEnabled ?? true;
 
     const counts = requests.reduce(
         (acc, r) => {
@@ -30,6 +38,10 @@ export default async function CateringInboxPage() {
                 <p className="text-gray-400 text-sm">
                     Review incoming quotes and mark them as contacted or completed.
                 </p>
+
+                <div className="max-w-md mt-4">
+                    <CateringAvailabilityToggle initialEnabled={cateringEnabled} />
+                </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 text-sm mb-8">
