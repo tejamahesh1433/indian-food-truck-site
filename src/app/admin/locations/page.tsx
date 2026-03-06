@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import TimePicker from "@/components/TimePicker";
+import { site } from "@/config/site";
 
 type StopForm = {
     todayLocation: string;
@@ -160,6 +160,12 @@ export default function AdminLocationsPage() {
         }
     }
 
+    const setCurrentTime = (field: 'todayStart' | 'todayEnd' | 'nextStart' | 'nextEnd') => {
+        const d = new Date();
+        const timeStr = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+        setForm({ ...form, [field]: timeStr });
+    };
+
     const setNextToToday = () => {
         setForm({
             ...form,
@@ -211,6 +217,8 @@ export default function AdminLocationsPage() {
 
     if (loading) return <div className="p-10 text-white text-center">Loading Schedule...</div>;
 
+    const mapBase = site.brand.city;
+
     return (
         <main className="mx-auto max-w-6xl px-6 py-12 text-white">
             <Link href="/admin" className="text-sm font-medium text-gray-400 hover:text-white mb-8 inline-block transition">
@@ -225,11 +233,18 @@ export default function AdminLocationsPage() {
                             <h1 className="text-3xl font-semibold">Schedule Manager</h1>
                             <p className="text-gray-400 text-sm">Update your truck's live status and upcoming stops.</p>
                         </div>
-                        {lastPublished && (
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg">
-                                Last published: {lastPublished.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                        )}
+                        <div className="flex items-center gap-3">
+                            {lastPublished && (
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg">
+                                    Last published: {lastPublished.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                            )}
+                            {hasChanges && (
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400 bg-orange-400/10 border border-orange-400/20 px-3 py-1.5 rounded-lg animate-pulse">
+                                    Unsaved Changes
+                                </div>
+                            )}
+                        </div>
                     </header>
 
                     <form onSubmit={handleSave} className="space-y-10">
@@ -243,9 +258,9 @@ export default function AdminLocationsPage() {
                                 </h2>
                                 <div className="flex items-center gap-4">
                                     <div className="hidden sm:flex gap-2">
-                                        <button type="button" onClick={() => applyPreset('today', 'lunch')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-orange-400 transition border border-white/5">Lunch</button>
-                                        <button type="button" onClick={() => applyPreset('today', 'dinner')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-orange-400 transition border border-white/5">Dinner</button>
-                                        <button type="button" onClick={() => applyPreset('today', 'allday')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-orange-400 transition border border-white/5">All Day</button>
+                                        <button type="button" onClick={() => applyPreset('today', 'lunch')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-orange-400 transition border border-white/5">Lunch (12-3)</button>
+                                        <button type="button" onClick={() => applyPreset('today', 'dinner')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-orange-400 transition border border-white/5">Dinner (5-9)</button>
+                                        <button type="button" onClick={() => applyPreset('today', 'allday')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-orange-400 transition border border-white/5">All Day (12-6)</button>
                                     </div>
                                     <button type="button" onClick={clearToday} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-red-400 transition">Clear</button>
                                 </div>
@@ -272,18 +287,24 @@ export default function AdminLocationsPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <TimePicker
-                                        label="Start Time"
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 flex items-center justify-between">
+                                        Start Time
+                                        <button type="button" onClick={() => setCurrentTime('todayStart')} className="text-orange-400 hover:text-orange-300 transition text-[9px]">Set Now</button>
+                                    </label>
+                                    <input
+                                        type="time"
                                         value={form.todayStart}
-                                        onChange={val => setForm({ ...form, todayStart: val })}
-                                        showNow
+                                        onChange={e => setForm({ ...form, todayStart: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
                                     />
                                 </div>
                                 <div>
-                                    <TimePicker
-                                        label="End Time"
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">End Time</label>
+                                    <input
+                                        type="time"
                                         value={form.todayEnd}
-                                        onChange={val => setForm({ ...form, todayEnd: val })}
+                                        onChange={e => setForm({ ...form, todayEnd: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
                                     />
                                 </div>
                                 <div>
@@ -308,7 +329,7 @@ export default function AdminLocationsPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px} font-bold uppercase tracking-widest text-gray-500 mb-2">Short Note (Optional)</label>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Short Note (Optional)</label>
                                     <input
                                         value={form.todayNotes}
                                         onChange={e => setForm({ ...form, todayNotes: e.target.value })}
@@ -349,9 +370,9 @@ export default function AdminLocationsPage() {
                                 </h2>
                                 <div className="flex items-center gap-4">
                                     <div className="hidden sm:flex gap-2">
-                                        <button type="button" onClick={() => applyPreset('next', 'lunch')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-blue-400 transition border border-white/5">Lunch</button>
-                                        <button type="button" onClick={() => applyPreset('next', 'dinner')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-blue-400 transition border border-white/5">Dinner</button>
-                                        <button type="button" onClick={() => applyPreset('next', 'allday')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-blue-400 transition border border-white/5">All Day</button>
+                                        <button type="button" onClick={() => applyPreset('next', 'lunch')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-blue-400 transition border border-white/5">Lunch (12-3)</button>
+                                        <button type="button" onClick={() => applyPreset('next', 'dinner')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-blue-400 transition border border-white/5">Dinner (5-9)</button>
+                                        <button type="button" onClick={() => applyPreset('next', 'allday')} className="text-[9px] font-bold uppercase px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-blue-400 transition border border-white/5">All Day (12-6)</button>
                                     </div>
                                     <button type="button" onClick={clearNext} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-red-400 transition">Clear</button>
                                 </div>
@@ -378,17 +399,23 @@ export default function AdminLocationsPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                        <TimePicker
-                                            label="From"
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 flex items-center justify-between">
+                                            From
+                                        </label>
+                                        <input
+                                            type="time"
                                             value={form.nextStart}
-                                            onChange={val => setForm({ ...form, nextStart: val })}
+                                            onChange={e => setForm({ ...form, nextStart: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
                                         />
                                     </div>
                                     <div>
-                                        <TimePicker
-                                            label="To"
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">To</label>
+                                        <input
+                                            type="time"
                                             value={form.nextEnd}
-                                            onChange={val => setForm({ ...form, nextEnd: val })}
+                                            onChange={e => setForm({ ...form, nextEnd: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
                                         />
                                     </div>
                                 </div>
@@ -412,8 +439,7 @@ export default function AdminLocationsPage() {
                                 {saving ? "Saving Changes..." : "Publish Schedule"}
                                 {!saving && hasChanges && <span className="w-2 h-2 rounded-full bg-black animate-pulse" />}
                             </button>
-                            {hasChanges && <span className="text-orange-400 text-xs font-bold uppercase tracking-widest animate-pulse">Unsaved Edits</span>}
-                            {status === "saved" && <span className="text-green-400 text-sm font-medium animate-bounce">Saved & Published!</span>}
+                            {status === "saved" && <span className="text-green-400 text-sm font-medium animate-bounce">Published to Website!</span>}
                             {status === "error" && <span className="text-red-400 text-sm font-medium">Failed to save.</span>}
                         </div>
                     </form>
@@ -430,34 +456,50 @@ export default function AdminLocationsPage() {
 
                         <div className="space-y-4">
                             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-orange-500 flex items-center justify-between">
-                                    Today
-                                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-orange-500/20 border border-orange-500/30 text-orange-300">{form.todayStatus.replace(/_/g, " ")}</span>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-orange-500 mb-2">Today</div>
+                                <div className="mb-2">
+                                    <div className="text-xs font-bold text-gray-300">
+                                        {form.todayStatus === 'CLOSED' ? 'Closed for the day' : form.todayStatus.replace(/_/g, " ")}
+                                    </div>
+                                    {form.todayStatus !== 'CLOSED' && (
+                                        <>
+                                            <a
+                                                href={`https://maps.google.com/?q=${encodeURIComponent(form.todayLocation + ' ' + mapBase)}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="mt-1 text-sm font-bold block hover:text-orange-400 transition flex items-center gap-1.5"
+                                            >
+                                                {form.todayLocation || "Unscheduled"}
+                                                <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                            </a>
+                                            <div className="text-xs text-orange-400/80 font-medium">
+                                                {form.todayStart && form.todayEnd ? `${new Date(`2000-01-01T${form.todayStart}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} – ${new Date(`2000-01-01T${form.todayEnd}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : '--'}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
-                                <a
-                                    href={`https://maps.google.com/?q=${encodeURIComponent(form.todayLocation || "Hartford, CT")}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="mt-2 text-sm font-bold block hover:text-orange-400 transition flex items-center gap-1.5"
-                                >
-                                    {form.todayLocation || "Unscheduled"}
-                                    <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                </a>
-                                <div className="text-xs text-gray-400">{form.todayStart} - {form.todayEnd}</div>
                             </div>
 
                             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-blue-500">Next Stop</div>
-                                <a
-                                    href={`https://maps.google.com/?q=${encodeURIComponent(form.nextLocation || "Hartford, CT")}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="mt-2 text-sm font-bold block hover:text-blue-400 transition flex items-center gap-1.5"
-                                >
-                                    {form.nextLocation || "TBD"}
-                                    <svg className="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                </a>
-                                <div className="text-xs text-gray-400">{form.nextDate} · {form.nextStart}</div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-2">Next Stop</div>
+                                <div className="text-xs font-bold text-gray-300 mb-1">{form.nextLocation || "TBD"}</div>
+                                {form.nextLocation && (
+                                    <>
+                                        <a
+                                            href={`https://maps.google.com/?q=${encodeURIComponent(form.nextLocation + ' ' + mapBase)}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-[10px] text-blue-400 hover:text-blue-300 transition flex items-center gap-1 mb-1"
+                                        >
+                                            View on Map
+                                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                        </a>
+                                        <div className="text-[10px] text-gray-500">
+                                            {form.nextDate ? new Date(form.nextDate + 'T00:00:00').toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
+                                            {form.nextStart ? ` · ${new Date(`2000-01-01T${form.nextStart}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -465,37 +507,34 @@ export default function AdminLocationsPage() {
                     {/* Saved Locations / History */}
                     <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
                         <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-4">Location History</h3>
-                        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                             {savedLocs.length === 0 ? (
-                                <p className="text-xs text-gray-600 italic">No saved locations yet.</p>
+                                <p className="text-xs text-gray-600 italic">No saved locations yet. Use the [+] button to add current stop.</p>
                             ) : (
-                                savedLocs.map(loc => (
-                                    <div key={loc.id} className="group relative">
-                                        <div className="w-full text-left p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/20 hover:bg-white/10 transition">
-                                            <div className="text-xs font-bold text-gray-200">{loc.name}</div>
-                                            {loc.address && <div className="text-[10px] text-gray-500 truncate">{loc.address}</div>}
+                                savedLocs.slice().reverse().map(loc => (
+                                    <div key={loc.id} className="p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/20 transition group">
+                                        <div className="text-xs font-bold text-gray-200 mb-2">{loc.name}</div>
 
-                                            <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
-                                                <button
-                                                    onClick={() => setForm({ ...form, todayLocation: loc.name })}
-                                                    className="text-[9px] font-bold uppercase px-2 py-1 bg-white/10 rounded hover:bg-orange-500 hover:text-black transition"
-                                                >
-                                                    Today
-                                                </button>
-                                                <button
-                                                    onClick={() => setForm({ ...form, nextLocation: loc.name })}
-                                                    className="text-[9px] font-bold uppercase px-2 py-1 bg-white/10 rounded hover:bg-blue-500 hover:text-black transition"
-                                                >
-                                                    Next
-                                                </button>
-                                                <button
-                                                    onClick={() => deleteSavedLocation(loc.id)}
-                                                    className="ml-auto p-1.5 text-gray-500 hover:text-red-400 transition"
-                                                    title="Delete"
-                                                >
-                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                </button>
-                                            </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => setForm({ ...form, todayLocation: loc.name })}
+                                                className="flex-1 text-[9px] font-bold uppercase py-1.5 bg-white/5 border border-white/10 rounded hover:bg-orange-500 hover:text-black transition"
+                                            >
+                                                Today
+                                            </button>
+                                            <button
+                                                onClick={() => setForm({ ...form, nextLocation: loc.name })}
+                                                className="flex-1 text-[9px] font-bold uppercase py-1.5 bg-white/5 border border-white/10 rounded hover:bg-blue-500 hover:text-black transition"
+                                            >
+                                                Next
+                                            </button>
+                                            <button
+                                                onClick={() => deleteSavedLocation(loc.id)}
+                                                className="p-1.5 text-gray-600 hover:text-red-400 transition"
+                                                title="Delete"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
                                         </div>
                                     </div>
                                 ))
