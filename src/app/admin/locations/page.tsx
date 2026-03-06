@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import TimePicker from "@/components/TimePicker";
 
 type StopForm = {
     todayLocation: string;
@@ -202,21 +203,17 @@ export default function AdminLocationsPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Start Time</label>
-                                    <input
-                                        type="time"
+                                    <TimePicker
+                                        label="Start Time"
                                         value={form.todayStart}
-                                        onChange={e => setForm({ ...form, todayStart: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30"
+                                        onChange={val => setForm({ ...form, todayStart: val })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">End Time</label>
-                                    <input
-                                        type="time"
+                                    <TimePicker
+                                        label="End Time"
                                         value={form.todayEnd}
-                                        onChange={e => setForm({ ...form, todayEnd: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30"
+                                        onChange={val => setForm({ ...form, todayEnd: val })}
                                     />
                                 </div>
                                 <div>
@@ -297,21 +294,17 @@ export default function AdminLocationsPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">From</label>
-                                        <input
-                                            type="time"
+                                        <TimePicker
+                                            label="From"
                                             value={form.nextStart}
-                                            onChange={e => setForm({ ...form, nextStart: e.target.value })}
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30"
+                                            onChange={val => setForm({ ...form, nextStart: val })}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">To</label>
-                                        <input
-                                            type="time"
+                                        <TimePicker
+                                            label="To"
                                             value={form.nextEnd}
-                                            onChange={e => setForm({ ...form, nextEnd: e.target.value })}
-                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30"
+                                            onChange={val => setForm({ ...form, nextEnd: val })}
                                         />
                                     </div>
                                 </div>
