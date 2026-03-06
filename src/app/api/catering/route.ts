@@ -77,7 +77,7 @@ export async function POST(req: Request) {
                 guests: parsed.data.guests || null,
                 location: parsed.data.location || "TBD",
                 notes: parsed.data.notes || null,
-                selections: parsed.data.selections || null,
+                selections: parsed.data.selections || undefined,
                 chatToken: makeChatToken(),
             },
         });
