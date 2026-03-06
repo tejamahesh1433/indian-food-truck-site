@@ -74,15 +74,23 @@ export default function Location() {
                             </div>
 
                             <div className="mt-10 grid grid-cols-2 gap-4 text-sm">
-                                <div className="rounded-2xl border border-white/10 bg-black/30 p-4 relative overflow-hidden">
+                                <a
+                                    href={`https://maps.google.com/?q=${encodeURIComponent(next.label)}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="rounded-2xl border border-white/10 bg-black/30 p-4 relative overflow-hidden hover:bg-white/5 transition block group/next"
+                                >
+                                    <div className="absolute top-0 right-0 p-2 opacity-0 group-hover/next:opacity-50 transition">
+                                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                    </div>
                                     <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">Next stop</div>
-                                    <div className="font-bold text-gray-100 truncate">
+                                    <div className="font-bold text-gray-100 truncate group-hover/next:text-blue-300 transition">
                                         {next.label}
                                     </div>
                                     <div className="mt-1 text-xs text-gray-400">
                                         {next.date} {next.start ? `· ${next.start}` : ""}
                                     </div>
-                                </div>
+                                </a>
                                 <a href="/catering" className="rounded-2xl border border-white/10 bg-orange-500/5 hover:bg-orange-500/10 transition p-4 group">
                                     <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400 mb-2">Catering</div>
                                     <div className="font-bold text-gray-100 group-hover:text-orange-300 transition flex items-center gap-1">
