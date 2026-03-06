@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { CateringRequest } from "@prisma/client";
 import { updateInternalNotes, deleteCateringRequest, updateCateringStatus, archiveCateringRequest } from "../actions";
+import { SelectedItem } from "@/app/catering/ui/types";
 
 export default function CateringDetailsDrawer({
     request,
@@ -129,6 +130,35 @@ Phone: ${request.phone || "N/A"}`;
                             {request.notes || <span className="text-gray-600 italic">No additional notes provided.</span>}
                         </p>
                     </div>
+
+                    {/* Structured Selections */}
+                    {(request.selections as any as SelectedItem[])?.length > 0 && (
+                        <div className="space-y-4">
+                            <div className="text-xs text-orange-400 uppercase tracking-wider font-bold flex items-center gap-2">
+                                <span>🍱</span> Order Selections
+                            </div>
+                            <div className="space-y-3">
+                                {(request.selections as any as SelectedItem[]).map((item, idx) => (
+                                    <div key={item.internalId || idx} className="bg-black/40 border border-white/5 p-4 rounded-xl">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h4 className="text-sm font-bold text-white">{item.name}</h4>
+                                            <span className="text-xs font-black text-orange-500">Qty {item.quantity}</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                                            {Object.entries(item.options).map(([k, v]) => (
+                                                <div key={k} className="text-[10px] text-gray-500 font-medium">
+                                                    <span className="opacity-50 uppercase tracking-tighter">{k}:</span> {v}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="mt-2 pt-2 border-t border-white/[0.03] text-[10px] text-orange-500/60 font-black uppercase tracking-widest text-right">
+                                            {item.priceLabel}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="h-px bg-white/10 my-4" />
 

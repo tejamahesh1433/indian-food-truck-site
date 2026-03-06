@@ -30,6 +30,7 @@ model CateringRequest {
   chatToken     String        @unique @default(cuid())
   chatEnabled   Boolean       @default(true)
   messages      CateringMessage[]
+  selections    Json?    // Array of selected items with options
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
@@ -110,5 +111,42 @@ model SavedLocation {
   id        String   @id @default(cuid())
   name      String   @unique
   address   String?
+  createdAt DateTime @default(now())
+}
+
+model CateringItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String   // Matches CateringCategory.name
+  
+  priceKind   String   // PER_PERSON, TRAY, FIXED
+  
+  // For PER_PERSON / FIXED
+  amount      Float?
+  minPeople   Int?     // For PER_PERSON
+  unit        String?  // For FIXED (dozen, platter, etc)
+  
+  // For TRAY
+  halfPrice   Float?
+  fullPrice   Float?
+  
+  isVeg       Boolean  @default(false)
+  isSpicy     Boolean  @default(false)
+  isPopular   Boolean  @default(false)
+  isAvailable Boolean  @default(true)
+  
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category, isAvailable, sortOrder])
+}
+
+model CateringCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  subtitle  String?
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 }

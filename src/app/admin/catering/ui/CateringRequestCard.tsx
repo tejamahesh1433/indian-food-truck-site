@@ -23,6 +23,11 @@ export default function CateringRequestCard({
                     <div className="flex items-center gap-3 mb-1">
                         <h3 className="text-lg font-semibold text-white">{request.name}</h3>
                         {isNew && <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">New</span>}
+                        {(request.selections as any)?.length > 0 && (
+                            <span className="bg-orange-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+                                <span className="text-[8px]">🍱</span> Selection
+                            </span>
+                        )}
                         <span className="text-xs text-gray-500 ml-auto md:ml-0">
                             {new Date(request.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>

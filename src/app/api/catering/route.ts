@@ -13,6 +13,7 @@ const Schema = z.object({
     location: z.string().optional(),
     notes: z.string().optional(),
     website: z.string().optional(),
+    selections: z.array(z.any()).optional(),
 });
 
 // Simple in-memory rate limit Map. Keys: IP -> { count, expires }
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
                 guests: parsed.data.guests || null,
                 location: parsed.data.location || "TBD",
                 notes: parsed.data.notes || null,
+                selections: parsed.data.selections || null,
                 chatToken: makeChatToken(),
             },
         });
