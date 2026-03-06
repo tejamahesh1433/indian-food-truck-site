@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function POST(req: Request) {
     const body = await req.json().catch(() => null);
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
                 })
             )
         );
+        revalidatePath("/catering");
         return NextResponse.json({ ok: true });
     } catch (err: any) {
         console.error("Reorder Error:", err);

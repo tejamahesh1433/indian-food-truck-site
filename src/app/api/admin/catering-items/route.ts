@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 function bad(msg: string, status = 400) {
     return NextResponse.json({ ok: false, error: msg }, { status });
@@ -87,5 +88,6 @@ export async function POST(req: Request) {
         },
     });
 
+    revalidatePath("/catering");
     return NextResponse.json({ ok: true, item: created }, { status: 201 });
 }

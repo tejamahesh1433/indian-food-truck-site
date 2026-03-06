@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
     try {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
                 sortOrder: (last?.sortOrder ?? 0) + 1,
             },
         });
-
+        revalidatePath("/menu");
         return NextResponse.json({ ok: true, category: cat }, { status: 201 });
     } catch (e: any) {
         // Handle unique constraint failure
