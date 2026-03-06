@@ -44,32 +44,43 @@ export default function AdminLocationsPage() {
 
     useEffect(() => {
         (async () => {
-            const [settingsRes, locsRes] = await Promise.all([
-                fetch("/api/admin/settings"),
-                fetch("/api/admin/saved-locations")
-            ]);
+            try {
+                const [settingsRes, locsRes] = await Promise.all([
+                    fetch("/api/admin/settings").catch(e => {
+                        console.error("Settings fetch failed:", e);
+                        return null;
+                    }),
+                    fetch("/api/admin/saved-locations").catch(e => {
+                        console.error("Saved locations fetch failed:", e);
+                        return null;
+                    })
+                ]);
 
-            if (settingsRes.ok) {
-                const data = await settingsRes.json();
-                setForm({
-                    todayLocation: data.todayLocation || "",
-                    todayStart: data.todayStart || "",
-                    todayEnd: data.todayEnd || "",
-                    todayStatus: data.todayStatus || "CLOSED",
-                    todayNotes: data.todayNotes || "",
-                    nextLocation: data.nextLocation || "",
-                    nextDate: data.nextDate || "",
-                    nextStart: data.nextStart || "",
-                    nextEnd: data.nextEnd || "",
-                    nextNotes: data.nextNotes || "",
-                });
+                if (settingsRes && settingsRes.ok) {
+                    const data = await settingsRes.json();
+                    setForm({
+                        todayLocation: data.todayLocation || "",
+                        todayStart: data.todayStart || "",
+                        todayEnd: data.todayEnd || "",
+                        todayStatus: data.todayStatus || "CLOSED",
+                        todayNotes: data.todayNotes || "",
+                        nextLocation: data.nextLocation || "",
+                        nextDate: data.nextDate || "",
+                        nextStart: data.nextStart || "",
+                        nextEnd: data.nextEnd || "",
+                        nextNotes: data.nextNotes || "",
+                    });
+                }
+
+                if (locsRes && locsRes.ok) {
+                    setSavedLocs(await locsRes.json());
+                }
+            } catch (err) {
+                console.error("Initialization error:", err);
+                setStatus("error");
+            } finally {
+                setLoading(false);
             }
-
-            if (locsRes.ok) {
-                setSavedLocs(await locsRes.json());
-            }
-
-            setLoading(false);
         })();
     }, []);
 
