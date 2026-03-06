@@ -93,6 +93,13 @@ export default function CustomerChatClient({
                     ))
                 )}
                 <div ref={bottomRef} />
+
+                <div className="mx-auto max-w-sm p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 text-center space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-orange-400">Pro Tip</p>
+                    <p className="text-xs text-orange-100/60 leading-relaxed">
+                        Bookmark this page to easily find your discussion later, even if the notification email is delayed!
+                    </p>
+                </div>
             </div>
 
             <form

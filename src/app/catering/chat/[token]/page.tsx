@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import CustomerChatClient from "./ui/CustomerChatClient";
+import Navbar from "@/components/Navbar";
 import { site } from "@/config/site";
 
 export const dynamic = "force-dynamic";
@@ -39,8 +40,18 @@ export default async function CustomerChatPage({
     }
 
     return (
-        <main className="min-h-screen bg-neutral-900 pt-32 pb-12 px-6">
-            <div className="max-w-2xl mx-auto space-y-4">
+        <main className="min-h-screen bg-neutral-900 pb-12 px-6">
+            <Navbar />
+            <div className="max-w-2xl mx-auto space-y-4 pt-32">
+                <a
+                    href="/catering"
+                    className="flex items-center gap-2 text-gray-400 hover:text-white transition text-xs font-bold uppercase tracking-wider mb-4 inline-flex"
+                >
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Catering
+                </a>
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-white">Event Chat</h1>

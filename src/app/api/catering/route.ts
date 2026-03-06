@@ -66,6 +66,7 @@ export async function POST(req: Request) {
     }
 
     try {
+        console.log("CATERING_SUBMIT: Starting DB create...");
         const created = await prisma.cateringRequest.create({
             data: {
                 name: parsed.data.name,
@@ -78,16 +79,23 @@ export async function POST(req: Request) {
                 chatToken: makeChatToken(),
             },
         });
+        console.log("CATERING_SUBMIT: DB create success. ID:", created.id);
 
         // Send email notification asynchronously (don't block the response)
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || req.headers.get("origin") || "http://localhost:3000";
         const chatLink = `${baseUrl}/catering/chat/${created.chatToken}`;
 
+        console.log("CATERING_SUBMIT: Triggering email to", created.email, "with link:", chatLink);
+
         sendChatLinkEmail({
             email: created.email,
             name: created.name,
             chatLink: chatLink,
-        }).catch(e => console.error("EMAIL_SEND_BG_ERROR:", e));
+        }).then(() => {
+            console.log("CATERING_SUBMIT: sendChatLinkEmail finished.");
+        }).catch(e => {
+            console.error("CATERING_SUBMIT: EMAIL_SEND_BG_ERROR:", e);
+        });
 
         return NextResponse.json({ ok: true, chatToken: created.chatToken });
     } catch (err: any) {
