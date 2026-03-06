@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import CateringClient from "./ui/CateringClient";
-import CateringAvailabilityToggle from "./ui/CateringAvailabilityToggle";
+import CateringAvailabilityToggle from "../ui/CateringAvailabilityToggle";
 
 export const dynamic = "force-dynamic";
 

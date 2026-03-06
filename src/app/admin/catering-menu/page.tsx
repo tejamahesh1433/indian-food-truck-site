@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import CateringAvailabilityToggle from "../ui/CateringAvailabilityToggle";
 
 type PriceKind = "PER_PERSON" | "TRAY" | "FIXED";
 
@@ -59,6 +60,7 @@ export default function AdminCateringMenuPage() {
 
     const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [cateringEnabled, setCateringEnabled] = useState(true);
 
     // list state
     const [items, setItems] = useState<CateringItem[]>([]);
@@ -104,6 +106,15 @@ export default function AdminCateringMenuPage() {
                 if (data.categories.length > 0 && !category) {
                     setCategory(data.categories[0].name);
                 }
+            }
+
+            // Also fetch site settings for catering toggle
+            const sRes = await fetch("/api/admin/settings");
+            const sData = await sRes.json();
+            if (sData.ok || sData.cateringEnabled !== undefined) {
+                // The API might return the settings object or the fields directly depending on implementation
+                const status = sData.settings?.cateringEnabled ?? sData.cateringEnabled ?? true;
+                setCateringEnabled(status);
             }
         } catch (e) {
             console.error("Failed to fetch categories");
@@ -259,6 +270,9 @@ export default function AdminCateringMenuPage() {
             <div className="mb-8">
                 <h1 className="text-3xl font-semibold mb-2">Catering Menu Management</h1>
                 <p className="text-gray-400 text-sm">Manage categories and items for the professional catering menu.</p>
+                <div className="max-w-md mt-6">
+                    <CateringAvailabilityToggle initialEnabled={cateringEnabled} />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateCateringEnabled } from "../actions";
+import { useState, useTransition, useEffect } from "react";
+import { updateCateringEnabled } from "../catering/actions";
 
 export default function CateringAvailabilityToggle({
     initialEnabled
@@ -10,6 +10,10 @@ export default function CateringAvailabilityToggle({
 }) {
     const [isEnabled, setIsEnabled] = useState(initialEnabled);
     const [isPending, startTransition] = useTransition();
+
+    useEffect(() => {
+        setIsEnabled(initialEnabled);
+    }, [initialEnabled]);
 
     const handleToggle = () => {
         const next = !isEnabled;
