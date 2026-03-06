@@ -8,6 +8,20 @@ export type DbSettings = {
     instagramUrl: string;
     truckToday: string;
     truckNext: string;
+
+    // Advanced Today
+    todayLocation?: string;
+    todayStart?: string;
+    todayEnd?: string;
+    todayStatus?: string;
+    todayNotes?: string;
+
+    // Advanced Next
+    nextLocation?: string;
+    nextDate?: string;
+    nextStart?: string;
+    nextEnd?: string;
+    nextNotes?: string;
 };
 
 const SiteContext = createContext<DbSettings | null>(null);
@@ -33,11 +47,27 @@ export function useSite() {
             ...defaultSite.truck,
             today: {
                 ...defaultSite.truck.today,
-                label: dbSettings.truckToday || defaultSite.truck.today.label
+                label: dbSettings.todayLocation || dbSettings.truckToday || defaultSite.truck.today.label,
+                start: dbSettings.todayStart || "",
+                end: dbSettings.todayEnd || "",
+                status: dbSettings.todayStatus || "CLOSED",
+                notes: dbSettings.todayNotes || "",
+                // Keep label for backward compat
+                hours: dbSettings.todayStart && dbSettings.todayEnd
+                    ? `${dbSettings.todayStart} – ${dbSettings.todayEnd}`
+                    : defaultSite.truck.today.hours,
+                mapsQuery: dbSettings.todayLocation || defaultSite.truck.today.mapsQuery,
             },
             next: {
                 ...defaultSite.truck.next,
-                label: dbSettings.truckNext || defaultSite.truck.next.label
+                label: dbSettings.nextLocation || dbSettings.truckNext || defaultSite.truck.next.label,
+                date: dbSettings.nextDate || "",
+                start: dbSettings.nextStart || "",
+                end: dbSettings.nextEnd || "",
+                notes: dbSettings.nextNotes || "",
+                hours: dbSettings.nextStart && dbSettings.nextEnd
+                    ? `${dbSettings.nextStart} – ${dbSettings.nextEnd}`
+                    : defaultSite.truck.next.hours,
             }
         }
     };

@@ -26,13 +26,37 @@ export async function PUT(req: Request) {
             instagramUrl: body.instagramUrl,
             truckToday: body.truckToday,
             truckNext: body.truckNext,
+
+            todayLocation: body.todayLocation,
+            todayStart: body.todayStart,
+            todayEnd: body.todayEnd,
+            todayStatus: body.todayStatus,
+            todayNotes: body.todayNotes,
+
+            nextLocation: body.nextLocation,
+            nextDate: body.nextDate,
+            nextStart: body.nextStart,
+            nextEnd: body.nextEnd,
+            nextNotes: body.nextNotes,
         },
         create: {
             id: "global",
             phone: body.phone || "",
             instagramUrl: body.instagramUrl || "",
             truckToday: body.truckToday || "",
-            truckNext: body.truckNext || ""
+            truckNext: body.truckNext || "",
+
+            todayLocation: body.todayLocation || "",
+            todayStart: body.todayStart || "",
+            todayEnd: body.todayEnd || "",
+            todayStatus: body.todayStatus || "CLOSED",
+            todayNotes: body.todayNotes || "",
+
+            nextLocation: body.nextLocation || "",
+            nextDate: body.nextDate || "",
+            nextStart: body.nextStart || "",
+            nextEnd: body.nextEnd || "",
+            nextNotes: body.nextNotes || "",
         }
     });
     return NextResponse.json({ ok: true, settings });
