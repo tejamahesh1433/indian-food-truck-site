@@ -1,6 +1,40 @@
 # Component Library
 
-The application is built using a modular component architecture based on React and Tailwind CSS. This guide describes the primary reusable components.
+The application is built using a modular component architecture based on React and Tailwind CSS.
+
+## Component Diagram
+```mermaid
+graph TB
+    subgraph "User Interface Layer"
+        BC[Common UI Components]
+        CC[Catering Feature Module]
+        AC[Admin Dashboard Module]
+    end
+
+    subgraph "Cross-Cutting Utilities"
+        Utils[Shared Logic lib/utils]
+        Providers[Global Context SiteProvider]
+    end
+
+    subgraph "Backend Framework"
+        Layout[App Router Layout]
+        Prisma[Prisma Data Services]
+        Auth[Admin Auth Actions]
+    end
+
+    Layout --> Providers
+    Providers --> BC
+    Providers --> CC
+    Providers --> AC
+    
+    BC --> Utils
+    CC --> Utils
+    AC --> Utils
+    
+    AC --> Auth
+    Auth --> Prisma
+    CC --> Prisma
+```
 
 ---
 

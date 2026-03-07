@@ -37,71 +37,223 @@ The application is built on the **Next.js 15 App Router** architecture, leveragi
 - **Styling**: Tailwind CSS with custom Glassmorphism layers
 - **Testing**: Vitest (Unit/Integration) & Playwright (E2E)
 
-### Architecture Diagram
+## System Visualizations
+
+### 1. System Architecture Diagram
+The system follows a multi-tier architecture, separating external services, the Next.js application layer, and the Supabase persistence layer.
+
 ```mermaid
 graph TD
-    subgraph "Client Layer"
-        User([Customer/Admin Browser])
-        UI[React Components / Framer Motion]
+    subgraph "External Entities"
+        Guest([Guest User])
+        Owner([Admin User])
+        EmailSvc[Resend Email API]
+        MapsAPI[Google Maps]
     end
 
-    subgraph "Application Layer"
-        NextJS[Next.js Server]
-        Actions[Server Actions]
-        API[REST API Routes]
-        Provider[SiteProvider Context]
+    subgraph "Next.js Application (Vercel)"
+        direction TB
+        subgraph "Frontend Layer"
+            Pages[App Router Pages]
+            Comps[React Components]
+            Providers[Context Providers]
+        end
+        subgraph "Logic Layer"
+            Actions[Server Actions]
+            API[REST API Routes]
+            Auth[Middleware / Admin Auth]
+        end
     end
 
-    subgraph "Data Layer"
+    subgraph "Persistence Layer (Supabase)"
         Prisma[Prisma ORM]
-        DB[(PostgreSQL Supabase)]
-        Cache[Next.js Data Cache]
+        DB[(PostgreSQL Database)]
     end
 
-    User --> UI
-    UI --> Actions
-    UI --> API
+    Guest --> |View Menu/Catering| Pages
+    Guest --> |Submit Inquiry| API
+    Owner --> |Login/Manage| Auth
+    Owner --> |CRUD Operations| Actions
+
+    Pages --> Comps
+    Comps --> Providers
     Actions --> Prisma
     API --> Prisma
     Prisma --> DB
-    Provider --> Cache
+
+    API --> |Trigger SMTP| EmailSvc
+    Comps --> |Embed Locations| MapsAPI
 ```
 
----
+### 2. ER (Entity Relationship) Diagram
+The database schema is optimized for relational integrity and efficient querying.
 
-## User Interface Design & Aesthetics
-Aesthetics were treated as a first-class citizen. The project employs a "Premium Dark Mode" aesthetic, utilizing glassmorphism and ambient saffron/chili gradients to evoke the sensory experience of Indian street food in a high-tech shell.
-
-### Design Principles:
-1. **Glassmorphism**: Using `backdrop-blur-xl` and semi-transparent borders to create depth and focus.
-2. **Layered Gradients**: Implementing radial light pools in `globals.css` to prevent "flat" dark mode designs.
-3. **Micro-Animations**: Staggered fades and slides via Framer Motion to ensure the UI feels "alive" and responsive.
-
----
-
-## Database Architecture & Schema
-The database is designed for high relational integrity and performance optimization.
-
-### ER Diagram
 ```mermaid
 erDiagram
-    CateringRequest ||--o{ CateringMessage : "Discussion Thread"
-    MenuItem }|--|| MenuCategory : "Belongs To"
-    CateringItem }|--|| CateringCategory : "Belongs To"
+    CateringRequest ||--o{ CateringMessage : "has"
+    MenuItem }|--|| MenuCategory : "categorised_by"
+    CateringItem }|--|| CateringCategory : "categorised_by"
+    SiteSettings ||--o{ SavedLocation : "references"
+
+    CateringRequest {
+        string id PK
+        string status "NEW | CONTACTED | DONE"
+        string chatToken "Unique access key"
+        json selections "Array of item customisations"
+    }
+
+    CateringMessage {
+        string id PK
+        string requestId FK
+        enum sender "CUSTOMER | ADMIN"
+        string text
+    }
+
+    MenuItem {
+        string id PK
+        string name
+        int priceCents
+        string category
+        boolean isAvailable
+    }
+
+    CateringItem {
+        string id PK
+        string name
+        string priceKind
+        float halfPrice
+        float fullPrice
+    }
 
     SiteSettings {
-        string id PK "'global'"
+        string id PK "global"
         string businessName
         boolean cateringEnabled
         string todayStatus
     }
+```
 
-    CateringRequest {
-        string id PK
-        string chatToken "Secure Access Key"
-        json selections "Custom Configuration"
-        string status "NEW | CONTACTED | DONE"
-    }
+### 3. Use Case Diagram
+High-level interactions between specific user roles and system functionalities.
+
+```mermaid
+graph TD
+    subgraph "External Actors"
+        U1[Guest User]
+        U2[Admin User]
+    end
+
+    subgraph "Indian Food Truck System"
+        UC1(View Menu & Locations)
+        UC2(Submit Catering Inquiry)
+        UC3(Real-time Chat)
+        UC4(Manage Inventory & Schedule)
+        UC5(Update Site Settings)
+        UC6(Respond to Lead Inquiries)
+    end
+
+    U1 --> UC1
+    U1 --> UC2
+    U1 --> UC3
+
+    U2 --> UC4
+    U2 --> UC5
+    U2 --> UC6
+    U2 --> UC3
+```
+
+### 4. Sequence Diagram (Catering Request Flow)
+Details the step-by-step logic and communication flow when a customer submits an inquiry.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Customer (Browser)
+    participant S as Next.js Server
+    participant P as Prisma / DB
+    participant E as Resend API
+
+    C->>S: POST /api/catering (Inquiry Data)
+    critical Server-Side Logic
+        S->>S: Validate Data (Zod Schema Check)
+        S->>S: Rate Limit & Honeypot Verification
+    end
+    S->>P: Create CateringRequest Entry
+    P-->>S: Success (Persistent Record Created)
+    S->>E: Send Confirmation Email (Async Task)
+    S-->>C: 200 OK (Registration Complete)
+    E-->>C: Customer receives chat access link
+```
+
+### 5. Data Flow Diagram (DFD Level 1)
+Illustrates how data flows between external entities, processes, and data stores.
+
+```mermaid
+graph LR
+    subgraph "External"
+        U[Customer]
+        A[Admin]
+    end
+
+    subgraph "System Processes"
+        P1[Inquiry Processing]
+        P2[Inventory Sync]
+        P3[Schedule Management]
+        P4[Email/Chat Service]
+    end
+
+    subgraph "Data Storage"
+        D1[(PostgreSQL DB)]
+    end
+
+    U -->|Selection Data| P1
+    P1 -->|Save Request| D1
+    P1 -->|Trigger| P4
+    P4 -->|Sent Link| U
+
+    A -->|Update Item| P2
+    P2 -->|Update Records| D1
+    
+    A -->|Set Location| P3
+    P3 -->|Save Schedule| D1
+    
+    D1 -->|Read Settings| P1
+```
+
+### 6. Component Diagram
+Shows the structural relationship and dependencies between major software modules.
+
+```mermaid
+graph TB
+    subgraph "User Interface Layer"
+        BC[Common UI Components]
+        CC[Catering Feature Module]
+        AC[Admin Dashboard Module]
+    end
+
+    subgraph "Cross-Cutting Utilities"
+        Utils[Shared Logic lib/utils]
+        Providers[Global Context SiteProvider]
+    end
+
+    subgraph "Backend Framework"
+        Layout[App Router Layout]
+        Prisma[Prisma Data Services]
+        Auth[Admin Auth Actions]
+    end
+
+    Layout --> Providers
+    Providers --> BC
+    Providers --> CC
+    Providers --> AC
+    
+    BC --> Utils
+    CC --> Utils
+    AC --> Utils
+    
+    AC --> Auth
+    Auth --> Prisma
+    CC --> Prisma
 ```
 
 ---

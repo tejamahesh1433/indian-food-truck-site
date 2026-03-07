@@ -1,25 +1,17 @@
-# Database Design
-
-The application uses **PostgreSQL** (hosted on Supabase) with **Prisma ORM** for type-safe data access.
-
----
-
 ## Entity Relationship Diagram
 
 ```mermaid
 erDiagram
-    CateringRequest ||--o{ CateringMessage : has
-    MenuItem }|--|| MenuCategory : belongs_to
-    CateringItem }|--|| CateringCategory : belongs_to
+    CateringRequest ||--o{ CateringMessage : "has"
+    MenuItem }|--|| MenuCategory : "categorised_by"
+    CateringItem }|--|| CateringCategory : "categorised_by"
+    SiteSettings ||--o{ SavedLocation : "references"
 
     CateringRequest {
         string id PK
         string name
         string email
         string phone
-        string eventDate
-        string guests
-        string location
         string status "NEW | CONTACTED | DONE"
         string chatToken "Unique access key"
         json selections "Array of item customisations"
@@ -37,17 +29,35 @@ erDiagram
         string id PK
         string name
         int priceCents "Price in integer cents"
-        string category
+        string category "String Key"
         boolean isAvailable
         int sortOrder
     }
 
+    CateringItem {
+        string id PK
+        string name
+        string priceKind "PER_PERSON | TRAY | FIXED"
+        float halfPrice
+        float fullPrice
+        int minPeople
+        boolean isAvailable
+    }
+
     SiteSettings {
-        string id PK "Always 'global'"
+        string id PK "global"
         string businessName
         string phone
         boolean cateringEnabled
         string todayStatus "OPEN | CLOSED"
+        string todayLocation
+        string nextLocation
+    }
+
+    SavedLocation {
+        string id PK
+        string name "Label"
+        string address "Full address"
     }
 ```
 

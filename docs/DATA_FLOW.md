@@ -1,6 +1,39 @@
 # Data Flow
 
-This document outlines how data is fetched, managed, and synchronized across the system, from the database to the front-end components.
+This document outlines how data is fetched, managed, and synchronized across the system.
+
+## Data Flow Diagram (Level 1)
+```mermaid
+graph LR
+    subgraph "External Entities"
+        U[Customer]
+        A[Admin]
+    end
+
+    subgraph "System Processes"
+        P1[Inquiry Processing]
+        P2[Inventory Sync]
+        P3[Schedule Management]
+        P4[Email/Chat Service]
+    end
+
+    subgraph "Data Storage"
+        D1[(PostgreSQL DB)]
+    end
+
+    U -->|Selection Data| P1
+    P1 -->|Save Request| D1
+    P1 -->|Trigger| P4
+    P4 -->|Sent Link| U
+
+    A -->|Update Item| P2
+    P2 -->|Update Records| D1
+    
+    A -->|Set Location| P3
+    P3 -->|Save Schedule| D1
+    
+    D1 -->|Read Settings| P1
+```
 
 ---
 
