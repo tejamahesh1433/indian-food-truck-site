@@ -77,16 +77,9 @@ Aesthetics were treated as a first-class citizen. The project employs a "Premium
 2. **Layered Gradients**: Implementing radial light pools in `globals.css` to prevent "flat" dark mode designs.
 3. **Micro-Animations**: Staggered fades and slides via Framer Motion to ensure the UI feels "alive" and responsive.
 
-### UI Gallery
-![Home Page Mockup](./home_page_mockup_1772850386796.png)
-*Figure 1: The Public Landing Page showcasing the 'Spice Trail' aesthetic.*
-
-![Catering Selection Flow](./catering_selection_mockup_1772850397835.png)
-*Figure 2: The professional catering selection drawer with tray-size logic.*
-
 ---
 
-## Database Architecture & Schema
+## Core Module Deep-Dives
 The database is designed for high relational integrity and performance optimization.
 
 ### ER Diagram
