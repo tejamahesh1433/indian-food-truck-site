@@ -79,7 +79,7 @@ Aesthetics were treated as a first-class citizen. The project employs a "Premium
 
 ---
 
-## Core Module Deep-Dives
+## Database Architecture & Schema
 The database is designed for high relational integrity and performance optimization.
 
 ### ER Diagram
