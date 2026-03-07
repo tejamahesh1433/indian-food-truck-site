@@ -1,47 +1,66 @@
-# Testing Documentation
+# Testing Manual
 
-## Testing Philosophy
-The project employs a **3-layer testing strategy** to ensure reliability across logic, database, and browser interactions.
-
----
-
-## Testing Tools
-
-* **Vitest**: Fast unit and integration testing.
-* **React Testing Library**: Component-level verification.
-* **Playwright**: End-to-end browser testing.
+The system uses a 3-layer automated testing strategy to ensure reliability across logic, database, and browser interactions.
 
 ---
 
-## 1. Unit Testing
-Focuses on pure utility functions without external dependencies.
-* **Files**: `tests/unit/*.test.ts`
-* **Examples**: 
-    * `priceLabel`: Ensures currency formatting and tray-size logic is correct.
-    * `phone`: Validates E.164 normalization for SMS/Call links.
-    * `cateringSummary`: Verifies the auto-generation of request notes.
+## 🚀 Running Tests
+
+### Unit & Integration (Vitest)
+```bash
+# Run all vitest tests
+npm run test:unit
+npm run test:integration
+
+# Run in watch mode (recommended for development)
+npm run test:watch
+```
+
+### End-to-End (Playwright)
+```bash
+# Run all e2e tests
+npm run test:e2e
+
+# Open Playwright UI (Time-travel debugging)
+npm run test:e2e:ui
+```
+
+### Code Coverage
+The project is configured with `v8` for coverage reporting.
+```bash
+npm run coverage
+```
+Reports are generated in the `./coverage` directory.
 
 ---
 
-## 2. Integration Testing
-Verifies the interaction between code and the database (Prisma).
-* **Files**: `tests/integration/*.test.ts`
-* **Database**: Uses an isolated local/test database.
-* **Examples**:
-    * Verifying that a `CateringRequest` is successfully saved to the DB.
-    * Ensuring `SiteSettings` updates correctly reflect in the `SiteProvider`.
+## 🧪 Testing Infrastructure
+
+### 1. Environment Isolation
+All tests strictly use `.env.test`. 
+> [!IMPORTANT]
+> **Safety Guard**: The file `tests/helpers/db.ts` contains a script that checks the `DATABASE_URL`. If it detects a production host (Supabase/AWS), the test suite will immediately abort to prevent accidental data loss.
+
+### 2. Admin Authentication (`adminPage` fixture)
+To test protected routes without re-writing login logic, use the custom `adminPage` fixture:
+```typescript
+import { test, expect } from "../helpers/admin-auth";
+
+test("can access dashboard", async ({ adminPage }) => {
+    // page is already logged in
+    await adminPage.goto("/admin");
+    await expect(adminPage.getByText(/recent activity/i)).toBeVisible();
+});
+```
+
+### 3. Database Helpers
+- `resetDatabase()`: Wipes all tables in the test DB before each test.
+- `seedBasicData()`: Popularizes the test DB with standard categories and items for consistent testing.
 
 ---
 
-## 3. End-to-End Testing
-Simulates real user behavior in a headless browser.
-* **Files**: `tests/e2e/*.spec.ts`
-* **Examples**:
-    * **Catering Flow**: Customer selects items, fills form, and submits.
-    * **Admin Login**: Ensuring the password wall blocks unauthorized access.
-    * **Responsive Check**: Verifying the "Call" button visibility on mobile vs desktop.
+## 🛠 Troubleshooting Tests
 
----
-
-## Safety Guard
-The project includes a **production safety guard** in `tests/helpers/db.ts` that detects if the test suite is accidentally pointed at a production database URL (Supabase/AWS) and aborts the execution to prevent data loss.
+- **Hydration Errors**: Ensure `jsdom` is the environment for Vitest component tests.
+- **Port Conflicts**: Playwright's `webServer` is configured to reuse an existing server at `127.0.0.1:3000`.
+- **Timeouts**: If Vercel/CI is slow, you can increase the timeout in `playwright.config.ts`.

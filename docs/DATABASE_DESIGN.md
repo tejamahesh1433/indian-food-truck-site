@@ -1,21 +1,17 @@
 # Database Design
 
+The application uses **PostgreSQL** (hosted on Supabase) with **Prisma ORM** for type-safe data access.
+
+---
+
 ## Entity Relationship Diagram
 
 ```mermaid
 erDiagram
-    MenuItem {
-        string id PK
-        string name
-        string description
-        float priceCents
-        string category
-        boolean isVeg
-        boolean isSpicy
-        boolean isPopular
-        boolean isAvailable
-        datetime createdAt
-    }
+    CateringRequest ||--o{ CateringMessage : has
+    MenuItem }|--|| MenuCategory : belongs_to
+    CateringItem }|--|| CateringCategory : belongs_to
+
     CateringRequest {
         string id PK
         string name
@@ -24,52 +20,54 @@ erDiagram
         string eventDate
         string guests
         string location
-        string notes
-        string status
-        string chatToken
-        datetime createdAt
+        string status "NEW | CONTACTED | DONE"
+        string chatToken "Unique access key"
+        json selections "Array of item customisations"
     }
-    CateringItem {
-        string id PK
-        string name
-        string description
-        string category
-        string priceKind
-        float amount
-        float halfPrice
-        float fullPrice
-    }
-    SiteSettings {
-        string id PK
-        string businessName
-        string cityState
-        string phone
-        string email
-        string instagramUrl
-        boolean cateringEnabled
-    }
+
     CateringMessage {
         string id PK
         string requestId FK
-        string content
-        string sender
+        enum sender "CUSTOMER | ADMIN"
+        string text
         datetime createdAt
     }
-    CateringRequest ||--o{ CateringMessage : has
+
+    MenuItem {
+        string id PK
+        string name
+        int priceCents "Price in integer cents"
+        string category
+        boolean isAvailable
+        int sortOrder
+    }
+
+    SiteSettings {
+        string id PK "Always 'global'"
+        string businessName
+        string phone
+        boolean cateringEnabled
+        string todayStatus "OPEN | CLOSED"
+    }
 ```
 
 ---
 
-## Main Tables
+## Detailed Data Models
 
-### MenuItem Table
-Stores items for the public food truck menu.
+### 1. `CateringRequest` & `CateringMessage`
+- **Relationship**: One-to-Many.
+- **Cascading**: Deleting a `CateringRequest` will automatically delete all associated `CateringMessage` records.
+- **Token Access**: The `chatToken` allows customers to access their specific discussion thread without a full user account.
 
-### CateringRequest Table
-Stores incoming catering inquiries and their current status.
+### 2. `MenuItem`
+- **Price Handling**: Prices are stored as `Int` (priceCents) to avoid floating-point math issues.
+- **Optimization**: Indexes are applied to `category`, `isAvailable`, and `sortOrder` for fast menu rendering.
 
-### CateringItem Table
-Stores professional catering menu offerings (packages, trays, etc.).
+### 3. `CateringItem`
+- **Variability**: Uses a `priceKind` field ("PER_PERSON", "TRAY", "FIXED") to handle different pricing structures in the same table.
+- **Fields**: `halfPrice` and `fullPrice` are specific to the "TRAY" kind.
 
-### SiteSettings Table
-Stores global configuration for the truck (branding, contact info, toggles).
+### 4. `SiteSettings`
+- **Global Singleton**: The application logic strictly uses the record with `id: "global"` to fetch site-wide configuration.
+- **Advanced Scheduling**: Includes individual fields for `todayStart`, `todayEnd`, and `todayLocation` to provide precise info to the `Location` component.
