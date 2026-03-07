@@ -1,15 +1,21 @@
-import { test as base, expect } from "@playwright/test";
+import { test as base, expect, type Page } from "@playwright/test";
 
-// Admin password from .env.test
-const ADMIN_PASSWORD = "TejaFoodTruck@2026!";
+// Admin password from .env.test (or fallback for Dev)
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "TejaFoodTruck@2026!";
 
-export const test = base.extend({
+type AdminFixtures = {
+    adminPage: Page;
+};
+
+export const test = base.extend<AdminFixtures>({
     adminPage: async ({ page }, use) => {
         await page.goto("/admin/login");
         await page.getByPlaceholder(/admin password/i).fill(ADMIN_PASSWORD);
         await page.getByRole("button", { name: /sign in/i }).click();
-        // Wait for redirect to dashboard
+
+        // Wait for redirect to dashboard to confirm login worked
         await expect(page).toHaveURL(/\/admin/);
+
         await use(page);
     },
 });
