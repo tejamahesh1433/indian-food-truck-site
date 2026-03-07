@@ -65,7 +65,7 @@ export default function Navbar() {
 
                     <a
                         href={`tel:${site.contact.phoneE164}`}
-                        className="bg-orange-500 text-black px-4 py-2 rounded-full font-semibold hover:bg-orange-400 transition"
+                        className="hidden md:inline-block bg-orange-500 text-black px-4 py-2 rounded-full font-semibold hover:bg-orange-400 transition"
                     >
                         Call
                     </a>

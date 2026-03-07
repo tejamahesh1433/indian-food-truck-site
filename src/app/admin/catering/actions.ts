@@ -40,5 +40,4 @@ export async function updateCateringEnabled(enabled: boolean) {
     });
     revalidatePath("/admin/catering");
     revalidatePath("/catering");
-    revalidatePath("/");
 }

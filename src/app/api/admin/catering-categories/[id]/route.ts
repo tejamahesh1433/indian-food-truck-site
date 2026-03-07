@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -16,7 +15,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 sortOrder: body.sortOrder !== undefined ? Number(body.sortOrder) : undefined,
             },
         });
-        revalidatePath("/catering");
         return NextResponse.json({ ok: true, category: updated });
     } catch (err: any) {
         return NextResponse.json({ ok: false, error: "Failed to update category" }, { status: 500 });
@@ -27,7 +25,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params;
     try {
         await prisma.cateringCategory.delete({ where: { id } });
-        revalidatePath("/catering");
         return NextResponse.json({ ok: true });
     } catch (err: any) {
         return NextResponse.json({ ok: false, error: "Failed to delete category" }, { status: 500 });

@@ -59,12 +59,20 @@ export default function Location() {
                                     </div>
                                 </div>
 
-                                <div className="mt-2 text-2xl md:text-3xl font-bold text-white">
-                                    {today.label || "Check back soon!"}
-                                </div>
-                                <div className="mt-2 text-lg text-orange-400 font-medium tracking-tight">
-                                    {today.start && today.end ? `${today.start} – ${today.end}` : today.hours}
-                                </div>
+                                {today.status === "CLOSED" ? (
+                                    <div className="mt-2 text-2xl md:text-3xl font-bold text-white/40">
+                                        Closed for today
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="mt-2 text-2xl md:text-3xl font-bold text-white">
+                                            {today.label || "Check back soon!"}
+                                        </div>
+                                        <div className="mt-2 text-lg text-orange-400 font-medium tracking-tight">
+                                            {(today.start && today.end) ? `${today.start} – ${today.end}` : today.hours}
+                                        </div>
+                                    </>
+                                )}
 
                                 {today.notes && (
                                     <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 italic">

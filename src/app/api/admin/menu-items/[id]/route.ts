@@ -36,13 +36,23 @@ export async function PATCH(
     if (body.inPos !== undefined) data.inPos = !!body.inPos;
     if (body.sortOrder !== undefined) data.sortOrder = Number(body.sortOrder);
 
-    const updated = await prisma.menuItem.update({
-        where: { id },
-        data,
-    });
-    revalidatePath("/menu");
-    revalidatePath("/");
-    return NextResponse.json({ ok: true, item: updated });
+    try {
+        const updated = await prisma.menuItem.update({
+            where: { id },
+            data,
+        });
+
+        revalidatePath("/admin/menu-items");
+        revalidatePath("/menu");
+
+        return NextResponse.json({ ok: true, item: updated });
+    } catch (err: any) {
+        if (err.code === "P2025") {
+            return bad("Menu item not found", 404);
+        }
+        console.error("PATCH Error:", err);
+        return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
+    }
 }
 
 export async function DELETE(
@@ -50,8 +60,19 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
-    await prisma.menuItem.delete({ where: { id } });
-    revalidatePath("/menu");
-    revalidatePath("/");
-    return NextResponse.json({ ok: true });
+
+    try {
+        await prisma.menuItem.delete({ where: { id } });
+
+        revalidatePath("/admin/menu-items");
+        revalidatePath("/menu");
+
+        return NextResponse.json({ ok: true });
+    } catch (err: any) {
+        if (err.code === "P2025") {
+            return bad("Menu item not found", 404);
+        }
+        console.error("DELETE Error:", err);
+        return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
+    }
 }

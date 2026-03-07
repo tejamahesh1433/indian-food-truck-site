@@ -2,11 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum ChatSender {
-  CUSTOMER
-  ADMIN
-}
-
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -14,36 +9,32 @@ datasource db {
 }
 
 model CateringRequest {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String
-  email     String
-  eventDate String?
-  guests    String?
-  location  String?
+  id            String            @id @default(cuid())
+  name          String
+  phone         String
+  email         String
+  eventDate     String?
+  guests        String?
+  location      String?
   notes         String?
   internalNotes String?
-  status        String   @default("NEW") // NEW, CONTACTED, DONE
-  isArchived    Boolean        @default(false)
-
-  // Chat capability
-  chatToken     String        @unique @default(cuid())
-  chatEnabled   Boolean       @default(true)
+  status        String            @default("NEW")
+  isArchived    Boolean           @default(false)
+  chatToken     String            @unique @default(cuid())
+  chatEnabled   Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now()) @updatedAt
+  selections    Json?
   messages      CateringMessage[]
-  selections    Json?    // Array of selected items with options
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
 }
 
 model CateringMessage {
-  id        String     @id @default(cuid())
+  id        String          @id @default(cuid())
   requestId String
-  request   CateringRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-
   sender    ChatSender
   text      String
-  createdAt DateTime   @default(now())
+  createdAt DateTime        @default(now())
+  request   CateringRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   @@index([requestId, createdAt])
 }
@@ -54,7 +45,7 @@ model MenuItem {
   description String?
   priceCents  Int
   imageUrl    String?
-  category    String // Starters, Mains, Wraps, Drinks, Dessert
+  category    String
   isVeg       Boolean  @default(false)
   isSpicy     Boolean  @default(false)
   isPopular   Boolean  @default(false)
@@ -75,37 +66,30 @@ model MenuCategory {
 }
 
 model SiteSettings {
-  id           String   @id @default("global")
-  phone        String   @default("")
-  instagramUrl String   @default("")
-  publicEmail   String? @default("")
-  businessName  String? @default("Indian Food Truck")
-  cityState     String? @default("Hartford, CT")
-  footerMessage String? @default("")
-  bannerEnabled Boolean @default(false)
-  bannerText    String? @default("")
-  logoUrl       String? @default("")
-  cateringEnabled Boolean @default(true)
-
-  // Advanced Schedule Today
-  todayLocation String @default("")
-  todayStart    String @default("")
-  todayEnd      String @default("")
-  todayStatus   String @default("CLOSED") // SERVING, ON_THE_WAY, CLOSED
-  todayNotes    String @default("")
-
-  // Advanced Schedule Next
-  nextLocation String @default("")
-  nextDate     String @default("")
-  nextStart    String @default("")
-  nextEnd      String @default("")
-  nextNotes    String @default("")
-
-  // Legacy fields (keeping for migration)
-  truckToday String @default("")
-  truckNext  String @default("")
-
-  updatedAt DateTime @updatedAt
+  id              String   @id @default("global")
+  phone           String   @default("")
+  instagramUrl    String   @default("")
+  truckToday      String   @default("")
+  truckNext       String   @default("")
+  updatedAt       DateTime @updatedAt
+  nextDate        String   @default("")
+  nextEnd         String   @default("")
+  nextLocation    String   @default("")
+  nextNotes       String   @default("")
+  nextStart       String   @default("")
+  todayEnd        String   @default("")
+  todayLocation   String   @default("")
+  todayNotes      String   @default("")
+  todayStart      String   @default("")
+  todayStatus     String   @default("CLOSED")
+  bannerEnabled   Boolean  @default(false)
+  bannerText      String?  @default("")
+  businessName    String?  @default("Indian Food Truck")
+  cityState       String?  @default("Hartford, CT")
+  footerMessage   String?  @default("")
+  publicEmail     String?  @default("")
+  logoUrl         String?  @default("")
+  cateringEnabled Boolean  @default(true)
 }
 
 model SavedLocation {
@@ -119,24 +103,17 @@ model CateringItem {
   id          String   @id @default(cuid())
   name        String
   description String?
-  category    String   // Matches CateringCategory.name
-  
-  priceKind   String   // PER_PERSON, TRAY, FIXED
-  
-  // For PER_PERSON / FIXED
+  category    String
+  priceKind   String
   amount      Float?
-  minPeople   Int?     // For PER_PERSON
-  unit        String?  // For FIXED (dozen, platter, etc)
-  
-  // For TRAY
+  minPeople   Int?
+  unit        String?
   halfPrice   Float?
   fullPrice   Float?
-  
   isVeg       Boolean  @default(false)
   isSpicy     Boolean  @default(false)
   isPopular   Boolean  @default(false)
   isAvailable Boolean  @default(true)
-  
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -150,4 +127,9 @@ model CateringCategory {
   subtitle  String?
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+enum ChatSender {
+  CUSTOMER
+  ADMIN
 }

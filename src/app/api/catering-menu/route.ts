@@ -12,12 +12,21 @@ export async function GET() {
             orderBy: { sortOrder: "asc" },
         });
 
-        const sections = categories.map((cat: any) => ({
-            title: cat.name,
-            subtitle: cat.subtitle,
-            items: items
+        const sections = categories.map((cat: any) => {
+            const seenNames = new Set<string>();
+            const filteredItems = items
                 .filter((item: any) => item.category === cat.name)
-                .map((item: any) => ({
+                .filter((item: any) => {
+                    const normalized = item.name.trim().toLowerCase();
+                    if (seenNames.has(normalized)) return false;
+                    seenNames.add(normalized);
+                    return true;
+                });
+
+            return {
+                title: cat.name,
+                subtitle: cat.subtitle,
+                items: filteredItems.map((item: any) => ({
                     id: item.id,
                     name: item.name,
                     description: item.description,
@@ -26,12 +35,22 @@ export async function GET() {
                         item.isSpicy && "SPICY",
                         item.isPopular && "POPULAR",
                     ].filter(Boolean) as any[],
-                    price:
-                        item.priceKind === "PER_PERSON" ? { kind: "PER_PERSON", amount: item.amount, minPeople: item.minPeople } :
-                            item.priceKind === "TRAY" ? { kind: "TRAY", half: item.halfPrice, full: item.fullPrice } :
-                                { kind: "FIXED", amount: item.amount, unit: item.unit }
+                    price: (() => {
+                        switch (item.priceKind) {
+                            case "PER_PERSON":
+                                return { kind: "PER_PERSON", amount: item.amount, minPeople: item.minPeople };
+                            case "TRAY":
+                                return { kind: "TRAY", half: item.halfPrice, full: item.fullPrice };
+                            case "FIXED":
+                                return { kind: "FIXED", amount: item.amount, unit: item.unit };
+                            default:
+                                console.error(`Invalid priceKind [${item.priceKind}] for item: ${item.name} (${item.id})`);
+                                return { kind: "FIXED", amount: 0, unit: "INVALID_PRICE_KIND" };
+                        }
+                    })()
                 })),
-        }));
+            };
+        });
 
         return NextResponse.json({ ok: true, sections });
     } catch (err: any) {

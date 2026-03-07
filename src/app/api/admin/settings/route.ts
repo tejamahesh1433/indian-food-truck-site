@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 
 export async function GET() {
     let settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
@@ -90,8 +89,5 @@ export async function PUT(req: Request) {
             nextNotes: body.nextNotes || "",
         }
     });
-    revalidatePath("/");
-    revalidatePath("/menu");
-    revalidatePath("/catering");
     return NextResponse.json({ ok: true, settings });
 }

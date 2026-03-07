@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -27,7 +26,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                 sortOrder: body.sortOrder !== undefined ? Number(body.sortOrder) : undefined,
             },
         });
-        revalidatePath("/catering");
         return NextResponse.json({ ok: true, item: updated });
     } catch (err: any) {
         console.error("PATCH Error:", err);
@@ -39,7 +37,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params;
     try {
         await prisma.cateringItem.delete({ where: { id } });
-        revalidatePath("/catering");
         return NextResponse.json({ ok: true });
     } catch (err: any) {
         console.error("DELETE Error:", err);

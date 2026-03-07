@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CateringItem, SelectedItem } from "./types";
+import { priceLabel } from "@/lib/utils/priceLabel";
 
 interface Props {
     item: CateringItem | null;
@@ -46,18 +47,7 @@ export default function CateringItemDrawer({ item, isOpen, onClose, onAdd }: Pro
 
     function handleAdd() {
         if (!item) return;
-        let priceLabel = "";
-        const p = item.price;
-
-        if (p.kind === "PER_PERSON") {
-            priceLabel = `$${p.amount}/person`;
-        } else if (p.kind === "TRAY") {
-            const size = options["Size"] as string;
-            const price = size === "Half Tray" ? p.half : p.full;
-            priceLabel = `$${price} (${size})`;
-        } else if (p.kind === "FIXED") {
-            priceLabel = `$${p.amount}${p.unit ? ` per ${p.unit}` : ""}`;
-        }
+        const label = priceLabel(item.price, { selectedSize: options["Size"] as string });
 
         onAdd({
             id: item.id,
@@ -65,7 +55,7 @@ export default function CateringItemDrawer({ item, isOpen, onClose, onAdd }: Pro
             name: item.name,
             quantity,
             options,
-            priceLabel,
+            priceLabel: label,
         });
         onClose();
     }

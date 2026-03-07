@@ -200,9 +200,9 @@ export default function CateringPrintedMenu({
                                     <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Professional Catering</span>
                                 </div>
                                 <div>
-                                    <h1 className="text-5xl font-black tracking-tight text-white md:text-6xl print:text-black">
+                                    <h2 className="text-5xl font-black tracking-tight text-white md:text-6xl print:text-black">
                                         The <span className="text-orange-500">Catering</span> Menu
-                                    </h1>
+                                    </h2>
                                     <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-semibold text-white/40 print:text-gray-500">
                                         <span className="text-white/60 print:text-gray-500">{site.brand.city}</span>
                                         <span className="h-1 w-1 rounded-full bg-white/20 print:bg-gray-400" />
@@ -230,7 +230,7 @@ export default function CateringPrintedMenu({
                     </div>
 
                     {/* Nav Tabs - Hidden on print */}
-                    <div className="print:hidden border-b border-white/5 px-8 pt-6 md:px-12">
+                    <div className="print-hidden border-b border-white/5 px-8 pt-6 md:px-12">
                         <div className="flex flex-wrap gap-1 pb-6">
                             {sections.map((s) => {
                                 const key = slugify(s.title);
@@ -257,7 +257,7 @@ export default function CateringPrintedMenu({
                     {/* Content */}
                     <div className="p-8 md:p-12">
                         {/* SCREEN VERSION */}
-                        <div className="print:hidden">
+                        <div className="screen-version">
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center py-32 text-white/20">
                                     <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/5 border-t-orange-500 mb-4" />
@@ -271,7 +271,7 @@ export default function CateringPrintedMenu({
                         </div>
 
                         {/* PRINT VERSION */}
-                        <div className="hidden print:block">
+                        <div className="print-version">
                             {sections.map((s) => renderSection(s, true))}
 
                             <div className="mt-20 border-t border-black/10 pt-10 text-center">
@@ -290,8 +290,15 @@ export default function CateringPrintedMenu({
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
+                .screen-version { display: block !important; }
+                .print-version { display: none !important; }
+                .print-hidden { display: flex !important; }
+
                 @media print {
+                    .screen-version { display: none !important; }
+                    .print-version { display: block !important; }
+                    .print-hidden { display: none !important; }
                     .absolute { display: none !important; }
                 }
             `}</style>

@@ -11,13 +11,16 @@ body {
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
@@ -80,5 +83,25 @@ body::before {
 
   .pill {
     @apply text-xs px-3 py-1 rounded-full bg-black/40 border border-white/10 text-gray-200;
+  }
+
+  .screen-only {
+    display: block;
+  }
+
+  @media print {
+    .screen-only {
+      display: none !important;
+    }
+  }
+
+  .print-only {
+    display: none !important;
+  }
+
+  @media print {
+    .print-only {
+      display: block !important;
+    }
   }
 }

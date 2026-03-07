@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 
 export async function GET() {
     try {
@@ -30,7 +29,6 @@ export async function POST(req: Request) {
                 sortOrder: (last?.sortOrder ?? 0) + 1,
             },
         });
-        revalidatePath("/catering");
         return NextResponse.json({ ok: true, category: created });
     } catch (err: any) {
         return NextResponse.json({ ok: false, error: "Failed to create category" }, { status: 500 });
