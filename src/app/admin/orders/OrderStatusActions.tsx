@@ -30,13 +30,12 @@ export default function OrderStatusActions({
         switch (currentStatus) {
             case "PENDING":
                 return (
-                    <button
-                        onClick={() => handleUpdate("PAID")}
-                        disabled={loading}
-                        className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg active:scale-95 disabled:opacity-50"
-                    >
-                        Mark as Paid
-                    </button>
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-400 italic">
+                            Waiting for Payment
+                        </span>
+                    </div>
                 );
             case "PAID":
                 return (
