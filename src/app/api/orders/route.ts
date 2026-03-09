@@ -23,6 +23,31 @@ export async function POST(req: Request) {
         // Calculate total and verify prices if needed (in a real app, fetch from DB)
         const totalAmount = validatedData.items.reduce((acc, item) => acc + (item.priceCents * item.quantity), 0);
 
+        // Idempotency Check: Prevent duplicate orders within 10 seconds
+        const tenSecondsAgo = new Date(Date.now() - 10000);
+        const existingOrder = await prisma.order.findFirst({
+            where: {
+                customerEmail: validatedData.customerEmail,
+                customerPhone: validatedData.customerPhone,
+                totalAmount: totalAmount,
+                createdAt: {
+                    gte: tenSecondsAgo
+                },
+                status: "PENDING"
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        if (existingOrder) {
+            console.log("♻️ Duplicate order detected within 10s, returning existing URL");
+            // If we have a session ID, return the URL if possible, or just the existing order info
+            // For now, let's just error to the frontend as "Already processing" to be safe
+            return NextResponse.json({
+                error: "Duplicate order attempt. Please wait a moment.",
+                orderId: existingOrder.id
+            }, { status: 409 });
+        }
+
         // Create Pending Order
         const order = await prisma.order.create({
             data: {
