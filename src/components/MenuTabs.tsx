@@ -1,26 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { categories } from "@/data/menu";
+import { useCart, type CartItem } from "@/lib/cart";
 
-// Replace the local MenuItem import with our Prisma shape
-type MenuItem = {
+interface MenuItem {
     id: string;
     name: string;
-    description: string | null;
+    description: string;
     priceCents: number;
-    imageUrl: string | null;
+    imageUrl: string;
     category: string;
     isVeg: boolean;
     isSpicy: boolean;
     isPopular: boolean;
-    isAvailable: boolean;
-};
+}
 
-function ItemCard({ item }: { item: MenuItem }) {
+function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => void }) {
     return (
         <div className="group rounded-3xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/10 transition">
             <div className="relative h-44">
@@ -47,18 +45,27 @@ function ItemCard({ item }: { item: MenuItem }) {
                             </div>
                         )}
                     </div>
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onAdd(item);
+                        }}
+                        className="bg-orange-500 text-black px-4 py-2 rounded-xl font-bold hover:bg-orange-400 transition shadow-lg active:scale-95"
+                    >
+                        + Add
+                    </button>
                 </div>
             </div>
 
             <div className="p-6">
-                <p className="text-gray-300">{item.description}</p>
+                <p className="text-sm text-gray-300 line-clamp-2">{item.description}</p>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                     {([item.isVeg && "Veg", item.isSpicy && "Spicy", item.isPopular && "Popular"].filter(Boolean) as string[])
                         .map((t) => (
                             <span
                                 key={t}
-                                className="text-xs px-3 py-1 rounded-full bg-black/40 border border-white/10 text-gray-200"
+                                className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-black/40 border border-white/10 text-gray-400"
                             >
                                 {t}
                             </span>
@@ -70,49 +77,65 @@ function ItemCard({ item }: { item: MenuItem }) {
 }
 
 export default function MenuTabs() {
-    const [active, setActive] = useState<(typeof categories)[number]>("Starters");
-    const [popularOnly, setPopularOnly] = useState(false);
+    const [active, setActive] = useState<string>("All");
     const [query, setQuery] = useState("");
     const [vegOnly, setVegOnly] = useState(false);
     const [spicyOnly, setSpicyOnly] = useState(false);
+    const [popularOnly, setPopularOnly] = useState(false);
 
-    // DB State
-    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+    const [items, setItems] = useState<MenuItem[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const { addToCart, items: cartItems, totalCents } = useCart();
+    const cartCount = cartItems.reduce((acc: number, i: CartItem) => acc + i.quantity, 0);
+
     useEffect(() => {
-        async function fetchMenu() {
+        const fetchData = async () => {
             try {
-                const res = await fetch("/api/menu-items");
-                const data = await res.json();
-                setMenuItems(data.items || []);
+                const [itemsRes, catsRes] = await Promise.all([
+                    fetch("/api/menu-items"),
+                    fetch("/api/categories")
+                ]);
+                const itemsData = await itemsRes.json();
+                const catsData = await catsRes.json();
+                setItems(itemsData.items || []);
+                setCategories(["All", ...(catsData.categories || [])]);
             } catch (err) {
-                console.error("Failed to fetch menu items", err);
+                console.error("Failed to fetch menu data", err);
             } finally {
                 setLoading(false);
             }
-        }
-        fetchMenu();
+        };
+        fetchData();
     }, []);
 
-    const filtered = useMemo(() => {
-        const q = query.trim().toLowerCase();
-
-        return menuItems
-            .filter((m) => m.category === active)
-            .filter((m) => {
-                if (!q) return true;
-                const matchesName = m.name.toLowerCase().includes(q);
-                const matchesDesc = m.description?.toLowerCase().includes(q);
-                return matchesName || matchesDesc;
-            })
-            .filter((m) => (vegOnly ? m.isVeg : true))
-            .filter((m) => (spicyOnly ? m.isSpicy : true))
-            .filter((m) => (popularOnly ? m.isPopular : true));
-    }, [active, query, vegOnly, spicyOnly, popularOnly, menuItems]);
+    const filtered = items.filter((item) => {
+        const matchesCat = active === "All" || item.category === active;
+        const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase()) ||
+            item.description.toLowerCase().includes(query.toLowerCase());
+        const matchesVeg = !vegOnly || item.isVeg;
+        const matchesSpicy = !spicyOnly || item.isSpicy;
+        const matchesPopular = !popularOnly || item.isPopular;
+        return matchesCat && matchesQuery && matchesVeg && matchesSpicy && matchesPopular;
+    });
 
     return (
-        <section className="px-6 md:px-20 py-12">
+        <section className="px-6 md:px-20 py-12 relative">
+            {cartCount > 0 && (
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60] w-full max-w-xs px-4 md:hidden">
+                    <button
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-cart"))}
+                        className="w-full bg-orange-600 text-white p-4 rounded-2xl font-bold shadow-2xl flex items-center justify-between"
+                    >
+                        <span className="flex items-center gap-2">
+                            <span className="bg-white/20 px-2 py-0.5 rounded-lg">{cartCount}</span>
+                            View Cart
+                        </span>
+                        <span>${(totalCents / 100).toFixed(2)}</span>
+                    </button>
+                </div>
+            )}
             <div className="max-w-6xl mx-auto">
                 <div className="flex items-end justify-between gap-6">
                     <div>
@@ -123,7 +146,7 @@ export default function MenuTabs() {
                     </div>
                     <Link
                         href="/#location"
-                        className="hidden md:inline-flex border border-white/15 px-5 py-3 rounded-full hover:border-white/40 transition"
+                        className="hidden md:inline-flex border border-white/15 px-5 py-3 rounded-full hover:border-white/40 transition text-sm font-medium"
                     >
                         Find the Truck
                     </Link>
@@ -137,7 +160,7 @@ export default function MenuTabs() {
                                 key={c}
                                 onClick={() => setActive(c)}
                                 className={[
-                                    "px-5 py-2 rounded-full border transition",
+                                    "px-5 py-2 rounded-full border transition text-sm font-medium",
                                     isActive
                                         ? "bg-orange-500 text-black border-orange-500"
                                         : "border-white/15 hover:border-white/40 text-gray-200",
@@ -150,7 +173,7 @@ export default function MenuTabs() {
                     <button
                         onClick={() => setPopularOnly((v) => !v)}
                         className={[
-                            "px-5 py-2 rounded-full border transition",
+                            "px-5 py-2 rounded-full border transition text-sm font-medium",
                             popularOnly
                                 ? "bg-white text-black border-white"
                                 : "border-white/15 hover:border-white/40 text-gray-200",
@@ -174,7 +197,7 @@ export default function MenuTabs() {
                         <button
                             onClick={() => setVegOnly((v) => !v)}
                             className={[
-                                "px-5 py-2 rounded-full border transition",
+                                "px-5 py-2 rounded-full border transition text-sm font-medium",
                                 vegOnly ? "bg-white text-black border-white" : "border-white/15 hover:border-white/40 text-gray-200",
                             ].join(" ")}
                         >
@@ -184,7 +207,7 @@ export default function MenuTabs() {
                         <button
                             onClick={() => setSpicyOnly((v) => !v)}
                             className={[
-                                "px-5 py-2 rounded-full border transition",
+                                "px-5 py-2 rounded-full border transition text-sm font-medium",
                                 spicyOnly ? "bg-white text-black border-white" : "border-white/15 hover:border-white/40 text-gray-200",
                             ].join(" ")}
                         >
@@ -196,8 +219,10 @@ export default function MenuTabs() {
                                 setQuery("");
                                 setVegOnly(false);
                                 setSpicyOnly(false);
+                                setPopularOnly(false);
+                                setActive("All");
                             }}
-                            className="px-5 py-2 rounded-full border border-white/15 hover:border-white/40 transition text-gray-200"
+                            className="px-5 py-2 rounded-full border border-white/15 hover:border-white/40 transition text-gray-200 text-sm font-medium"
                         >
                             Reset
                         </button>
@@ -216,13 +241,22 @@ export default function MenuTabs() {
                         {loading ? (
                             <div className="col-span-full py-20 text-center text-gray-400">Loading menu...</div>
                         ) : filtered.map((item) => (
-                            <ItemCard key={item.id} item={item} />
+                            <ItemCard
+                                key={item.id}
+                                item={item}
+                                onAdd={(m) => addToCart({
+                                    id: m.id,
+                                    name: m.name,
+                                    priceCents: m.priceCents,
+                                    imageUrl: m.imageUrl
+                                })}
+                            />
                         ))}
                     </motion.div>
                 </AnimatePresence>
 
                 {!loading && filtered.length === 0 && (
-                    <div className="mt-10 card p-10 text-center text-gray-300">
+                    <div className="mt-10 p-10 text-center text-gray-400 bg-white/5 rounded-3xl border border-white/10">
                         No matches. Try a different search or clear filters.
                     </div>
                 )}

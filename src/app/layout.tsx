@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { SiteProvider } from "@/components/SiteProvider";
+import CartDrawer from "@/components/CartDrawer";
 import { Analytics } from "@vercel/analytics/react";
 import { prisma } from "@/lib/prisma";
 
@@ -23,6 +24,8 @@ export const metadata: Metadata = {
     "Authentic Indian street food on wheels in Hartford, CT. View the menu, find today’s location, and book catering.",
 };
 
+import { CartProvider } from "@/lib/cart";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -38,12 +41,15 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SiteProvider settings={settings}>
-          <AnnouncementBanner />
-          {children}
-          <Footer />
-          <Analytics />
-        </SiteProvider>
+        <CartProvider>
+          <SiteProvider settings={settings}>
+            <AnnouncementBanner />
+            {children}
+            <CartDrawer />
+            <Footer />
+            <Analytics />
+          </SiteProvider>
+        </CartProvider>
       </body>
     </html>
   );
