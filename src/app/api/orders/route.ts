@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const OrderSchema = z.object({
     customerName: z.string().min(2),
@@ -17,6 +19,7 @@ const OrderSchema = z.object({
 
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
         const body = await req.json();
         const validatedData = OrderSchema.parse(body);
 
@@ -56,6 +59,7 @@ export async function POST(req: Request) {
                 customerPhone: validatedData.customerPhone,
                 totalAmount,
                 status: "PENDING",
+                userId: (session?.user as any)?.id || null, // Link to user if logged in
                 items: {
                     create: validatedData.items.map(item => ({
                         menuItemId: item.id,

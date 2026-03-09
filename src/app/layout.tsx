@@ -25,6 +25,7 @@ export const metadata: Metadata = {
 };
 
 import { CartProvider } from "@/lib/cart";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export default async function RootLayout({
   children,
@@ -41,15 +42,17 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider>
-          <SiteProvider settings={settings}>
-            <AnnouncementBanner />
-            {children}
-            <CartDrawer />
-            <Footer />
-            <Analytics />
-          </SiteProvider>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <SiteProvider settings={settings}>
+              <AnnouncementBanner />
+              {children}
+              <CartDrawer />
+              <Footer />
+              <Analytics />
+            </SiteProvider>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
