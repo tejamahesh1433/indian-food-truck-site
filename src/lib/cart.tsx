@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
+import { useSession } from "next-auth/react";
 
 export type CartItem = {
     id: string;
@@ -22,28 +23,40 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+    const { data: session, status } = useSession();
     const [items, setItems] = useState<CartItem[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load cart from local storage on mount
+    // Determine the storage key based on authentication status
+    const cartKey = useMemo(() => {
+        if (status === "authenticated" && session?.user?.email) {
+            return `food-truck-cart-${session.user.email}`;
+        }
+        return "food-truck-cart-guest";
+    }, [session?.user?.email, status]);
+
+    // Load cart from local storage whenever the cartKey changes (login/logout)
     useEffect(() => {
-        const savedCart = localStorage.getItem("food-truck-cart");
+        const savedCart = localStorage.getItem(cartKey);
         if (savedCart) {
             try {
                 setItems(JSON.parse(savedCart));
             } catch (e) {
                 console.error("Failed to parse cart", e);
+                setItems([]);
             }
+        } else {
+            setItems([]);
         }
         setIsLoaded(true);
-    }, []);
+    }, [cartKey]);
 
     // Save cart to local storage whenever it changes
     useEffect(() => {
         if (isLoaded) {
-            localStorage.setItem("food-truck-cart", JSON.stringify(items));
+            localStorage.setItem(cartKey, JSON.stringify(items));
         }
-    }, [items, isLoaded]);
+    }, [items, isLoaded, cartKey]);
 
     const addToCart = useCallback((item: Omit<CartItem, "quantity">) => {
         setItems((prev) => {
@@ -98,9 +111,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 export function useCart() {
     const context = useContext(CartContext);
     if (context === undefined) {
-        // Fallback for SSR or if used outside provider accidentally
-        // Return a mock if needed, or throw error
-        // throwing is safer for dev
         throw new Error("useCart must be used within a CartProvider");
     }
     return context;
