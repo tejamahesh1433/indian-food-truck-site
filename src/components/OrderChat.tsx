@@ -103,8 +103,8 @@ export default function OrderChat({ orderId, isAdmin = false }: { orderId: strin
                         return (
                             <div key={msg.id} className={`flex ${isMe ? "justify-start" : "justify-end"}`}>
                                 <div className={`max-w-[85%] rounded-[1.5rem] px-5 py-3 text-xs ${isMe
-                                    ? "bg-white/10 text-white rounded-tl-none border border-white/10 backdrop-blur-md"
-                                    : "bg-orange-600 text-white rounded-tr-none shadow-xl shadow-orange-950/20"
+                                        ? "bg-orange-600 text-white rounded-tl-none shadow-xl shadow-orange-950/20"
+                                        : "bg-white/10 text-white rounded-tr-none border border-white/10 backdrop-blur-md"
                                     }`}>
                                     <p className="leading-relaxed font-semibold tracking-tight">{msg.text}</p>
                                     <div className={`text-[8px] mt-2 font-black uppercase tracking-[0.1em] opacity-40 flex items-center gap-1.5 ${isMe ? "justify-start" : "justify-end"}`}>

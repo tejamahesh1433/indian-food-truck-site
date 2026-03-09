@@ -54,22 +54,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // Determine sender based on both credentials and page context
-    // This allows developers to test both roles in the same browser without cookie conflicts.
     const referer = req.headers.get("referer") || "";
     const isFromAdminPage = referer.includes("/admin");
 
     let sender: "ADMIN" | "CUSTOMER" | null = null;
 
+    // Admin role takes precedence if they are on the admin page
     if (isAdmin && isFromAdminPage) {
         sender = "ADMIN";
-    } else if (session?.user?.email === order.customerEmail) {
+    }
+    // Otherwise, check if they are the authenticated customer for this order
+    else if (session?.user?.email === order.customerEmail) {
         sender = "CUSTOMER";
+    }
+    // Fallback: If they have an admin token but are on a non-admin page, 
+    // they are still the ADMIN (unlikely but possible during testing)
+    else if (isAdmin) {
+        sender = "ADMIN";
     }
 
     if (!sender) {
-        // Fallback for direct API calls or ambiguous states
-        if (isAdmin) sender = "ADMIN";
-        else return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const message = await prisma.orderMessage.create({
