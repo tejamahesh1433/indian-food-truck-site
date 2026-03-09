@@ -25,11 +25,11 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
     }
 
-    if (event.type === "checkout.session.completed") {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const orderId = session.metadata?.orderId;
+    if (event.type === "checkout.session.completed" || event.type === "payment_intent.succeeded") {
+        const sessionOrIntent = event.data.object as any;
+        const orderId = sessionOrIntent.metadata?.orderId;
 
-        console.log(`📦 Processing Checkout Session: ${session.id} for Order: ${orderId}`);
+        console.log(`📦 Processing ${event.type}: ${sessionOrIntent.id} for Order: ${orderId}`);
 
         if (orderId) {
             try {
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
                 console.error(`❌ Failed to update order ${orderId} in database:`, dbError.message);
             }
         } else {
-            console.warn("⚠️ No orderId found in session metadata. Skipping DB update.");
+            console.warn(`⚠️ No orderId found in ${event.type} metadata. Skipping DB update.`);
         }
     }
 

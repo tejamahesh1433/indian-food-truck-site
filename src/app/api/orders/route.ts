@@ -67,34 +67,28 @@ export async function POST(req: Request) {
             }
         });
 
-        // Create Stripe Session
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: validatedData.items.map(item => ({
-                price_data: {
-                    currency: "usd",
-                    product_data: {
-                        name: item.name,
-                    },
-                    unit_amount: item.priceCents,
-                },
-                quantity: item.quantity,
-            })),
-            mode: "payment",
-            success_url: `${req.headers.get("origin")}/order-success?orderId=${order.id}`,
-            cancel_url: `${req.headers.get("origin")}/menu`,
+        // Create Stripe PaymentIntent
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: totalAmount,
+            currency: "usd",
+            automatic_payment_methods: {
+                enabled: true,
+            },
             metadata: {
                 orderId: order.id,
             },
         });
 
-        // Update Order with Stripe Session ID
+        // Update Order with Stripe PaymentIntent ID
         await prisma.order.update({
             where: { id: order.id },
-            data: { stripeSessionId: session.id }
+            data: { stripeSessionId: paymentIntent.id } // Reuse field for PI ID
         });
 
-        return NextResponse.json({ url: session.url });
+        return NextResponse.json({
+            clientSecret: paymentIntent.client_secret,
+            orderId: order.id
+        });
     } catch (error: any) {
         console.error("ORDER_CREATE_ERROR:", error);
 

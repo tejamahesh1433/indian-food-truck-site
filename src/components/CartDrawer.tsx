@@ -155,8 +155,8 @@ export default function CartDrawer() {
                                                         }),
                                                     });
                                                     const data = await res.json();
-                                                    if (data.url) {
-                                                        window.location.href = data.url;
+                                                    if (data.clientSecret) {
+                                                        window.location.href = `/checkout?clientSecret=${data.clientSecret}&orderId=${data.orderId}&amount=${items.reduce((acc, i) => acc + i.priceCents * i.quantity, 0)}`;
                                                     } else {
                                                         alert("Checkout failed: " + (data.error || "Unknown error"));
                                                         setIsSubmitting(false);
