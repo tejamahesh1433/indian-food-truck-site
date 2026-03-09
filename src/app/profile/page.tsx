@@ -32,16 +32,28 @@ export default async function ProfilePage() {
 
     return (
         <main className="min-h-screen pt-24 pb-20 px-6 max-w-4xl mx-auto">
-            <header className="mb-12 flex flex-wrap items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-4xl font-black italic tracking-tighter uppercase text-white">My Profile</h1>
-                    <div className="mt-2 flex items-center gap-2 text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-                        <span className="text-orange-500">{user.name}</span>
-                        <span className="opacity-20">•</span>
-                        <span>{user.email}</span>
+            <header className="mb-12">
+                <Link
+                    href="/menu"
+                    className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-orange-500 transition mb-6 group"
+                >
+                    <svg className="h-3 w-3 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Menu
+                </Link>
+
+                <div className="flex flex-wrap items-end justify-between gap-6">
+                    <div>
+                        <h1 className="text-4xl font-black italic tracking-tighter uppercase text-white">My Profile</h1>
+                        <div className="mt-2 flex items-center gap-2 text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+                            <span className="text-orange-500">{user.name}</span>
+                            <span className="opacity-20">•</span>
+                            <span>{user.email}</span>
+                        </div>
                     </div>
+                    <LogoutButton />
                 </div>
-                <LogoutButton />
             </header>
 
             <section className="space-y-8">
