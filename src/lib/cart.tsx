@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 
 export type CartItem = {
     id: string;
@@ -45,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items, isLoaded]);
 
-    const addToCart = (item: Omit<CartItem, "quantity">) => {
+    const addToCart = useCallback((item: Omit<CartItem, "quantity">) => {
         setItems((prev) => {
             const existing = prev.find((i) => i.id === item.id);
             if (existing) {
@@ -55,13 +55,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }
             return [...prev, { ...item, quantity: 1 }];
         });
-    };
+    }, []);
 
-    const removeFromCart = (id: string) => {
+    const removeFromCart = useCallback((id: string) => {
         setItems((prev) => prev.filter((i) => i.id !== id));
-    };
+    }, []);
 
-    const updateQuantity = (id: string, quantity: number) => {
+    const updateQuantity = useCallback((id: string, quantity: number) => {
         if (quantity <= 0) {
             removeFromCart(id);
             return;
@@ -69,27 +69,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems((prev) =>
             prev.map((i) => (i.id === id ? { ...i, quantity } : i))
         );
-    };
+    }, [removeFromCart]);
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         setItems([]);
-    };
+    }, []);
 
     const totalCents = useMemo(() =>
         items.reduce((acc, item) => acc + item.priceCents * item.quantity, 0),
         [items]);
 
+    const contextValue = useMemo(() => ({
+        items,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        totalCents,
+    }), [items, addToCart, removeFromCart, updateQuantity, clearCart, totalCents]);
+
     return (
-        <CartContext.Provider
-            value={{
-                items,
-                addToCart,
-                removeFromCart,
-                updateQuantity,
-                clearCart,
-                totalCents,
-            }}
-        >
+        <CartContext.Provider value={contextValue}>
             {children}
         </CartContext.Provider>
     );
