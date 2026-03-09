@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect } from "react";
-import { useCart } from "@/lib/useCart";
+import { useCart } from "@/lib/cart";
 
 export default function OrderSuccessPage() {
     const { clearCart } = useCart();
