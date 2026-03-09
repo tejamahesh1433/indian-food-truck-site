@@ -108,7 +108,7 @@ export default function OrderChat({ orderId, isAdmin = false }: { orderId: strin
                                     }`}>
                                     <p className="leading-relaxed font-semibold tracking-tight">{msg.text}</p>
                                     <div className={`text-[8px] mt-2 font-black uppercase tracking-[0.1em] opacity-40 flex items-center gap-1.5 ${isMe ? "justify-start" : "justify-end"}`}>
-                                        {msg.sender === "ADMIN" ? "KITCHEN" : "YOU"} • {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {isMe ? "YOU" : (msg.sender === "ADMIN" ? "CHEF" : "CUSTOMER")} • {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </div>
                             </div>

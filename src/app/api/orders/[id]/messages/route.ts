@@ -41,7 +41,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const session = await getServerSession(authOptions);
-
     const cookieStore = await cookies();
     const adminToken = cookieStore.get(getAdminCookieName())?.value;
     const isAdmin = adminToken ? await verifyAdminToken(adminToken) : false;
@@ -54,16 +53,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Permission check
-    if (!isAdmin && order.customerEmail !== session?.user?.email) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Determine sender based on both credentials and page context
+    // This allows developers to test both roles in the same browser without cookie conflicts.
+    const referer = req.headers.get("referer") || "";
+    const isFromAdminPage = referer.includes("/admin");
+
+    let sender: "ADMIN" | "CUSTOMER" | null = null;
+
+    if (isAdmin && isFromAdminPage) {
+        sender = "ADMIN";
+    } else if (session?.user?.email === order.customerEmail) {
+        sender = "CUSTOMER";
+    }
+
+    if (!sender) {
+        // Fallback for direct API calls or ambiguous states
+        if (isAdmin) sender = "ADMIN";
+        else return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const message = await prisma.orderMessage.create({
         data: {
             orderId,
             text: text.trim(),
-            sender: isAdmin ? "ADMIN" : "CUSTOMER"
+            sender
         }
     });
 
