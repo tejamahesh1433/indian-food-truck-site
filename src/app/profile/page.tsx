@@ -3,9 +3,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import LogoutButton from "@/components/LogoutButton";
-
-import OrderTrackingList from "@/components/OrderTrackingList";
+import LogoutButton from "../../components/LogoutButton";
+import OrderTrackingList from "../../components/OrderTrackingList";
 
 export const dynamic = "force-dynamic";
 

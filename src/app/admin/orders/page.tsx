@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { OrderStatus } from "@prisma/client";
 import Link from "next/link";
 import OrderStatusActions from "./OrderStatusActions";
+import AdminOrderChat from "./AdminOrderChat";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,8 @@ export default async function AdminOrdersPage() {
                                         <div className="text-xs uppercase tracking-widest text-gray-400 font-bold italic">Quick Actions</div>
                                         <OrderStatusActions orderId={order.id} currentStatus={order.status} />
                                     </div>
+
+                                    <AdminOrderChat orderId={order.id} />
                                 </div>
                             </div>
                         ))}
