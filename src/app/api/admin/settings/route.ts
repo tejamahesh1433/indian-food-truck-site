@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -54,12 +55,8 @@ export async function PUT(req: Request) {
             todayEnd: body.todayEnd,
             todayStatus: body.todayStatus,
             todayNotes: body.todayNotes,
-
-            nextLocation: body.nextLocation,
-            nextDate: body.nextDate,
-            nextStart: body.nextStart,
-            nextEnd: body.nextEnd,
-            nextNotes: body.nextNotes,
+            
+            weeklySchedule: body.weeklySchedule ?? null,
         },
         create: {
             id: "global",
@@ -81,13 +78,12 @@ export async function PUT(req: Request) {
             todayEnd: body.todayEnd || "",
             todayStatus: body.todayStatus || "CLOSED",
             todayNotes: body.todayNotes || "",
-
-            nextLocation: body.nextLocation || "",
-            nextDate: body.nextDate || "",
-            nextStart: body.nextStart || "",
-            nextEnd: body.nextEnd || "",
-            nextNotes: body.nextNotes || "",
+            
+            weeklySchedule: body.weeklySchedule ?? null,
         }
     });
+
+    revalidatePath("/", "layout");
+    
     return NextResponse.json({ ok: true, settings });
 }

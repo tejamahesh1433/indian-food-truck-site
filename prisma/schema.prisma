@@ -90,6 +90,7 @@ model SiteSettings {
   publicEmail     String?  @default("")
   logoUrl         String?  @default("")
   cateringEnabled Boolean  @default(true)
+  weeklySchedule  Json?
 }
 
 model SavedLocation {

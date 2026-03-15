@@ -32,6 +32,20 @@ export type DbSettings = {
     nextNotes?: string | null;
 
     cateringEnabled?: boolean | null;
+    weeklySchedule?: any | null;
+};
+
+const formatTime12h = (timeStr?: string | null) => {
+    if (!timeStr) return "";
+    try {
+        const [hourStr, minuteStr] = timeStr.split(':');
+        let hours = parseInt(hourStr, 10);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        return `${hours}:${minuteStr} ${ampm}`;
+    } catch {
+        return timeStr;
+    }
 };
 
 const SiteContext = createContext<DbSettings | null>(null);
@@ -44,6 +58,40 @@ export function useSite() {
     const dbSettings = useContext(SiteContext);
 
     if (!dbSettings) return defaultSite;
+
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDayName = dayNames[new Date().getDay()];
+
+    const weekly = dbSettings.weeklySchedule as Record<string, any> | null;
+    const currentSchedule = weekly?.[currentDayName] || {};
+
+    const activeStart = currentSchedule.start || "";
+    const activeEnd = currentSchedule.end || "";
+    const activeStatus = currentSchedule.status || "CLOSED";
+    const activeNotes = currentSchedule.notes || "";
+
+    const currentDayIndex = new Date().getDay();
+    let nextStart = dbSettings.nextStart || "";
+    let nextEnd = dbSettings.nextEnd || "";
+    let nextLabel = dbSettings.nextLocation || dbSettings.truckNext || defaultSite.truck.next.label;
+    let nextDayName = "";
+    
+    // Attempt to automatically derive "Next Stop" from the weekly schedule
+    if (weekly) {
+        for (let i = 1; i <= 7; i++) {
+            const checkIndex = (currentDayIndex + i) % 7;
+            const checkDayName = dayNames[checkIndex];
+            const schedule = weekly[checkDayName];
+            
+            if (schedule && schedule.status && schedule.status !== "CLOSED" && schedule.status !== "SOLD_OUT") {
+                nextStart = schedule.start || "";
+                nextEnd = schedule.end || "";
+                nextLabel = dbSettings.todayLocation || nextLabel;
+                nextDayName = checkDayName.slice(0, 3);
+                break;
+            }
+        }
+    }
 
     return {
         ...defaultSite,
@@ -72,26 +120,26 @@ export function useSite() {
             ...defaultSite.truck,
             today: {
                 ...defaultSite.truck.today,
-                label: dbSettings.todayLocation || dbSettings.truckToday || defaultSite.truck.today.label,
-                start: dbSettings.todayStart || "",
-                end: dbSettings.todayEnd || "",
-                status: dbSettings.todayStatus || "CLOSED",
-                notes: dbSettings.todayNotes || "",
-                // Keep label for backward compat
-                hours: dbSettings.todayStart && dbSettings.todayEnd
-                    ? `${dbSettings.todayStart} – ${dbSettings.todayEnd}`
-                    : defaultSite.truck.today.hours,
-                mapsQuery: dbSettings.todayLocation || defaultSite.truck.today.mapsQuery,
+                label: dbSettings.todayLocation || defaultSite.truck.today.label,
+                address: dbSettings.truckToday || "",
+                start: activeStart,
+                end: activeEnd,
+                status: activeStatus,
+                notes: activeNotes,
+                hours: activeStart && activeEnd
+                    ? `${formatTime12h(activeStart)} – ${formatTime12h(activeEnd)}`
+                    : activeStatus === "CLOSED" ? "Closed" : defaultSite.truck.today.hours,
+                mapsQuery: dbSettings.truckToday || dbSettings.todayLocation || defaultSite.truck.today.mapsQuery,
             },
             next: {
                 ...defaultSite.truck.next,
-                label: dbSettings.nextLocation || dbSettings.truckNext || defaultSite.truck.next.label,
+                label: nextLabel,
                 date: dbSettings.nextDate || "",
-                start: dbSettings.nextStart || "",
-                end: dbSettings.nextEnd || "",
+                start: nextStart,
+                end: nextEnd,
                 notes: dbSettings.nextNotes || "",
-                hours: dbSettings.nextStart && dbSettings.nextEnd
-                    ? `${dbSettings.nextStart} – ${dbSettings.nextEnd}`
+                hours: nextStart && nextEnd
+                    ? (nextDayName ? `${nextDayName} · ${formatTime12h(nextStart)} – ${formatTime12h(nextEnd)}` : `${formatTime12h(nextStart)} – ${formatTime12h(nextEnd)}`)
                     : defaultSite.truck.next.hours,
             }
         }

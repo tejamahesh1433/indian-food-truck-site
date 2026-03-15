@@ -3,14 +3,15 @@
 import Reveal from "@/components/Reveal";
 import { useSite } from "@/components/SiteProvider";
 
+
+
 export default function Location() {
     const site = useSite();
-    const today = site.truck.today;
-    const next = site.truck.next;
+    const today = site.truck.today as any;
 
     const statusConfig: Record<string, { label: string; color: string; animate: boolean }> = {
         SERVING: { label: "Serving Now", color: "bg-green-500", animate: true },
-        ON_THE_WAY: { label: "On the Way", color: "bg-blue-500", animate: true },
+        OPENING_SOON: { label: "Opening Soon", color: "bg-blue-500", animate: true },
         SOLD_OUT: { label: "Sold Out", color: "bg-red-500", animate: false },
         WEATHER_DELAY: { label: "Weather Delay", color: "bg-orange-500", animate: false },
         CLOSED: { label: "Closed", color: "bg-gray-500", animate: false },
@@ -38,7 +39,7 @@ export default function Location() {
                                 Call
                             </a>
                             <a
-                                href={`https://maps.google.com/?q=${encodeURIComponent(today.label)}`}
+                                href={`https://maps.google.com/?q=${encodeURIComponent(today.mapsQuery)}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="border border-white/15 px-5 py-3 rounded-full hover:border-white/40 transition"
@@ -63,13 +64,22 @@ export default function Location() {
                                     <div className="mt-2 text-2xl md:text-3xl font-bold text-white/40">
                                         Closed for today
                                     </div>
+                                ) : today.status === "SOLD_OUT" ? (
+                                    <div className="mt-2 text-2xl md:text-3xl font-bold text-red-500 flex items-center gap-3">
+                                        <span className="text-2xl md:text-3xl">❌</span> SOLD OUT TODAY
+                                    </div>
                                 ) : (
                                     <>
                                         <div className="mt-2 text-2xl md:text-3xl font-bold text-white">
                                             {today.label || "Check back soon!"}
                                         </div>
+                                        {today.address && (
+                                            <div className="mt-1 text-sm md:text-base text-gray-400 font-medium">
+                                                {today.address}
+                                            </div>
+                                        )}
                                         <div className="mt-2 text-lg text-orange-400 font-medium tracking-tight">
-                                            {(today.start && today.end) ? `${today.start} – ${today.end}` : today.hours}
+                                            {today.hours}
                                         </div>
                                     </>
                                 )}
@@ -81,31 +91,18 @@ export default function Location() {
                                 )}
                             </div>
 
-                            <div className="mt-10 grid grid-cols-2 gap-4 text-sm">
-                                <a
-                                    href={`https://maps.google.com/?q=${encodeURIComponent(next.label)}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="rounded-2xl border border-white/10 bg-black/30 p-4 relative overflow-hidden hover:bg-white/5 transition block group/next"
-                                >
-                                    <div className="absolute top-0 right-0 p-2 opacity-0 group-hover/next:opacity-50 transition">
-                                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            <div className="mt-8 pt-6 border-t border-white/10 text-sm">
+                                <a href="/catering" className="rounded-2xl border border-white/10 bg-orange-500/5 hover:bg-orange-500/10 transition p-4 flex flex-col items-center sm:flex-row sm:justify-between group">
+                                    <div>
+                                        <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400 mb-1">Catering</div>
+                                        <div className="font-bold text-gray-100 group-hover:text-orange-300 transition flex items-center gap-1">
+                                            Book the Truck for your Event
+                                        </div>
                                     </div>
-                                    <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-2">Next stop</div>
-                                    <div className="font-bold text-gray-100 truncate group-hover/next:text-blue-300 transition">
-                                        {next.label}
+                                    <div className="mt-3 sm:mt-0 flex items-center gap-1 text-orange-400 font-bold text-xs uppercase tracking-widest bg-orange-500/10 px-4 py-2 rounded-full">
+                                        Request Quote
+                                        <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                     </div>
-                                    <div className="mt-1 text-xs text-gray-400">
-                                        {next.date} {next.start ? `· ${next.start}` : ""}
-                                    </div>
-                                </a>
-                                <a href="/catering" className="rounded-2xl border border-white/10 bg-orange-500/5 hover:bg-orange-500/10 transition p-4 group">
-                                    <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400 mb-2">Catering</div>
-                                    <div className="font-bold text-gray-100 group-hover:text-orange-300 transition flex items-center gap-1">
-                                        Book Now
-                                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                                    </div>
-                                    <div className="mt-1 text-xs text-gray-400">Request a quote</div>
                                 </a>
                             </div>
                         </div>
@@ -116,7 +113,7 @@ export default function Location() {
                                 className="w-full h-[450px]"
                                 loading="lazy"
                                 referrerPolicy="no-referrer-when-downgrade"
-                                src={`https://www.google.com/maps?q=${encodeURIComponent(today.label)}&output=embed`}
+                                src={`https://www.google.com/maps?q=${encodeURIComponent(today.mapsQuery)}&output=embed`}
                             />
                         </div>
                     </div>

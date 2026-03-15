@@ -28,7 +28,7 @@ export const site = {
     truck: {
         today: {
             label: "Downtown Hartford",
-            hours: "12:00 PM – 6:00 PM",
+            hours: "Closed",
             mapsQuery: "Downtown Hartford, CT",
             start: "12:00",
             end: "18:00",
@@ -37,7 +37,7 @@ export const site = {
         },
         next: {
             label: "Bushnell Park",
-            hours: "Wed · 12–6",
+            hours: "",
             date: "",
             start: "",
             end: "",
