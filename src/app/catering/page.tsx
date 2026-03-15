@@ -15,7 +15,6 @@ export default function CateringPage() {
     const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
     const [errorMsg, setErrorMsg] = useState("");
     const [phoneStr, setPhoneStr] = useState("");
-    const [prevChatToken, setPrevChatToken] = useState<string | null>(null);
 
     // Selection State
     const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
@@ -47,11 +46,7 @@ export default function CateringPage() {
         }
     }, [selectedItems]);
 
-    useEffect(() => {
-        // Initial check for token
-        const saved = localStorage.getItem("catering_chat_token");
-        if (saved) setPrevChatToken(saved);
-    }, []);
+
 
     function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
         const val = e.target.value.replace(/\D/g, "");
@@ -94,7 +89,6 @@ export default function CateringPage() {
                 form.reset();
                 setSelectedItems([]);
                 if (json.chatToken) {
-                    localStorage.setItem("catering_chat_token", json.chatToken);
                     router.push(`/catering/chat/${json.chatToken}`);
                 }
             } else {
@@ -129,27 +123,7 @@ export default function CateringPage() {
                         </p>
                     </div>
 
-                    {prevChatToken && (
-                        <div className="mt-8 p-4 rounded-3xl border border-orange-500/20 bg-orange-500/5 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
-                                    <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="font-bold text-orange-50 text-sm">Resume Recent Discussion</p>
-                                    <p className="text-orange-200/40 text-[11px] font-medium tracking-tight">You have an active quote discussion from this browser.</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => router.push(`/catering/chat/${prevChatToken}`)}
-                                className="px-5 py-2 rounded-2xl bg-orange-500 text-black text-sm font-black hover:bg-orange-400 transition shadow-lg shadow-orange-500/20 whitespace-nowrap"
-                            >
-                                OPEN CHAT
-                            </button>
-                        </div>
-                    )}
+
 
                     {!site.cateringEnabled && (
                         <div className="mt-8 p-6 rounded-3xl border border-red-500/20 bg-red-500/5 flex items-center gap-4">

@@ -2,8 +2,7 @@
 
 import Reveal from "@/components/Reveal";
 import { useSite } from "@/components/SiteProvider";
-
-
+import GlassSurface from "@/components/GlassSurface";
 
 export default function Location() {
     const site = useSite();
@@ -50,62 +49,72 @@ export default function Location() {
                     </div>
 
                     <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="card p-6 flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="text-sm text-gray-400 font-bold uppercase tracking-widest">Today</div>
-                                    <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${status.color} text-white flex items-center gap-1.5 shadow-lg shadow-${status.color.split('-')[1]}-500/20`}>
-                                        {status.animate && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-                                        {status.label}
+                        <GlassSurface 
+                            borderRadius={24} 
+                            backgroundOpacity={0.2} 
+                            distortionScale={-150}
+                            saturation={2}
+                            mixBlendMode="screen"
+                            displace={0.5}
+                            className="flex flex-col justify-between"
+                        >
+                            <div className="p-6 h-full flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="text-sm text-gray-400 font-bold uppercase tracking-widest">Today</div>
+                                        <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${status.color} text-white flex items-center gap-1.5 shadow-lg shadow-${status.color.split('-')[1]}-500/20`}>
+                                            {status.animate && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                                            {status.label}
+                                        </div>
                                     </div>
+
+                                    {today.status === "CLOSED" ? (
+                                        <div className="mt-2 text-2xl md:text-3xl font-bold text-white/40">
+                                            Closed for today
+                                        </div>
+                                    ) : today.status === "SOLD_OUT" ? (
+                                        <div className="mt-2 text-2xl md:text-3xl font-bold text-red-500 flex items-center gap-3">
+                                            <span className="text-2xl md:text-3xl">❌</span> SOLD OUT TODAY
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="mt-2 text-2xl md:text-3xl font-bold text-white">
+                                                {today.label || "Check back soon!"}
+                                            </div>
+                                            {today.address && (
+                                                <div className="mt-1 text-sm md:text-base text-gray-400 font-medium">
+                                                    {today.address}
+                                                </div>
+                                            )}
+                                            <div className="mt-2 text-lg text-orange-400 font-medium tracking-tight">
+                                                {today.hours}
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {today.notes && (
+                                        <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 italic">
+                                            " {today.notes} "
+                                        </div>
+                                    )}
                                 </div>
 
-                                {today.status === "CLOSED" ? (
-                                    <div className="mt-2 text-2xl md:text-3xl font-bold text-white/40">
-                                        Closed for today
-                                    </div>
-                                ) : today.status === "SOLD_OUT" ? (
-                                    <div className="mt-2 text-2xl md:text-3xl font-bold text-red-500 flex items-center gap-3">
-                                        <span className="text-2xl md:text-3xl">❌</span> SOLD OUT TODAY
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="mt-2 text-2xl md:text-3xl font-bold text-white">
-                                            {today.label || "Check back soon!"}
-                                        </div>
-                                        {today.address && (
-                                            <div className="mt-1 text-sm md:text-base text-gray-400 font-medium">
-                                                {today.address}
+                                <div className="mt-8 pt-6 border-t border-white/10 text-sm">
+                                    <a href="/catering" className="rounded-2xl border border-white/10 bg-orange-500/5 hover:bg-orange-500/10 transition p-4 flex flex-col items-center sm:flex-row sm:justify-between group">
+                                        <div>
+                                            <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400 mb-1">Catering</div>
+                                            <div className="font-bold text-gray-100 group-hover:text-orange-300 transition flex items-center gap-1">
+                                                Book the Truck for your Event
                                             </div>
-                                        )}
-                                        <div className="mt-2 text-lg text-orange-400 font-medium tracking-tight">
-                                            {today.hours}
                                         </div>
-                                    </>
-                                )}
-
-                                {today.notes && (
-                                    <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 italic">
-                                        " {today.notes} "
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="mt-8 pt-6 border-t border-white/10 text-sm">
-                                <a href="/catering" className="rounded-2xl border border-white/10 bg-orange-500/5 hover:bg-orange-500/10 transition p-4 flex flex-col items-center sm:flex-row sm:justify-between group">
-                                    <div>
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400 mb-1">Catering</div>
-                                        <div className="font-bold text-gray-100 group-hover:text-orange-300 transition flex items-center gap-1">
-                                            Book the Truck for your Event
+                                        <div className="mt-3 sm:mt-0 flex items-center gap-1 text-orange-400 font-bold text-xs uppercase tracking-widest bg-orange-500/10 px-4 py-2 rounded-full">
+                                            Request Quote
+                                            <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                         </div>
-                                    </div>
-                                    <div className="mt-3 sm:mt-0 flex items-center gap-1 text-orange-400 font-bold text-xs uppercase tracking-widest bg-orange-500/10 px-4 py-2 rounded-full">
-                                        Request Quote
-                                        <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        </GlassSurface>
 
                         <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.12)]">
                             <iframe
