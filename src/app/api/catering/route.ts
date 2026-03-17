@@ -104,10 +104,13 @@ export async function POST(req: Request) {
         sendChatLinkEmail({
             email: created.email,
             name: created.name,
+            phone: created.phone,
             chatLink: chatLink,
+            requestId: created.id,
             eventDate: created.eventDate || undefined,
             guests: created.guests || undefined,
             location: created.location || "TBD",
+            notes: created.notes || undefined,
             selections: (created.selections as any[]) || [],
         }).then(() => {
             console.log("CATERING_SUBMIT: sendChatLinkEmail finished.");

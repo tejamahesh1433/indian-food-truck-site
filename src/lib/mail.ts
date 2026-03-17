@@ -3,18 +3,24 @@ import { Resend } from "resend";
 export async function sendChatLinkEmail({
     email,
     name,
+    phone,
     chatLink,
+    requestId,
     eventDate,
     guests,
     location,
+    notes,
     selections = [],
 }: {
     email: string;
     name: string;
+    phone?: string;
     chatLink: string;
+    requestId: string;
     eventDate?: string;
     guests?: string;
     location?: string;
+    notes?: string;
     selections?: any[];
 }) {
     const apiKey = process.env.RESEND_API_KEY;
@@ -24,61 +30,96 @@ export async function sendChatLinkEmail({
     }
 
     const resend = new Resend(apiKey);
+    const requestIdShort = requestId.slice(-4).toUpperCase();
+    const formattedLocation = location ? location.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') : "TBD";
 
     try {
         console.log(`Attempting to send catering email to: ${email}`);
         
         const selectionsHtml = selections && selections.length > 0 ? `
-            <div style="background-color: #f8fafc; border-radius: 24px; padding: 25px; margin-bottom: 25px; border: 1px solid #f1f5f9;">
-                <h2 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 15px; margin-top: 0;">Initial Selections</h2>
-                <div style="font-size: 14px; color: #444;">
-                    ${selections.map(s => `<div style="padding: 5px 0;">• ${s.name || s}</div>`).join("")}
+            <div style="background-color: #f8fafc; border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid #f1f5f9;">
+                <h2 style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 12px; margin-top: 0;">Initial Menu Selections</h2>
+                <div style="font-size: 14px; color: #444; line-height: 1.5;">
+                    ${selections.map(s => `<div style="padding: 4px 0;">• ${s.name || s}</div>`).join("")}
                 </div>
             </div>
         ` : "";
 
-        const eventDetailsHtml = (eventDate || guests || location) ? `
-            <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                ${eventDate ? `<div style="font-size: 12px; color: #666;"><strong style="display:block; color: #111; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Date</strong>${eventDate}</div>` : ""}
-                ${guests ? `<div style="font-size: 12px; color: #666;"><strong style="display:block; color: #111; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Guests</strong>${guests}</div>` : ""}
-                ${location ? `<div style="font-size: 12px; color: #666; grid-column: span 2; margin-top: 10px;"><strong style="display:block; color: #111; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Location</strong>${location}</div>` : ""}
+        const notesHtml = notes ? `
+            <div style="background-color: #fffbeb; border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid #fef3c7;">
+                <h2 style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #b45309; margin-bottom: 12px; margin-top: 0;">Special Notes & Instructions</h2>
+                <div style="font-size: 14px; color: #92400e; line-height: 1.6;">${notes}</div>
             </div>
         ` : "";
 
         const { data, error } = await resend.emails.send({
             from: "Indian Food Truck <contact@tejainfo.xyz>",
             to: email,
-            subject: "Catering Request Received - Indian Food Truck",
+            subject: `Catering Request Received: #CAT-${requestIdShort}`,
             html: `
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #333;">
                     <div style="text-align: center; margin-bottom: 40px;">
                         <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">IFT</div>
-                        <h1 style="font-size: 32px; font-weight: 800; font-style: italic; letter-spacing: -0.05em; margin: 20px 0 10px 0; color: #111; text-transform: uppercase;">Request Received</h1>
-                        <p style="color: #666; margin: 0; font-weight: 500;">We've received your catering inquiry!</p>
+                        <h1 style="font-size: 28px; font-weight: 800; font-style: italic; letter-spacing: -0.05em; margin: 20px 0 10px 0; color: #111; text-transform: uppercase;">Inquiry Received</h1>
+                        <div style="display: inline-block; padding: 6px 12px; border-radius: 8px; background-color: #f1f5f9; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                            Request #CAT-${requestIdShort} • Status: New
+                        </div>
                     </div>
 
-                    <div style="margin-bottom: 40px;">
-                        <h2 style="font-size: 20px; font-weight: 800; color: #111; margin-bottom: 10px;">Hi ${name}!</h2>
-                        <p style="font-size: 16px; line-height: 1.6; color: #444;">
-                            Thank you for considering us for your event. We&apos;ve saved your details and would love to discuss the specifics with you via our live event chat.
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="font-size: 20px; font-weight: 800; color: #111; margin-bottom: 12px;">Hi ${name},</h2>
+                        <p style="font-size: 15px; line-height: 1.6; color: #444; margin: 0;">
+                            Thank you for reaching out! We&apos;ve received your catering inquiry and our team will review it shortly. You can expect a follow-up response within 24 hours.
                         </p>
                     </div>
 
-                    ${eventDetailsHtml}
-                    ${selectionsHtml}
+                    <!-- Contact & Event Summary -->
+                    <div style="background-color: #f8fafc; border-radius: 24px; padding: 30px; margin-bottom: 25px; border: 1px solid #f1f5f9;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                            <div>
+                                <h3 style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 10px; margin-top: 0;">Contact Details</h3>
+                                <p style="font-size: 13px; color: #111; margin: 2px 0;"><strong>${name}</strong></p>
+                                <p style="font-size: 13px; color: #64748b; margin: 2px 0;">${email}</p>
+                                ${phone ? `<p style="font-size: 13px; color: #64748b; margin: 2px 0;">${phone}</p>` : ""}
+                            </div>
+                            <div>
+                                <h3 style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 10px; margin-top: 0;">Event Details</h3>
+                                <p style="font-size: 13px; color: #111; margin: 2px 0;">${eventDate || "TBD"}</p>
+                                <p style="font-size: 13px; color: #64748b; margin: 2px 0;">${guests || "?"} Guests</p>
+                                <p style="font-size: 13px; color: #64748b; margin: 2px 0;">@ ${formattedLocation}</p>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div style="text-align: center; margin-bottom: 40px; background-color: #f8fafc; padding: 40px; border-radius: 32px; border: 1px solid #f1f5f9;">
-                        <p style="font-size: 14px; font-weight: 700; color: #666; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.05em;">Click below to open your secure chat</p>
+                    ${selectionsHtml}
+                    ${notesHtml}
+
+                    <div style="text-align: center; margin-bottom: 40px; background-color: #111; padding: 45px 30px; border-radius: 32px; color: white;">
+                        <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 12px; font-style: italic; text-transform: uppercase; letter-spacing: -0.02em;">Let&apos;s finalize the details</h3>
+                        <p style="font-size: 14px; color: #a1a1aa; margin-bottom: 30px; line-height: 1.5;">
+                            Use our secure live chat to update menu choices, guest count, timing, or ask any questions directly to our chefs.
+                        </p>
                         <a href="${chatLink}" style="background-color: #f97316; color: white; padding: 18px 36px; text-decoration: none; border-radius: 18px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; transition: background-color 0.2s; box-shadow: 0 10px 20px -10px #f97316;">
                             Open Live Event Chat
                         </a>
+                        <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #27272a;">
+                            <p style="font-size: 11px; font-weight: 700; color: #71717a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Fallback Contact</p>
+                            <p style="font-size: 13px; color: #e4e4e7; margin: 5px 0;">Call/Text: (860) 904-8902</p>
+                            <p style="font-size: 11px; color: #52525b; word-break: break-all; margin-top: 10px;">${chatLink}</p>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; padding: 0 40px;">
+                        <p style="font-size: 12px; color: #94a3b8; line-height: 1.6; font-style: italic;">
+                            Note: This is an inquiry summary, not a final invoice. We will provide a formal quote after discussing your specific needs.
+                        </p>
                     </div>
 
                     <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 40px 0;">
                     
                     <div style="text-align: center;">
-                        <p style="font-size: 12px; color: #cbd5e1; margin-top: 10px;">
-                            © ${new Date().getFullYear()} Indian Food Truck. All rights reserved.
+                        <p style="font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.1em;">
+                            © ${new Date().getFullYear()} Indian Food Truck. Hartford, CT.
                         </p>
                     </div>
                 </div>
@@ -94,6 +135,8 @@ export async function sendChatLinkEmail({
         console.error("FAILED_TO_SEND_EMAIL_EXCEPTION:", error);
     }
 }
+
+
 
 export async function sendOrderConfirmationEmail({
     email,
