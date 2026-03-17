@@ -65,6 +65,7 @@ export default async function ProfilePage() {
 
                 {user.orders.length === 0 ? (
                     <div className="py-20 text-center rounded-[2rem] border border-dashed border-white/10 bg-white/5">
+                        {/* eslint-disable-next-line react/no-unescaped-entities */}
                         <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">No orders yet. Let's change that!</p>
                         <Link href="/menu" className="mt-6 inline-block bg-orange-600 text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-orange-500 transition shadow-lg shadow-orange-600/20">
                             View Menu

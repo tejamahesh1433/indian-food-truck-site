@@ -23,8 +23,8 @@ export async function POST(req: Request) {
             }
         });
         return NextResponse.json(location);
-    } catch (e: any) {
-        if (e.code === 'P2002') {
+    } catch (e) {
+        if (e instanceof Error && 'code' in e && e.code === 'P2002') {
             return NextResponse.json({ error: "Location already exists" }, { status: 400 });
         }
         return NextResponse.json({ error: "Failed to create location" }, { status: 500 });

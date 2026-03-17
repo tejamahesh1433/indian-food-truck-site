@@ -79,6 +79,16 @@ function DrawerContent({ item, onClose, onAdd }: { item: CateringItem; onClose: 
     function handleAdd() {
         const label = priceLabel(item.price, { selectedSize: options["Size"] as string });
 
+        let pricePerUnit = 0;
+        if (item.price.kind === "PER_PERSON") {
+            pricePerUnit = item.price.amount;
+        } else if (item.price.kind === "TRAY") {
+            if (options["Size"] === "Half Tray") pricePerUnit = item.price.half || 0;
+            else if (options["Size"] === "Full Tray") pricePerUnit = item.price.full || 0;
+        } else if (item.price.kind === "FIXED") {
+            pricePerUnit = item.price.amount;
+        }
+
         onAdd({
             id: item.id,
             internalId: Math.random().toString(36).substring(7),
@@ -86,6 +96,7 @@ function DrawerContent({ item, onClose, onAdd }: { item: CateringItem; onClose: 
             quantity,
             options,
             priceLabel: label,
+            pricePerUnit,
         });
         onClose();
     }

@@ -28,4 +28,5 @@ export type SelectedItem = {
         [key: string]: string | number;
     };
     priceLabel: string;
+    pricePerUnit: number;
 };

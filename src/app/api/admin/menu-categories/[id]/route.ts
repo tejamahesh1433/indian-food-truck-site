@@ -9,7 +9,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
             where: { id },
         });
         return NextResponse.json({ ok: true });
-    } catch (err: any) {
+    } catch {
         return NextResponse.json({ ok: false, error: "Failed to delete category" }, { status: 500 });
     }
 }

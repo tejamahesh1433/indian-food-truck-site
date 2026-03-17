@@ -6,6 +6,7 @@ import GlassSurface from "@/components/GlassSurface";
 
 export default function Location() {
     const site = useSite();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const today = site.truck.today as any;
 
     const statusConfig: Record<string, { label: string; color: string; animate: boolean }> = {
@@ -94,7 +95,7 @@ export default function Location() {
 
                                     {today.notes && (
                                         <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 italic">
-                                            " {today.notes} "
+                                            &quot; {today.notes} &quot;
                                         </div>
                                     )}
                                 </div>

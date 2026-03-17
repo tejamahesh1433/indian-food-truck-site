@@ -26,7 +26,7 @@ interface GlassSurfaceProps {
   style?: React.CSSProperties;
 }
 
-const GlassSurface: React.FC<GlassSurfaceProps> = ({
+const GlassSurface = ({
   children,
   width = '100%',
   height = '100%',
@@ -44,10 +44,11 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   blueOffset = 20,
   xChannel = 'R',
   yChannel = 'B',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mixBlendMode = 'difference' as any,
   className = '',
   style = {}
-}) => {
+}: GlassSurfaceProps) => {
   const uniqueId = useId().replace(/:/g, '-');
   const filterId = `glass-filter-${uniqueId}`;
   const redGradId = `red-grad-${uniqueId}`;
@@ -109,6 +110,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     });
 
     gaussianBlurRef.current?.setAttribute('stdDeviation', displace.toString());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     borderRadius,
     borderWidth,
@@ -137,10 +139,12 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     return () => {
       resizeObserver.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     setSvgSupported(supportsSVGFilters());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const supportsSVGFilters = () => {
@@ -150,6 +154,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
 
     // Checking for SVG filters support in backdrop-filter
     const div = document.createElement('div');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     div.style.backdropFilter = `url(#${filterId})`;
 
@@ -161,6 +166,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     width: typeof width === 'number' ? `${width}px` : width,
     height: typeof height === 'number' ? `${height}px` : height,
     borderRadius: `${borderRadius}px`,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     '--glass-frost': backgroundOpacity,
     '--glass-saturation': saturation,

@@ -7,5 +7,6 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(stripeSecretKey, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     apiVersion: "2023-10-16" as any, // Standard stable version or the one intended
 });

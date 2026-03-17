@@ -63,8 +63,9 @@ export default function LoginPage() {
                 router.push(callbackUrl);
                 router.refresh();
             }
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            setError(errorMsg);
         } finally {
             setIsLoading(false);
         }

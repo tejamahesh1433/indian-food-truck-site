@@ -1,0 +1,29 @@
+
+> indian-food-truck@0.1.0 lint
+> eslint
+
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/admin/catering-menu/page.tsx
+  82:5  warning  The 'fetchItems' function makes the dependencies of useEffect Hook (at line 124) change on every render. To fix this, wrap the definition of 'fetchItems' in its own useCallback() Hook            react-hooks/exhaustive-deps
+  82:5  warning  The 'fetchItems' function makes the dependencies of useEffect Hook (at line 129) change on every render. To fix this, wrap the definition of 'fetchItems' in its own useCallback() Hook            react-hooks/exhaustive-deps
+  94:5  warning  The 'fetchCategories' function makes the dependencies of useEffect Hook (at line 124) change on every render. To fix this, wrap the definition of 'fetchCategories' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/admin/menu-items/page.tsx
+  108:18  warning  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  108:21  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  134:18  warning  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  148:18  warning  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  360:23  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  378:23  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  406:23  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  772:51  warning  'isEditing' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/CheckoutForm.tsx
+  5:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/GlassSurface.tsx
+  113:6  warning  React Hook useEffect has a missing dependency: 'updateDisplacementMap'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  146:6  warning  React Hook useEffect has a missing dependency: 'supportsSVGFilters'. Either include it or remove the dependency array     react-hooks/exhaustive-deps
+
+✖ 14 problems (4 errors, 10 warnings)
+

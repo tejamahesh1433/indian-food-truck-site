@@ -24,7 +24,10 @@ export async function POST(req: Request) {
         const validatedData = OrderSchema.parse(body);
 
         // Calculate total and verify prices if needed (in a real app, fetch from DB)
-        const totalAmount = validatedData.items.reduce((acc, item) => acc + (item.priceCents * item.quantity), 0);
+        const subtotalAmount = validatedData.items.reduce((acc, item) => acc + (item.priceCents * item.quantity), 0);
+        const taxAmount = Math.floor(subtotalAmount * 0.0635); // 6.35% CT Tax
+        const serviceFeeAmount = 99; // $0.99 Processing Fee
+        const totalAmount = subtotalAmount + taxAmount + serviceFeeAmount;
 
         // Idempotency Check: Prevent duplicate orders within 10 seconds
         const tenSecondsAgo = new Date(Date.now() - 10000);
@@ -57,10 +60,13 @@ export async function POST(req: Request) {
                 customerName: validatedData.customerName,
                 customerEmail: validatedData.customerEmail,
                 customerPhone: validatedData.customerPhone,
+                subtotalAmount,
+                taxAmount,
+                serviceFeeAmount,
                 totalAmount,
                 status: "PENDING",
                 chatToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), // fallback if cuid() default doesn't trigger
-                userId: (session?.user as any)?.id || null, // Link to user if logged in
+                userId: (session?.user as { id: string })?.id || null, // Link to user if logged in
                 items: {
                     create: validatedData.items.map(item => ({
                         menuItemId: item.id,
@@ -92,9 +98,13 @@ export async function POST(req: Request) {
 
         return NextResponse.json({
             clientSecret: paymentIntent.client_secret,
-            orderId: order.id
+            orderId: order.id,
+            totalAmount: order.totalAmount,
+            subtotalAmount: order.subtotalAmount,
+            taxAmount: order.taxAmount,
+            serviceFeeAmount: order.serviceFeeAmount,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("ORDER_CREATE_ERROR:", error);
 
         if (error instanceof z.ZodError) {
@@ -102,7 +112,7 @@ export async function POST(req: Request) {
         }
 
         // Handle Stripe Errors
-        if (error.type === 'StripeAuthenticationError') {
+        if (error && typeof error === 'object' && 'type' in error && error.type === 'StripeAuthenticationError') {
             return NextResponse.json({
                 error: "Stripe Authentication Error: Your API keys are either missing or invalid. Please update the STRIPE_SECRET_KEY in your .env file."
             }, { status: 401 });

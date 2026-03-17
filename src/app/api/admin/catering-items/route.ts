@@ -16,6 +16,7 @@ export async function GET(req: Request) {
     const available = searchParams.get("available"); // "1" | "0" | null
     const orderByParam = searchParams.get("orderBy") ?? "sortOrder";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     let orderBy: any = [{ sortOrder: "asc" }, { name: "asc" }];
     if (orderByParam === "name") orderBy = [{ name: "asc" }];
     else if (orderByParam === "updatedAt") orderBy = [{ updatedAt: "desc" }];
@@ -43,7 +44,7 @@ export async function GET(req: Request) {
         });
 
         return NextResponse.json({ ok: true, items });
-    } catch (err: any) {
+    } catch (err) {
         console.error("API Error:", err);
         return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
     }

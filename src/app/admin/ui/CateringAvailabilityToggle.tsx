@@ -22,7 +22,7 @@ export default function CateringAvailabilityToggle({
         startTransition(async () => {
             try {
                 await updateCateringEnabled(next);
-            } catch (err) {
+            } catch {
                 // Revert on error
                 setIsEnabled(!next);
                 alert("Failed to update catering status. Please try again.");
@@ -49,6 +49,8 @@ export default function CateringAvailabilityToggle({
             <button
                 onClick={handleToggle}
                 disabled={isPending}
+                aria-label="Toggle catering availability"
+                title="Toggle catering availability"
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isEnabled ? "bg-orange-500" : "bg-neutral-800"
                     } ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
             >

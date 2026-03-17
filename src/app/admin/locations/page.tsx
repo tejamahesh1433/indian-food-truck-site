@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { site } from "@/config/site";
 
 type StopForm = {
     truckToday: string;
@@ -16,6 +15,7 @@ type StopForm = {
     nextStart: string;
     nextEnd: string;
     nextNotes: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     weeklySchedule: Record<string, any>;
 };
 
@@ -152,14 +152,12 @@ export default function AdminLocationsPage() {
         if (!timeStr) return "";
         try {
             return new Date(`2000-01-01T${timeStr}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-        } catch (e) {
+        } catch {
             return timeStr;
         }
     };
 
     if (loading) return <div className="p-10 text-white text-center">Loading Schedule...</div>;
-
-    const mapBase = site.brand.city;
 
     return (
         <main className="mx-auto max-w-6xl px-6 py-12 text-white">
@@ -237,6 +235,8 @@ export default function AdminLocationsPage() {
                                         <select 
                                             value={selectedDay}
                                             onChange={e => setSelectedDay(e.target.value)}
+                                            aria-label="Select day of the week to edit"
+                                            title="Select day of the week to edit"
                                             className="w-full sm:w-64 bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white"
                                         >
                                             <option value="Monday" className="bg-neutral-900">Monday</option>
@@ -262,6 +262,8 @@ export default function AdminLocationsPage() {
                                                 updateCurrentDay({ status: s });
                                             }
                                         }}
+                                        aria-label="Select operation status for the day"
+                                        title="Select operation status for the day"
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 text-white"
                                     >
                                         <option value="SERVING" className="bg-neutral-900">Open Now</option>
@@ -316,6 +318,9 @@ export default function AdminLocationsPage() {
                                                 type="time"
                                                 value={currentDay.start}
                                                 onChange={e => updateCurrentDay({ start: e.target.value })}
+                                                aria-label="Start time"
+                                                title="Start time"
+                                                placeholder="HH:MM"
                                                 className="w-full bg-black/40 border border-white/10 rounded-xl pl-16 pr-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
                                                 required={!!form.todayLocation && currentDay.status !== "CLOSED"}
                                             />
@@ -326,6 +331,9 @@ export default function AdminLocationsPage() {
                                                 type="time"
                                                 value={currentDay.end}
                                                 onChange={e => updateCurrentDay({ end: e.target.value })}
+                                                aria-label="End time"
+                                                title="End time"
+                                                placeholder="HH:MM"
                                                 className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-white/30 text-white [&::-webkit-calendar-picker-indicator]:invert"
                                                 required={!!form.todayLocation && currentDay.status !== "CLOSED"}
                                             />

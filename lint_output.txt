@@ -1,0 +1,216 @@
+
+> indian-food-truck@0.1.0 lint
+> eslint
+
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/admin/catering-menu/page.tsx
+  82:5  warning  The 'fetchItems' function makes the dependencies of useEffect Hook (at line 124) change on every render. To fix this, wrap the definition of 'fetchItems' in its own useCallback() Hook            react-hooks/exhaustive-deps
+  82:5  warning  The 'fetchItems' function makes the dependencies of useEffect Hook (at line 129) change on every render. To fix this, wrap the definition of 'fetchItems' in its own useCallback() Hook            react-hooks/exhaustive-deps
+  94:5  warning  The 'fetchCategories' function makes the dependencies of useEffect Hook (at line 124) change on every render. To fix this, wrap the definition of 'fetchCategories' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/admin/locations/page.tsx
+   19:36  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  155:18  warning  'e' is defined but never used                 @typescript-eslint/no-unused-vars
+  162:11  warning  'mapBase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/admin/menu-items/page.tsx
+  108:18  warning  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  108:21  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  134:18  warning  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  148:18  warning  'e' is defined but never used                   @typescript-eslint/no-unused-vars
+  360:23  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  378:23  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  406:23  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  772:51  warning  'isEditing' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/admin/ui/CateringAvailabilityToggle.tsx
+  25:22  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/catering-categories/[id]/route.ts
+  19:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  19:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  29:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/catering-categories/route.ts
+  10:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  10:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  33:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/catering-items/[id]/route.ts
+  30:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/catering-items/reorder/route.ts
+  21:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/catering-items/route.ts
+  19:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/menu-categories/[id]/route.ts
+  12:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  12:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/menu-categories/route.ts
+  23:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  23:17  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:17  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/menu-items/[id]/route.ts
+  49:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/menu-items/bulk/route.ts
+  60:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/menu-items/reorder/route.ts
+  25:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/menu-items/route.ts
+  19:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/admin/saved-locations/route.ts
+  26:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/auth/signup/route.ts
+  49:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/catering-menu/route.ts
+  15:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/catering/route.ts
+  114:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/api/webhooks/stripe/route.ts
+  23:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/login/page.tsx
+  66:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/profile/page.tsx
+  68:116  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/app/track/[token]/ui/OrderTrackingCard.tsx
+    4:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+   19:77  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  102:45  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/CheckoutForm.tsx
+  5:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/GlassSurface.tsx
+   47:34  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  112:6   warning  React Hook useEffect has a missing dependency: 'updateDisplacementMap'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  140:6   warning  React Hook useEffect has a missing dependency: 'updateDisplacementMap'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  143:21  error    Error: Cannot access variable before it is declared
+
+`supportsSVGFilters` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/GlassSurface.tsx:143:21
+  141 |
+  142 |   useEffect(() => {
+> 143 |     setSvgSupported(supportsSVGFilters());
+      |                     ^^^^^^^^^^^^^^^^^^ `supportsSVGFilters` accessed before it is declared
+  144 |   }, []);
+  145 |
+  146 |   const supportsSVGFilters = () => {
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/GlassSurface.tsx:146:3
+  144 |   }, []);
+  145 |
+> 146 |   const supportsSVGFilters = () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 147 |     if (typeof window === 'undefined' || typeof document === 'undefined') {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 148 |       return false;
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 156 |     return div.style.backdropFilter !== '';
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 157 |   };
+      | ^^^^^ `supportsSVGFilters` is declared here
+  158 |
+  159 |   const containerStyle: React.CSSProperties = {
+  160 |     ...style,  react-hooks/immutability
+  144:6   warning  React Hook useEffect has a missing dependency: 'supportsSVGFilters'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+  153:5   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/ban-ts-comment
+  164:5   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/ban-ts-comment
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/Location.tsx
+   9:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  97:45  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  97:61  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/Magnet.tsx
+  33:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/Magnet.tsx:33:7
+  31 |   useEffect(() => {
+  32 |     if (disabled) {
+> 33 |       setPosition({ x: 0, y: 0 });
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  34 |       return;
+  35 |     }
+  36 |  react-hooks/set-state-in-effect
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/OrderChat.tsx
+  37:8  warning  React Hook useEffect has a missing dependency: 'fetchMessages'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/OrderModal.tsx
+  16:11  warning  'openCart' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/OrderTrackingList.tsx
+  34:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/SiteProvider.tsx
+  35:22  error  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  69:64  error  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  79:9   error  'nextLabel' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/SplitText.tsx
+   23:4   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+   36:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/tejamaheshneerukonda/Projects/food_truck/indian-food-truck/src/components/SplitText.tsx:36:7
+  34 |   useEffect(() => {
+  35 |     if (document.fonts.status === 'loaded') {
+> 36 |       setFontsLoaded(true);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |     } else {
+  38 |       document.fonts.ready.then(() => {
+  39 |         setFontsLoaded(true);  react-hooks/set-state-in-effect
+   49:33  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+   54:18  warning  '_' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   72:20  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+   73:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+   88:25  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  125:18  warning  '_' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  149:18  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  158:24  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+
+✖ 85 problems (60 errors, 25 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

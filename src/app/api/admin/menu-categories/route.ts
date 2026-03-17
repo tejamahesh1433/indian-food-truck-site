@@ -20,7 +20,7 @@ export async function GET() {
         }
 
         return NextResponse.json({ ok: true, categories });
-    } catch (e: any) {
+    } catch {
         return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -43,9 +43,9 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ ok: true, category: cat }, { status: 201 });
-    } catch (e: any) {
+    } catch (e) {
         // Handle unique constraint failure
-        if (e.code === 'P2002') {
+        if (e instanceof Error && 'code' in e && e.code === 'P2002') {
             return NextResponse.json({ ok: false, error: "Category already exists" }, { status: 400 });
         }
         return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });

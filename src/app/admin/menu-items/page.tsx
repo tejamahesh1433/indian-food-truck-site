@@ -105,7 +105,7 @@ export default function AdminMenuItemsPage() {
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
             showToast("Menu order saved", "success");
-        } catch (e: any) {
+        } catch {
             showToast("Failed to save reordering", "error");
             fetchItems();
         }
@@ -131,7 +131,7 @@ export default function AdminMenuItemsPage() {
             const data = await res.json();
             setItems(data.items ?? []);
             setSelectedIds([]); // reset selection on new data
-        } catch (e) {
+        } catch {
             console.error("Failed to parse JSON response. Status:", res.status);
             const text = await res.text();
             console.error("Raw Response Text:", text);
@@ -145,7 +145,7 @@ export default function AdminMenuItemsPage() {
             const res = await fetch("/api/admin/menu-categories");
             const data = await res.json();
             if (data.ok) setCategories(data.categories || []);
-        } catch (e) {
+        } catch {
             console.error("Failed to fetch categories");
         }
     }
@@ -357,8 +357,8 @@ export default function AdminMenuItemsPage() {
             setNewCatName("");
             fetchCategories();
             showToast("Category added", "success");
-        } catch (err: any) {
-            showToast(err.message || "Failed to add category", "error");
+        } catch (err) {
+            showToast(err instanceof Error ? err.message : "Failed to add category", "error");
         }
         setIsSavingCat(false);
     }
@@ -375,8 +375,8 @@ export default function AdminMenuItemsPage() {
             if (!data.ok) throw new Error(data.error);
             showToast("Category deleted", "success");
             fetchCategories();
-        } catch (err: any) {
-            showToast(err.message || "Failed to delete", "error");
+        } catch (err) {
+            showToast(err instanceof Error ? err.message : "Failed to delete", "error");
         }
         setIsSavingCat(false);
     }
@@ -403,8 +403,8 @@ export default function AdminMenuItemsPage() {
             showToast(`Bulk action successful (${selectedIds.length} items)`, "success");
             setSelectedIds([]);
             fetchItems();
-        } catch (err: any) {
-            showToast(err.message || "Bulk action failed", "error");
+        } catch (err) {
+            showToast(err instanceof Error ? err.message : "Bulk action failed", "error");
         }
 
         setIsBulkLoading(false);
@@ -474,6 +474,8 @@ export default function AdminMenuItemsPage() {
                                     <button type="button" onClick={() => setIsCatModalOpen(true)} className="text-xs text-orange-400 hover:text-orange-300 transition underline">Manage</button>
                                 </div>
                                 <select
+                                    title="Category"
+                                    aria-label="Category"
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                     value={category}
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -574,11 +576,11 @@ export default function AdminMenuItemsPage() {
                                 <span className="text-sm text-gray-500 italic shrink-0">None active</span>
                             ) : (
                                 <>
-                                    {fCategory !== "All" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fCategory} <button onClick={() => setFCategory("All")} className="hover:text-red-400">&times;</button></span>}
-                                    {fAvailability !== "all" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fAvailability === "available" ? "In Stock" : "Out of Stock"} <button onClick={() => setFAvailability("all")} className="hover:text-red-400">&times;</button></span>}
-                                    {fVeg && <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Veg <button onClick={() => setFVeg(false)} className="hover:text-white">&times;</button></span>}
-                                    {fSpicy && <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Spicy <button onClick={() => setFSpicy(false)} className="hover:text-white">&times;</button></span>}
-                                    {fPopular && <span className="px-3 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Popular <button onClick={() => setFPopular(false)} className="hover:text-white">&times;</button></span>}
+                                    {fCategory !== "All" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fCategory} <button title="Remove category filter" aria-label="Remove category filter" onClick={() => setFCategory("All")} className="hover:text-red-400">&times;</button></span>}
+                                    {fAvailability !== "all" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fAvailability === "available" ? "In Stock" : "Out of Stock"} <button title="Remove availability filter" aria-label="Remove availability filter" onClick={() => setFAvailability("all")} className="hover:text-red-400">&times;</button></span>}
+                                    {fVeg && <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Veg <button title="Remove veg filter" aria-label="Remove veg filter" onClick={() => setFVeg(false)} className="hover:text-white">&times;</button></span>}
+                                    {fSpicy && <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Spicy <button title="Remove spicy filter" aria-label="Remove spicy filter" onClick={() => setFSpicy(false)} className="hover:text-white">&times;</button></span>}
+                                    {fPopular && <span className="px-3 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Popular <button title="Remove popular filter" aria-label="Remove popular filter" onClick={() => setFPopular(false)} className="hover:text-white">&times;</button></span>}
                                 </>
                             )}
                             {activeFiltersCount > 0 && (
@@ -590,6 +592,8 @@ export default function AdminMenuItemsPage() {
 
                         <div className="shrink-0">
                             <select
+                                title="Sort order"
+                                aria-label="Sort order"
                                 className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-white/30 transition text-white"
                                 value={sortBy}
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -619,6 +623,8 @@ export default function AdminMenuItemsPage() {
                             <div>
                                 <label className="text-sm font-medium text-gray-300">Category</label>
                                 <select
+                                    title="Filter by category"
+                                    aria-label="Filter by category"
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                     value={fCategory}
                                     onChange={(e) => setFCategory(e.target.value)}
@@ -635,6 +641,8 @@ export default function AdminMenuItemsPage() {
                             <div>
                                 <label className="text-sm font-medium text-gray-300">Availability</label>
                                 <select
+                                    title="Filter by availability"
+                                    aria-label="Filter by availability"
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
                                     value={fAvailability}
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -753,6 +761,8 @@ export default function AdminMenuItemsPage() {
                                             <th className="px-6 py-4 font-medium w-10">
                                                 <input
                                                     type="checkbox"
+                                                    title="Select all items"
+                                                    aria-label="Select all items"
                                                     className="w-4 h-4 rounded border-white/10 bg-black/40 cursor-pointer accent-orange-500"
                                                     onChange={toggleSelectAll}
                                                     checked={items.length > 0 && selectedIds.length === items.length}
@@ -769,7 +779,7 @@ export default function AdminMenuItemsPage() {
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {items.map((it) => {
-                                            const isEditing = editingId === it.id;
+
                                             const isDragging = draggedItemId === it.id;
                                             const isOver = dragOverItemId === it.id && !isDragging;
                                             return (
@@ -789,6 +799,8 @@ export default function AdminMenuItemsPage() {
                                                     <td className="px-6 py-4">
                                                         <input
                                                             type="checkbox"
+                                                            title={`Select ${it.name}`}
+                                                            aria-label={`Select ${it.name}`}
                                                             className="w-4 h-4 rounded border-white/10 bg-black/40 cursor-pointer accent-orange-500"
                                                             checked={selectedIds.includes(it.id)}
                                                             onChange={() => toggleSelect(it.id)}
@@ -915,7 +927,7 @@ export default function AdminMenuItemsPage() {
                     <div className="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
                             <h2 className="text-xl font-semibold">Edit Menu Item</h2>
-                            <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-white transition">
+                            <button title="Close edit modal" aria-label="Close edit modal" onClick={() => setEditingId(null)} className="text-gray-400 hover:text-white transition">
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -928,6 +940,7 @@ export default function AdminMenuItemsPage() {
                                     <label className="text-sm font-medium text-gray-300">Name <span className="text-red-400">*</span></label>
                                     <input
                                         required
+                                        placeholder="Item name"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={(editDraft.name as string) ?? ""}
                                         onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
@@ -940,6 +953,8 @@ export default function AdminMenuItemsPage() {
                                         <button type="button" onClick={() => setIsCatModalOpen(true)} className="text-xs text-orange-400 hover:text-orange-300 transition underline">Manage</button>
                                     </div>
                                     <select
+                                        title="Edit category"
+                                        aria-label="Edit category"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                         value={(editDraft.category as string) ?? "Starters"}
                                         onChange={(e) => setEditDraft((d) => ({ ...d, category: e.target.value }))}
@@ -957,6 +972,7 @@ export default function AdminMenuItemsPage() {
                                         type="number"
                                         step="0.01"
                                         min="0"
+                                        placeholder="e.g. 5.99"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={editDraft.priceCents ? (editDraft.priceCents / 100).toString() : ""}
                                         onChange={(e) => {
@@ -969,6 +985,7 @@ export default function AdminMenuItemsPage() {
                                 <div className="md:col-span-2">
                                     <label className="text-sm font-medium text-gray-300">Image URL</label>
                                     <input
+                                        placeholder="/images/menu/item.png"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={(editDraft.imageUrl as string) ?? ""}
                                         onChange={(e) => setEditDraft((d) => ({ ...d, imageUrl: e.target.value }))}
@@ -990,6 +1007,7 @@ export default function AdminMenuItemsPage() {
                                 <div className="md:col-span-4">
                                     <label className="text-sm font-medium text-gray-300">Description</label>
                                     <textarea
+                                        placeholder="Item description..."
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={(editDraft.description as string) ?? ""}
                                         onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))}
@@ -1053,7 +1071,7 @@ export default function AdminMenuItemsPage() {
                     <div className="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
                             <h2 className="text-xl font-semibold">Manage Categories</h2>
-                            <button onClick={() => setIsCatModalOpen(false)} className="text-gray-400 hover:text-white transition">
+                            <button title="Close categories modal" aria-label="Close categories modal" onClick={() => setIsCatModalOpen(false)} className="text-gray-400 hover:text-white transition">
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>

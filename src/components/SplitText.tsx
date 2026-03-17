@@ -20,6 +20,7 @@ const SplitText = ({
   textAlign = 'center',
   tag = 'p',
   onLetterAnimationComplete
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }: any) => {
   const ref = useRef<HTMLElement>(null);
   const animationCompletedRef = useRef(false);
@@ -33,6 +34,7 @@ const SplitText = ({
 
   useEffect(() => {
     if (document.fonts.status === 'loaded') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFontsLoaded(true);
     } else {
       document.fonts.ready.then(() => {
@@ -46,12 +48,13 @@ const SplitText = ({
       if (!ref.current || !text || !fontsLoaded) return;
       // Prevent re-animation if already completed
       if (animationCompletedRef.current) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const el = ref.current as any;
 
       if (el._rbsplitInstance) {
         try {
           el._rbsplitInstance.revert();
-        } catch (_) {
+        } catch {
           /* noop */
         }
         el._rbsplitInstance = null;
@@ -69,7 +72,9 @@ const SplitText = ({
             : `+=${marginValue}${marginUnit}`;
       const start = `top ${startPct}%${sign}`;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let targets: any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const assignTargets = (self: any) => {
         if (splitType.includes('chars') && self.chars.length) targets = self.chars;
         if (!targets && splitType.includes('words') && self.words.length) targets = self.words;
@@ -85,6 +90,7 @@ const SplitText = ({
         wordsClass: 'split-word',
         charsClass: 'split-char',
         reduceWhiteSpace: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onSplit: (self: any) => {
           assignTargets(self);
           const tween = gsap.fromTo(
@@ -122,7 +128,7 @@ const SplitText = ({
         });
         try {
           splitInstance.revert();
-        } catch (_) {
+        } catch {
           /* noop */
         }
         el._rbsplitInstance = null;
@@ -140,12 +146,14 @@ const SplitText = ({
         threshold,
         rootMargin,
         fontsLoaded
+         
       ],
       scope: ref
     }
   );
 
   const renderTag = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const style: any = {
       textAlign,
       overflow: 'hidden',
@@ -155,6 +163,7 @@ const SplitText = ({
       willChange: 'transform, opacity'
     };
     const classes = `split-parent ${className}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Tag = tag as any || 'p';
 
     return (

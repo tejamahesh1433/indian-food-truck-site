@@ -13,6 +13,7 @@ export default function OrderModal({
 }) {
     const site = useSite();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const openCart = () => {
         onClose();
         window.dispatchEvent(new CustomEvent("open-cart"));
@@ -56,6 +57,8 @@ export default function OrderModal({
 
                             <button
                                 onClick={onClose}
+                                title="Close Modal"
+                                aria-label="Close Modal"
                                 className="rounded-full border border-white/15 bg-white/5 p-2 text-gray-200 hover:border-white/40 transition"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -16,6 +16,7 @@ export const test = base.extend<AdminFixtures>({
         // Wait for redirect to dashboard to confirm login worked
         await expect(page).toHaveURL(/\/admin/);
 
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         await use(page);
     },
 });

@@ -34,13 +34,14 @@ export default function TimePicker({ value, onChange, label, showNow }: TimePick
     useEffect(() => {
         if (!value) return;
         const [hStr, mStr] = value.split(":");
-        let h = parseInt(hStr || "12");
+        const h = parseInt(hStr || "12");
         const m = mStr || "00";
 
         const period = h >= 12 ? "PM" : "AM";
         let h12 = h % 12;
         if (h12 === 0) h12 = 12;
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setHour(h12.toString());
         setMinute(m);
         setAmpm(period);

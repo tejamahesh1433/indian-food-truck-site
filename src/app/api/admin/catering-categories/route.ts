@@ -7,7 +7,7 @@ export async function GET() {
             orderBy: { sortOrder: "asc" },
         });
         return NextResponse.json({ ok: true, categories });
-    } catch (err: any) {
+    } catch {
         return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
             },
         });
         return NextResponse.json({ ok: true, category: created });
-    } catch (err: any) {
+    } catch {
         return NextResponse.json({ ok: false, error: "Failed to create category" }, { status: 500 });
     }
 }

@@ -32,6 +32,7 @@ export type DbSettings = {
     nextNotes?: string | null;
 
     cateringEnabled?: boolean | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     weeklySchedule?: any | null;
 };
 
@@ -66,6 +67,7 @@ export function useSite() {
     const currentDayIndex = now.getDay();
     const currentDayName = dayNames[currentDayIndex];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const weekly = dbSettings.weeklySchedule as Record<string, any> | null;
     const currentSchedule = weekly?.[currentDayName] || {};
 
@@ -76,7 +78,7 @@ export function useSite() {
 
     let nextStart = dbSettings.nextStart || "";
     let nextEnd = dbSettings.nextEnd || "";
-    let nextLabel = dbSettings.nextLocation || dbSettings.truckNext || defaultSite.truck.next.label;
+    const nextLabel = dbSettings.nextLocation || dbSettings.truckNext || defaultSite.truck.next.label;
     let nextDayName = "";
     
     // Attempt to automatically derive "Next Stop" from the weekly schedule

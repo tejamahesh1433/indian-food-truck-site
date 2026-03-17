@@ -2,7 +2,7 @@
 
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
 import { useState } from "react";
-import { motion } from "framer-motion";
+
 
 export default function CheckoutForm({ amount, orderId }: { amount: number; orderId: string }) {
     const stripe = useStripe();

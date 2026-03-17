@@ -2,7 +2,7 @@
 
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
-import { useEffect, useState, Suspense } from "react";
+import { useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutForm from "@/components/CheckoutForm";
 import Navbar from "@/components/Navbar";
@@ -14,18 +14,23 @@ function CheckoutContent() {
     const searchParams = useSearchParams();
     const clientSecret = searchParams.get("clientSecret");
     const orderId = searchParams.get("orderId");
-    const [amount, setAmount] = useState<number | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (orderId) {
-            // In a real app, fetch order details to show summary
-            // For now we'll just use a placeholder or assume amount is passed
-            // Let's mock the amount from URL for simplicity in this demo
-            const amt = searchParams.get("amount");
-            if (amt) setAmount(parseInt(amt));
-        }
-    }, [orderId, searchParams]);
+    const { amount, breakdown } = useMemo(() => {
+        const amt = searchParams.get("amount");
+        const sub = searchParams.get("subtotal");
+        const tx = searchParams.get("tax");
+        const f = searchParams.get("fee");
+        
+        const parsedAmount = amt ? parseInt(amt) : null;
+        return {
+            amount: parsedAmount,
+            breakdown: {
+                subtotal: sub ? parseInt(sub) : (parsedAmount ?? 0),
+                tax: tx ? parseInt(tx) : 0,
+                fee: f ? parseInt(f) : 0
+            }
+        };
+    }, [searchParams]);
 
     if (!clientSecret || !orderId) {
         return (
@@ -53,17 +58,34 @@ function CheckoutContent() {
 
                     <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-orange-500" />
-                        Order Summary
+                        Order Breakdown
                     </h3>
 
-                    <div className="flex justify-between items-center py-4 border-t border-white/5">
-                        <span className="text-gray-400 text-sm font-medium">Order ID</span>
-                        <span className="font-mono text-xs bg-white/5 px-2 py-1 rounded">#{orderId.slice(-6).toUpperCase()}</span>
-                    </div>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center py-1">
+                            <span className="text-gray-400 text-sm font-medium">Items Subtotal</span>
+                            <span className="text-sm font-bold text-white">${(breakdown.subtotal / 100).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                            <span className="text-gray-400 text-sm font-medium">CT Sales Tax (6.35%)</span>
+                            <span className="text-sm font-bold text-white">${(breakdown.tax / 100).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                            <span className="text-gray-400 text-sm font-medium">Web Processing Fee</span>
+                            <span className="text-sm font-bold text-white">${(breakdown.fee / 100).toFixed(2)}</span>
+                        </div>
+                        
+                        <div className="pt-4 mt-2 border-t border-white/10 flex justify-between items-center">
+                            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Order Reference</span>
+                            <span className="font-mono text-[10px] bg-white/5 px-2 py-1 rounded">#${orderId.slice(-6).toUpperCase()}</span>
+                        </div>
 
-                    <div className="flex justify-between items-center py-4 border-t border-white/5 text-xl font-bold">
-                        <span>Total Due</span>
-                        <span className="text-orange-500">${((amount ?? 0) / 100).toFixed(2)}</span>
+                        <div className="flex justify-between items-center pt-4 border-t border-white/5 text-2xl font-black italic tracking-tighter">
+                            <span className="text-white">TOTAL DUE</span>
+                            <span className="text-orange-500 shadow-orange-500/20 drop-shadow-2xl">
+                                ${( (amount ?? 0) / 100).toFixed(2)}
+                            </span>
+                        </div>
                     </div>
                 </div>
 

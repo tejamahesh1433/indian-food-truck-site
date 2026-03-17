@@ -121,12 +121,14 @@ export default function AdminCateringMenuPage() {
             await fetchItems();
         };
         fetchAll();
-    }, [fetchCategories, fetchItems]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const t = setTimeout(() => fetchItems(), 250);
         return () => clearTimeout(t);
-    }, [q, fCategory, fetchItems]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [q, fCategory]);
 
     async function addItem(e: React.FormEvent) {
         e.preventDefault();

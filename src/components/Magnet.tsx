@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import './Magnet.css';
 
 interface MagnetProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ const Magnet = ({
 
   useEffect(() => {
     if (disabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosition({ x: 0, y: 0 });
       return;
     }
@@ -60,6 +62,7 @@ const Magnet = ({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
+     
   }, [padding, disabled, magnetStrength]);
 
   const transitionStyle = isActive ? activeTransition : inactiveTransition;
@@ -67,16 +70,14 @@ const Magnet = ({
   return (
     <div
       ref={magnetRef}
-      className={wrapperClassName}
-      style={{ position: 'relative', display: 'inline-block' }}
+      className={`magnet-wrapper ${wrapperClassName}`}
       {...props}
     >
       <div
-        className={innerClassName}
+        className={`magnet-inner ${innerClassName}`}
         style={{
           transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
           transition: transitionStyle,
-          willChange: 'transform'
         }}
       >
         {children}

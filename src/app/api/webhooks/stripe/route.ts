@@ -20,14 +20,17 @@ export async function POST(req: Request) {
         }
         event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
         console.log(`✅ Webhook Event Received: ${event.type} [${event.id}]`);
-    } catch (err: any) {
-        console.error(`❌ Webhook Signature Verification Failed: ${err.message}`);
-        return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+    } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error(`❌ Webhook Signature Verification Failed: ${errorMsg}`);
+        return NextResponse.json({ error: `Webhook Error: ${errorMsg}` }, { status: 400 });
     }
 
     if (event.type === "checkout.session.completed" || event.type === "payment_intent.succeeded") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sessionOrIntent = event.data.object as any;
-        const orderId = sessionOrIntent.metadata?.orderId;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const orderId = (sessionOrIntent as any).metadata?.orderId || sessionOrIntent.metadata?.orderId;
 
         console.log(`📦 Processing ${event.type}: ${sessionOrIntent.id} for Order: ${orderId}`);
 
@@ -59,8 +62,9 @@ export async function POST(req: Request) {
                 });
                 
                 console.log(`📧 Confirmation email sent for Order: ${orderId}`);
-            } catch (dbError: any) {
-                console.error(`❌ Fulfillment error for order ${orderId}:`, dbError.message);
+            } catch (dbError) {
+                const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
+                console.error(`❌ Fulfillment error for order ${orderId}:`, errorMsg);
             }
         } 
     }

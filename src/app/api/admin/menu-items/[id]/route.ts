@@ -15,8 +15,7 @@ export async function PATCH(
     const body = await req.json().catch(() => null);
     if (!body) return bad("Invalid JSON body");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = {};
+    const data: Record<string, string | number | boolean | null> = {};
 
     if (body.name !== undefined) data.name = String(body.name).trim();
     if (body.category !== undefined) data.category = String(body.category).trim();
@@ -46,8 +45,8 @@ export async function PATCH(
         revalidatePath("/menu");
 
         return NextResponse.json({ ok: true, item: updated });
-    } catch (err: any) {
-        if (err.code === "P2025") {
+    } catch (err) {
+        if (err instanceof Error && 'code' in err && err.code === "P2025") {
             return bad("Menu item not found", 404);
         }
         console.error("PATCH Error:", err);
@@ -68,8 +67,8 @@ export async function DELETE(
         revalidatePath("/menu");
 
         return NextResponse.json({ ok: true });
-    } catch (err: any) {
-        if (err.code === "P2025") {
+    } catch (err) {
+        if (err instanceof Error && 'code' in err && err.code === "P2025") {
             return bad("Menu item not found", 404);
         }
         console.error("DELETE Error:", err);

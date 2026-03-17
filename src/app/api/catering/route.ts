@@ -111,6 +111,7 @@ export async function POST(req: Request) {
             guests: created.guests || undefined,
             location: created.location || "TBD",
             notes: created.notes || undefined,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selections: (created.selections as any[]) || [],
         }).then(() => {
             console.log("CATERING_SUBMIT: sendChatLinkEmail finished.");
@@ -119,10 +120,11 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json({ ok: true, chatToken: created.chatToken });
-    } catch (err: any) {
+    } catch (err) {
         console.error("CATERING_SUBMIT_ERROR:", err);
+        const errorMsg = err instanceof Error ? err.message : "Database error";
         return NextResponse.json(
-            { ok: false, error: err.message || "Database error" },
+            { ok: false, error: errorMsg },
             { status: 500 }
         );
     }

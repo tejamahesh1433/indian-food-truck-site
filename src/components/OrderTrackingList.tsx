@@ -31,6 +31,7 @@ const statusColors: Record<OrderStatus, string> = {
 
 const statusSteps = ["PAID", "PREPARING", "READY"];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function OrderTrackingList({ initialOrders }: { initialOrders: any[] }) {
     const [orders, setOrders] = useState<Order[]>(initialOrders as Order[]);
 

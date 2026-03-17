@@ -57,7 +57,7 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ ok: true, count: result.count });
-    } catch (err: any) {
+    } catch (err) {
         console.error("Bulk action failed:", err);
         return bad("Database operation failed", 500);
     }

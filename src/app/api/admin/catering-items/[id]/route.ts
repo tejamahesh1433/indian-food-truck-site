@@ -27,7 +27,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             },
         });
         return NextResponse.json({ ok: true, item: updated });
-    } catch (err: any) {
+    } catch (err) {
         console.error("PATCH Error:", err);
         return NextResponse.json({ ok: false, error: "Failed to update item" }, { status: 500 });
     }
@@ -38,7 +38,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     try {
         await prisma.cateringItem.delete({ where: { id } });
         return NextResponse.json({ ok: true });
-    } catch (err: any) {
+    } catch (err) {
         console.error("DELETE Error:", err);
         return NextResponse.json({ ok: false, error: "Failed to delete item" }, { status: 500 });
     }

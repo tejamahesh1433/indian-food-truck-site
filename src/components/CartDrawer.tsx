@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 export default function CartDrawer() {
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { items, updateQuantity, removeFromCart, totalCents, clearCart } = useCart();
+    const { items, updateQuantity, removeFromCart, totalCents } = useCart();
     const { data: session } = useSession();
 
     const [customerInfo, setCustomerInfo] = useState({
@@ -63,6 +63,7 @@ export default function CartDrawer() {
                                     <button
                                         onClick={() => setIsOpen(false)}
                                         className="p-2 text-gray-400 hover:text-white transition"
+                                        title="Close"
                                     >
                                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -131,7 +132,7 @@ export default function CartDrawer() {
                                     <div className="p-8 space-y-6 bg-white/5 border-t border-white/10 backdrop-blur-3xl">
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-500 italic">Chef's Information</h4>
+                                                <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-gray-500 italic">Chef&apos;s Information</h4>
                                                 {!session?.user && (
                                                     <Link href="/login" onClick={() => setIsOpen(false)} className="text-[9px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 underline underline-offset-4">
                                                         Login for 1-tap checkout
@@ -199,13 +200,22 @@ export default function CartDrawer() {
 
                                                     const data = await res.json();
                                                     if (data.clientSecret) {
-                                                        window.location.href = `/checkout?clientSecret=${data.clientSecret}&orderId=${data.orderId}&amount=${totalCents}`;
+                                                        const params = new URLSearchParams({
+                                                            clientSecret: data.clientSecret,
+                                                            orderId: data.orderId,
+                                                            amount: data.totalAmount || totalCents, // Use total from server if returned
+                                                            subtotal: data.subtotalAmount || totalCents,
+                                                            tax: data.taxAmount || "0",
+                                                            fee: data.serviceFeeAmount || "0"
+                                                        });
+                                                        window.location.href = `/checkout?${params.toString()}`;
                                                     } else {
                                                         throw new Error("Missing client secret");
                                                     }
-                                                } catch (err: any) {
+                                                } catch (err: unknown) {
                                                     console.error("Checkout error", err);
-                                                    alert(err.message || "An error occurred during checkout");
+                                                    const message = err instanceof Error ? err.message : "An error occurred during checkout";
+                                                    alert(message);
                                                     setIsSubmitting(false);
                                                 }
                                             }}

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         );
 
         return NextResponse.json({ ok: true });
-    } catch (err: any) {
+    } catch (err) {
         console.error("Reorder Error:", err);
         return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
     }

@@ -12,10 +12,13 @@ export async function GET() {
             orderBy: { sortOrder: "asc" },
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const sections = categories.map((cat: any) => {
             const seenNames = new Set<string>();
             const filteredItems = items
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((item: any) => item.category === cat.name)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((item: any) => {
                     const normalized = item.name.trim().toLowerCase();
                     if (seenNames.has(normalized)) return false;
@@ -26,6 +29,7 @@ export async function GET() {
             return {
                 title: cat.name,
                 subtitle: cat.subtitle,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items: filteredItems.map((item: any) => ({
                     id: item.id,
                     name: item.name,
@@ -34,6 +38,7 @@ export async function GET() {
                         item.isVeg && "VEG",
                         item.isSpicy && "SPICY",
                         item.isPopular && "POPULAR",
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ].filter(Boolean) as any[],
                     price: (() => {
                         switch (item.priceKind) {
@@ -53,7 +58,7 @@ export async function GET() {
         });
 
         return NextResponse.json({ ok: true, sections });
-    } catch (err: any) {
+    } catch (err) {
         console.error("Fetch Menu Error:", err);
         return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
     }

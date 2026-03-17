@@ -16,7 +16,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             },
         });
         return NextResponse.json({ ok: true, category: updated });
-    } catch (err: any) {
+    } catch {
         return NextResponse.json({ ok: false, error: "Failed to update category" }, { status: 500 });
     }
 }
@@ -26,7 +26,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     try {
         await prisma.cateringCategory.delete({ where: { id } });
         return NextResponse.json({ ok: true });
-    } catch (err: any) {
+    } catch {
         return NextResponse.json({ ok: false, error: "Failed to delete category" }, { status: 500 });
     }
 }

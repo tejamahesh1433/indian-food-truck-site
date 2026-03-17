@@ -199,6 +199,9 @@ model Order {
   customerName    String
   customerEmail   String
   customerPhone   String
+  subtotalAmount  Int      @default(0)
+  taxAmount       Int      @default(0)
+  serviceFeeAmount Int     @default(0)
   totalAmount     Int // In cents
   stripeSessionId String?     @unique
   status          OrderStatus @default(PENDING)

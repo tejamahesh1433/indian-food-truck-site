@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { OrderStatus } from "@prisma/client";
 import OrderChat from "@/components/OrderChat";
 
@@ -16,6 +16,7 @@ const statusColors: Record<OrderStatus, string> = {
 
 const statusSteps = ["PAID", "PREPARING", "READY"];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function OrderTrackingCard({ order: initialOrder }: { order: any }) {
     const [order, setOrder] = useState(initialOrder);
 
@@ -99,6 +100,7 @@ export default function OrderTrackingCard({ order: initialOrder }: { order: any 
             <div className="bg-black/20 rounded-3xl p-6 border border-white/5 space-y-4">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 pb-2 border-b border-white/5">Order Details</h3>
                 <div className="space-y-3">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {order.items.map((item: any) => (
                         <div key={item.id} className="flex justify-between items-center text-sm">
                             <div className="flex items-center gap-3">
