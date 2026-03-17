@@ -59,6 +59,7 @@ export async function POST(req: Request) {
                 customerPhone: validatedData.customerPhone,
                 totalAmount,
                 status: "PENDING",
+                chatToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), // fallback if cuid() default doesn't trigger
                 userId: (session?.user as any)?.id || null, // Link to user if logged in
                 items: {
                     create: validatedData.items.map(item => ({

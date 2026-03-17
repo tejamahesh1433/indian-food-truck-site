@@ -35,15 +35,34 @@ export async function POST(req: Request) {
             try {
                 const updatedOrder = await prisma.order.update({
                     where: { id: orderId },
-                    data: { status: "PAID" }
+                    data: { status: "PAID" },
+                    include: { items: true }
                 });
                 console.log(`✅ Order ${orderId} successfully marked as PAID in database.`);
+
+                // Send Confirmation Email
+                const { sendOrderConfirmationEmail } = await import("@/lib/mail");
+                const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+                const host = headersList.get("host") || "localhost:3000";
+                
+                await sendOrderConfirmationEmail({
+                    email: updatedOrder.customerEmail,
+                    name: updatedOrder.customerName,
+                    orderId: updatedOrder.id,
+                    amount: updatedOrder.totalAmount,
+                    items: updatedOrder.items.map(i => ({
+                        name: i.name,
+                        quantity: i.quantity,
+                        priceCents: i.priceCents
+                    })),
+                    trackingLink: `${protocol}://${host}/track/${updatedOrder.chatToken}`
+                });
+                
+                console.log(`📧 Confirmation email sent for Order: ${orderId}`);
             } catch (dbError: any) {
-                console.error(`❌ Failed to update order ${orderId} in database:`, dbError.message);
+                console.error(`❌ Fulfillment error for order ${orderId}:`, dbError.message);
             }
-        } else {
-            console.warn(`⚠️ No orderId found in ${event.type} metadata. Skipping DB update.`);
-        }
+        } 
     }
 
     return NextResponse.json({ received: true });
