@@ -40,6 +40,8 @@ export default function OrderStatusSelect({
     return (
         <div className="relative inline-block">
             <select
+                title="Order status"
+                aria-label="Order status"
                 value={currentStatus}
                 onChange={handleChange}
                 disabled={loading}
