@@ -19,7 +19,6 @@ function CheckoutContent() {
         const amt = searchParams.get("amount");
         const sub = searchParams.get("subtotal");
         const tx = searchParams.get("tax");
-        const f = searchParams.get("fee");
         
         const parsedAmount = amt ? parseInt(amt) : null;
         return {
@@ -27,7 +26,6 @@ function CheckoutContent() {
             breakdown: {
                 subtotal: sub ? parseInt(sub) : (parsedAmount ?? 0),
                 tax: tx ? parseInt(tx) : 0,
-                fee: f ? parseInt(f) : 0
             }
         };
     }, [searchParams]);
@@ -70,10 +68,7 @@ function CheckoutContent() {
                             <span className="text-gray-400 text-sm font-medium">CT Sales Tax (6.35%)</span>
                             <span className="text-sm font-bold text-white">${(breakdown.tax / 100).toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between items-center py-1">
-                            <span className="text-gray-400 text-sm font-medium">Web Processing Fee</span>
-                            <span className="text-sm font-bold text-white">${(breakdown.fee / 100).toFixed(2)}</span>
-                        </div>
+
                         
                         <div className="pt-4 mt-2 border-t border-white/10 flex justify-between items-center">
                             <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Order Reference</span>

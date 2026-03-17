@@ -25,9 +25,9 @@ export async function POST(req: Request) {
 
         // Calculate total and verify prices if needed (in a real app, fetch from DB)
         const subtotalAmount = validatedData.items.reduce((acc, item) => acc + (item.priceCents * item.quantity), 0);
-        const taxAmount = Math.floor(subtotalAmount * 0.0635); // 6.35% CT Tax
-        const serviceFeeAmount = 99; // $0.99 Processing Fee
-        const totalAmount = subtotalAmount + taxAmount + serviceFeeAmount;
+        const taxAmount = Math.round(subtotalAmount * 0.0635); // 6.35% CT Sales Tax
+        const serviceFeeAmount = 0;
+        const totalAmount = subtotalAmount + taxAmount;
 
         // Idempotency Check: Prevent duplicate orders within 10 seconds
         const tenSecondsAgo = new Date(Date.now() - 10000);
@@ -118,6 +118,7 @@ export async function POST(req: Request) {
             }, { status: 401 });
         }
 
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        const message = error instanceof Error ? error.message : "Internal Server Error";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

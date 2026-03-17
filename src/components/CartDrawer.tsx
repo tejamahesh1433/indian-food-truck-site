@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 export default function CartDrawer() {
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { items, updateQuantity, removeFromCart, totalCents } = useCart();
+    const { items, updateQuantity, removeFromCart, clearCart, totalCents } = useCart();
     const { data: session } = useSession();
 
     const [customerInfo, setCustomerInfo] = useState({
@@ -203,18 +203,19 @@ export default function CartDrawer() {
                                                         const params = new URLSearchParams({
                                                             clientSecret: data.clientSecret,
                                                             orderId: data.orderId,
-                                                            amount: data.totalAmount || totalCents, // Use total from server if returned
-                                                            subtotal: data.subtotalAmount || totalCents,
-                                                            tax: data.taxAmount || "0",
-                                                            fee: data.serviceFeeAmount || "0"
+                                                            amount: String(data.totalAmount ?? totalCents),
+                                                            subtotal: String(data.subtotalAmount ?? totalCents),
+                                                            tax: String(data.taxAmount ?? 0),
                                                         });
+                                                        clearCart();
                                                         window.location.href = `/checkout?${params.toString()}`;
                                                     } else {
                                                         throw new Error("Missing client secret");
                                                     }
                                                 } catch (err: unknown) {
                                                     console.error("Checkout error", err);
-                                                    const message = err instanceof Error ? err.message : "An error occurred during checkout";
+                                                    const rawMsg = err instanceof Error ? err.message : "An error occurred during checkout";
+                                                    const message = rawMsg.length > 150 ? rawMsg.slice(0, 150) + "…" : rawMsg;
                                                     alert(message);
                                                     setIsSubmitting(false);
                                                 }
