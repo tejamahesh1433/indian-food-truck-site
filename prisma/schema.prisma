@@ -91,6 +91,7 @@ model SiteSettings {
   logoUrl         String?  @default("")
   cateringEnabled Boolean  @default(true)
   weeklySchedule  Json?
+  adminAccessPin  String?  @default("")
 }
 
 model SavedLocation {

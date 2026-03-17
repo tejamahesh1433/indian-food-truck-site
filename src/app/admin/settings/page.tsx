@@ -12,6 +12,112 @@ const normalizePhone = (p: string) => {
     return digits ? `+${digits}` : "";
 };
 
+function PinManager() {
+    const [pin, setPin] = useState("");
+    const [initialPin, setInitialPin] = useState("");
+    const [saving, setSaving] = useState(false);
+    const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
+
+    useEffect(() => {
+        (async () => {
+            const res = await fetch("/api/admin/settings");
+            if (res.ok) {
+                const data = await res.json();
+                setPin(data.adminAccessPin || "");
+                setInitialPin(data.adminAccessPin || "");
+            }
+        })();
+    }, []);
+
+    async function savePin() {
+        setSaving(true);
+        setStatus("idle");
+        try {
+            const res = await fetch("/api/admin/settings", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ adminAccessPin: pin.trim() }),
+            });
+            if (res.ok) {
+                setStatus("saved");
+                setInitialPin(pin.trim());
+                setTimeout(() => setStatus("idle"), 3000);
+            } else {
+                setStatus("error");
+            }
+        } catch {
+            setStatus("error");
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    const hasChanged = pin !== initialPin;
+
+    return (
+        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+            <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 className="text-sm font-bold text-white">Security: Admin Access PIN</h3>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">6-digit code required before login</p>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Access PIN Code</label>
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="Enter 6-digit PIN"
+                        value={pin}
+                        onChange={(e) => {
+                            const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                            setPin(v);
+                            setStatus("idle");
+                        }}
+                        className="flex-1 rounded-xl border border-white/10 px-4 py-3 bg-black/50 text-white font-mono text-lg tracking-[0.5em] outline-none focus:border-orange-500/50 transition placeholder:text-gray-600 placeholder:tracking-normal placeholder:text-sm placeholder:font-sans"
+                    />
+                    <button
+                        onClick={savePin}
+                        disabled={saving || !hasChanged || pin.length !== 6}
+                        className="px-6 py-3 rounded-xl bg-orange-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-orange-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        {saving ? "Saving..." : "Update"}
+                    </button>
+                </div>
+                {pin.length > 0 && pin.length < 6 && (
+                    <p className="text-[10px] text-yellow-400 ml-1">PIN must be exactly 6 digits</p>
+                )}
+            </div>
+
+            {status === "saved" && (
+                <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold px-4 py-2 rounded-xl">
+                    ✓ PIN updated successfully
+                </div>
+            )}
+            {status === "error" && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold px-4 py-2 rounded-xl">
+                    Failed to update PIN
+                </div>
+            )}
+
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 flex gap-2">
+                <svg className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <p className="text-[10px] text-yellow-300 leading-relaxed">
+                    This PIN is required to access the admin login page. Without it, nobody can even see the login form. Keep it secret!
+                </p>
+            </div>
+        </section>
+    );
+}
+
 type SettingsForm = {
     phone: string;
     instagramUrl: string;
@@ -399,6 +505,9 @@ export default function AdminSettingsPage() {
                                 <strong>System Logic:</strong> Previews show exactly how links will resolve on mobile versus desktop. Normalized phone links ensure one-tap dialing works.
                             </div>
                         </div>
+
+                        {/* ── Security: Admin Access PIN ── */}
+                        <PinManager />
                     </div>
                 </div>
             </div>

@@ -57,6 +57,7 @@ export async function PUT(req: Request) {
             todayNotes: body.todayNotes,
             
             weeklySchedule: body.weeklySchedule ?? null,
+            ...(body.adminAccessPin !== undefined && { adminAccessPin: body.adminAccessPin?.trim() || "" }),
         },
         create: {
             id: "global",

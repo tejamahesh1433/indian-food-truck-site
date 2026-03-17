@@ -108,13 +108,8 @@ export default function Footer() {
                         )}
                     </div>
                     <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
-                        <Link href="/menu" className="hover:text-white transition">
-                            Menu
-                        </Link>
-                        <Link href="/catering" className="hover:text-white transition">
-                            Catering
-                        </Link>
-                        <Link href="/admin/login" className="hover:text-white transition underline opacity-80">
+
+                        <Link href="/truckadmin/login" className="hover:text-white transition underline opacity-80">
                             Owner Login
                         </Link>
                     </div>
