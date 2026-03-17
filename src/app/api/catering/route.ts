@@ -105,6 +105,10 @@ export async function POST(req: Request) {
             email: created.email,
             name: created.name,
             chatLink: chatLink,
+            eventDate: created.eventDate || undefined,
+            guests: created.guests || undefined,
+            location: created.location || "TBD",
+            selections: (created.selections as any[]) || [],
         }).then(() => {
             console.log("CATERING_SUBMIT: sendChatLinkEmail finished.");
         }).catch(e => {

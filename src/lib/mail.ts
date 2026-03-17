@@ -4,10 +4,18 @@ export async function sendChatLinkEmail({
     email,
     name,
     chatLink,
+    eventDate,
+    guests,
+    location,
+    selections = [],
 }: {
     email: string;
     name: string;
     chatLink: string;
+    eventDate?: string;
+    guests?: string;
+    location?: string;
+    selections?: any[];
 }) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
@@ -19,28 +27,60 @@ export async function sendChatLinkEmail({
 
     try {
         console.log(`Attempting to send catering email to: ${email}`);
+        
+        const selectionsHtml = selections && selections.length > 0 ? `
+            <div style="background-color: #f8fafc; border-radius: 24px; padding: 25px; margin-bottom: 25px; border: 1px solid #f1f5f9;">
+                <h2 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 15px; margin-top: 0;">Initial Selections</h2>
+                <div style="font-size: 14px; color: #444;">
+                    ${selections.map(s => `<div style="padding: 5px 0;">• ${s.name || s}</div>`).join("")}
+                </div>
+            </div>
+        ` : "";
+
+        const eventDetailsHtml = (eventDate || guests || location) ? `
+            <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                ${eventDate ? `<div style="font-size: 12px; color: #666;"><strong style="display:block; color: #111; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Date</strong>${eventDate}</div>` : ""}
+                ${guests ? `<div style="font-size: 12px; color: #666;"><strong style="display:block; color: #111; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Guests</strong>${guests}</div>` : ""}
+                ${location ? `<div style="font-size: 12px; color: #666; grid-column: span 2; margin-top: 10px;"><strong style="display:block; color: #111; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Location</strong>${location}</div>` : ""}
+            </div>
+        ` : "";
+
         const { data, error } = await resend.emails.send({
             from: "Indian Food Truck <contact@tejainfo.xyz>",
             to: email,
-            subject: "Your Catering Chat Link - Indian Food Truck",
+            subject: "Catering Request Received - Indian Food Truck",
             html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #f97316;">Hi ${name}!</h2>
-                    <p>Thank you for your catering request. We've received your details and would love to chat with you about the event.</p>
-                    <p>You can use the link below to chat directly with us and track the status of your quote:</p>
-                    <div style="margin: 30px 0;">
-                        <a href="${chatLink}" style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-                            Open Live Chat
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #333;">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">IFT</div>
+                        <h1 style="font-size: 32px; font-weight: 800; font-style: italic; letter-spacing: -0.05em; margin: 20px 0 10px 0; color: #111; text-transform: uppercase;">Request Received</h1>
+                        <p style="color: #666; margin: 0; font-weight: 500;">We've received your catering inquiry!</p>
+                    </div>
+
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="font-size: 20px; font-weight: 800; color: #111; margin-bottom: 10px;">Hi ${name}!</h2>
+                        <p style="font-size: 16px; line-height: 1.6; color: #444;">
+                            Thank you for considering us for your event. We&apos;ve saved your details and would love to discuss the specifics with you via our live event chat.
+                        </p>
+                    </div>
+
+                    ${eventDetailsHtml}
+                    ${selectionsHtml}
+
+                    <div style="text-align: center; margin-bottom: 40px; background-color: #f8fafc; padding: 40px; border-radius: 32px; border: 1px solid #f1f5f9;">
+                        <p style="font-size: 14px; font-weight: 700; color: #666; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.05em;">Click below to open your secure chat</p>
+                        <a href="${chatLink}" style="background-color: #f97316; color: white; padding: 18px 36px; text-decoration: none; border-radius: 18px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; transition: background-color 0.2s; box-shadow: 0 10px 20px -10px #f97316;">
+                            Open Live Event Chat
                         </a>
                     </div>
-                    <p style="font-size: 14px; color: #666;">
-                        If the button doesn't work, copy and paste this link into your browser:<br>
-                        <a href="${chatLink}" style="color: #f97316;">${chatLink}</a>
-                    </p>
-                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 12px; color: #999;">
-                        This is an automated message. Please use the link above to reply.
-                    </p>
+
+                    <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 40px 0;">
+                    
+                    <div style="text-align: center;">
+                        <p style="font-size: 12px; color: #cbd5e1; margin-top: 10px;">
+                            © ${new Date().getFullYear()} Indian Food Truck. All rights reserved.
+                        </p>
+                    </div>
                 </div>
             `,
         });
