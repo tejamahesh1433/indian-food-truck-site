@@ -10,7 +10,7 @@ export async function GET(
     const { token } = await params;
 
     try {
-        const order = await prisma.order.findUnique({
+        const order = await prisma.order.findFirst({
             where: { chatToken: token },
             include: { 
                 items: true,

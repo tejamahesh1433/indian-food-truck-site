@@ -12,7 +12,7 @@ export default async function OrderTrackingPage({
 }) {
     const { token } = await params;
 
-    const order = await prisma.order.findUnique({
+    const order = await prisma.order.findFirst({
         where: { chatToken: token },
         include: {
             items: true,
