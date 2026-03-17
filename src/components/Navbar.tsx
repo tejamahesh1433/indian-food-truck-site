@@ -56,8 +56,8 @@ export default function Navbar() {
                         </div>
                     </Link>
 
-                    {/* Middle: Pill Nav */}
-                    <div className="flex-1 flex justify-center px-4">
+                    {/* Middle: Pill Nav (Desktop) */}
+                    <div className="hidden md:flex flex-1 justify-center px-4">
                         <PillNav items={navItems} />
                     </div>
 
@@ -98,21 +98,7 @@ export default function Navbar() {
                     {/* Right: Actions (Mobile) */}
                     <div className="flex md:hidden items-center gap-3">
                         <CartTrigger />
-                        {session?.user ? (
-                            <Link href="/profile" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center active:bg-white/10 transition">
-                                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                            </Link>
-                        ) : (
-                            <Link href="/login" className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                                Login
-                            </Link>
-                        )}
-                        <a
-                            href={`tel:${site.contact.phoneE164}`}
-                            className="bg-orange-500 text-black px-4 py-2 rounded-full font-semibold text-sm"
-                        >
-                            Call
-                        </a>
+                        <PillNav items={navItems} />
                     </div>
                 </div>
             </header>

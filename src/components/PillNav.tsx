@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
+import { useSession } from "next-auth/react";
+import { useSite } from "@/components/SiteProvider";
 import './PillNav.css';
 
 interface NavItem {
@@ -42,6 +44,8 @@ const PillNav = ({
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navItemsRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
+  const site = useSite();
 
   useEffect(() => {
     const layout = () => {
@@ -253,6 +257,36 @@ const PillNav = ({
               </li>
             );
           })}
+          
+          <li className="mt-4 pt-4 border-t border-white/10 px-4 flex flex-col gap-3">
+            {session?.user ? (
+              <Link 
+                href="/profile" 
+                className="flex items-center gap-3 text-white font-bold uppercase text-sm"
+                onClick={() => toggleMobileMenu()}
+              >
+                <div className="h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                  <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                </div>
+                My Profile
+              </Link>
+            ) : (
+              <Link 
+                href="/login" 
+                className="text-gray-400 font-bold uppercase text-sm hover:text-white"
+                onClick={() => toggleMobileMenu()}
+              >
+                Login
+              </Link>
+            )}
+            <a
+              href={`tel:${site.contact.phoneE164}`}
+              className="bg-orange-500 text-black px-6 py-3 rounded-xl font-bold text-center text-sm"
+              onClick={() => toggleMobileMenu()}
+            >
+              Call the Truck
+            </a>
+          </li>
         </ul>
       </div>
     </div>

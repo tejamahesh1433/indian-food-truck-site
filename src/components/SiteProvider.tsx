@@ -60,17 +60,20 @@ export function useSite() {
     if (!dbSettings) return defaultSite;
 
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const currentDayName = dayNames[new Date().getDay()];
+    
+    // Use a stable reference for "now" to avoid hydration mismatches
+    const now = new Date();
+    const currentDayIndex = now.getDay();
+    const currentDayName = dayNames[currentDayIndex];
 
     const weekly = dbSettings.weeklySchedule as Record<string, any> | null;
     const currentSchedule = weekly?.[currentDayName] || {};
 
     const activeStart = currentSchedule.start || "";
     const activeEnd = currentSchedule.end || "";
-    const activeStatus = currentSchedule.status || "CLOSED";
-    const activeNotes = currentSchedule.notes || "";
+    const activeStatus = (currentSchedule.status || "CLOSED") as string;
+    const activeNotes = (currentSchedule.notes || "") as string;
 
-    const currentDayIndex = new Date().getDay();
     let nextStart = dbSettings.nextStart || "";
     let nextEnd = dbSettings.nextEnd || "";
     let nextLabel = dbSettings.nextLocation || dbSettings.truckNext || defaultSite.truck.next.label;
@@ -86,7 +89,7 @@ export function useSite() {
             if (schedule && schedule.status && schedule.status !== "CLOSED" && schedule.status !== "SOLD_OUT") {
                 nextStart = schedule.start || "";
                 nextEnd = schedule.end || "";
-                nextLabel = dbSettings.todayLocation || nextLabel;
+                // Do NOT overwrite nextLabel with todayLocation anymore as it might be different
                 nextDayName = checkDayName.slice(0, 3);
                 break;
             }

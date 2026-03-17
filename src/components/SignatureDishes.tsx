@@ -126,9 +126,9 @@ export default function SignatureDishes() {
                         </div>
                     </div>
 
-                    <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                         {filteredDishes.map((d) => (
-                            <SpotlightCard key={d.name} className="p-0 border-white/10" spotlightColor="rgba(255, 120, 0, 0.15)">
+                            <SpotlightCard key={d.name} className="p-0 border-white/10 w-full" spotlightColor="rgba(255, 120, 0, 0.15)">
                                 <div className="group relative h-full flex flex-col bg-white/[0.02]">
                                     {/* Image Holder */}
                                     <div className="relative h-64 overflow-hidden">

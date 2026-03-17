@@ -13,9 +13,9 @@ export default function Hero() {
     return (
         <section className="relative min-h-[92vh] flex items-center overflow-hidden">
             <div className="absolute inset-0 -z-10 bg-transparent">
-                <div className="absolute left-[-10%] top-[-10%] h-[320px] w-[320px] rounded-full bg-orange-500/20 blur-3xl pointer-events-none" />
-                <div className="absolute right-[-8%] top-[10%] h-[280px] w-[280px] rounded-full bg-red-500/15 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-[-10%] left-[20%] h-[260px] w-[260px] rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
+                <div className="absolute left-[-20%] top-[-10%] h-[280px] w-[280px] rounded-full bg-orange-500/20 blur-3xl pointer-events-none md:left-[-10%] md:h-[320px] md:w-[320px]" />
+                <div className="absolute right-[-15%] top-[10%] h-[240px] w-[240px] rounded-full bg-red-500/15 blur-3xl pointer-events-none md:right-[-8%] md:h-[280px] md:w-[280px]" />
+                <div className="absolute bottom-[-10%] left-[10%] h-[220px] w-[220px] rounded-full bg-amber-400/10 blur-3xl pointer-events-none md:left-[20%] md:h-[260px] md:w-[260px]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_35%)] pointer-events-none" />
             </div>
             
@@ -48,7 +48,7 @@ export default function Hero() {
                         </span>
                     </motion.div>
 
-                    <h1 className="mt-6 text-5xl font-bold leading-[1.02] tracking-tight text-white md:text-7xl">
+                    <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-white md:text-7xl md:leading-[1.02]">
                         <SplitText
                           text="Authentic Indian Street Food"
                           delay={40}
@@ -65,7 +65,7 @@ export default function Hero() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.8 }}
-                            className="mt-2 block bg-gradient-to-r from-orange-400 via-amber-300 to-red-400 bg-clip-text text-transparent"
+                            className="mt-2 block bg-gradient-to-r from-orange-400 via-amber-300 to-red-400 bg-clip-text text-transparent text-3xl md:text-5xl"
                         >
                             On Wheels in {city}
                         </motion.span>
@@ -97,18 +97,17 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.18 }}
-                        className="mt-9 flex flex-wrap gap-4"
+                        className="mt-9 flex flex-col sm:flex-row gap-4"
                     >
                         <Link
                             href="/menu"
-                            className="inline-flex items-center justify-center rounded-full bg-orange-500 px-7 py-3.5 font-semibold text-black transition hover:scale-[1.02] hover:bg-orange-400 shadow-[0_12px_40px_rgba(255,140,0,0.25)]"
+                            className="inline-flex items-center justify-center rounded-full bg-orange-500 px-7 py-3.5 font-semibold text-black transition hover:scale-[1.02] hover:bg-orange-400 shadow-[0_12px_40px_rgba(255,140,0,0.25)] w-full sm:w-auto"
                         >
                             View Menu
                         </Link>
-
                         <a
                             href="#location"
-                            className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-7 py-3.5 font-medium text-white shadow-[0_8px_24px_rgba(255,255,255,0.04)] transition hover:border-white/35 hover:bg-white/10"
+                            className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-7 py-3.5 font-medium text-white shadow-[0_8px_24px_rgba(255,255,255,0.04)] transition hover:border-white/35 hover:bg-white/10 w-full sm:w-auto"
                         >
                             Find the Truck
                         </a>
