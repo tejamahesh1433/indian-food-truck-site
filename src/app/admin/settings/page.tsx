@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 // Helper to normalize phone for tel: links
@@ -272,6 +273,8 @@ export default function AdminSettingsPage() {
                                     type="button"
                                     onClick={() => setForm({ ...form, bannerEnabled: !form.bannerEnabled })}
                                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${form.bannerEnabled ? 'bg-orange-500' : 'bg-gray-700'}`}
+                                    title="Toggle Announcement Banner"
+                                    aria-label="Toggle Announcement Banner"
                                 >
                                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.bannerEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                 </button>
@@ -324,12 +327,12 @@ export default function AdminSettingsPage() {
                                     <div className="text-[9px] font-bold uppercase text-gray-600">Header Branding</div>
                                     <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5">
                                         {form.logoUrl ? (
-                                            <div className="h-10 w-10 shrink-0 bg-white/10 rounded-xl overflow-hidden flex items-center justify-center">
-                                                <img
+                                            <div className="h-10 w-10 shrink-0 bg-white/10 rounded-xl overflow-hidden relative">
+                                                <Image
                                                     src={form.logoUrl}
-                                                    className="h-full w-full object-contain p-1"
+                                                    fill
+                                                    className="object-contain p-1"
                                                     alt="Preview"
-                                                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0' }}
                                                 />
                                             </div>
                                         ) : (

@@ -59,6 +59,8 @@ export default function CateringSelectionSummary({ items, onRemove }: Props) {
                                     <span className="text-xs font-black text-orange-500">{item.priceLabel}</span>
                                     <button
                                         onClick={() => onRemove(item.internalId)}
+                                        aria-label="Remove item"
+                                        title="Remove item"
                                         className="p-2 -mr-2 rounded-lg text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

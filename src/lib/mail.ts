@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 
+export type CateringSelection = string | { name: string };
+
 export async function sendChatLinkEmail({
     email,
     name,
@@ -21,7 +23,7 @@ export async function sendChatLinkEmail({
     guests?: string;
     location?: string;
     notes?: string;
-    selections?: any[];
+    selections?: CateringSelection[];
 }) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
@@ -40,7 +42,7 @@ export async function sendChatLinkEmail({
             <div style="background-color: #f8fafc; border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid #f1f5f9;">
                 <h2 style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 12px; margin-top: 0;">Initial Menu Selections</h2>
                 <div style="font-size: 14px; color: #444; line-height: 1.5;">
-                    ${selections.map(s => `<div style="padding: 4px 0;">• ${s.name || s}</div>`).join("")}
+                    ${selections.map(s => `<div style="padding: 4px 0;">• ${typeof s === 'string' ? s : s.name}</div>`).join("")}
                 </div>
             </div>
         ` : "";

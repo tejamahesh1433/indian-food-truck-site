@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
 import OrderModal from "@/components/OrderModal";
 import { useCart, type CartItem } from "@/lib/cart";
@@ -16,7 +16,6 @@ export default function Navbar() {
     const [orderOpen, setOrderOpen] = useState(false);
     const site = useSite();
     const { data: session } = useSession();
-    const pathname = usePathname();
 
     useEffect(() => {
         const el = document.getElementById("location");
@@ -44,7 +43,14 @@ export default function Navbar() {
                     {/* Left: Logo */}
                     <Link href="/" className="flex items-center gap-3 shrink-0">
                         {site.brand.logoUrl ? (
-                            <img src={site.brand.logoUrl} className="h-9 w-9 object-contain" alt={site.brand.name} />
+                            <Image 
+                                src={site.brand.logoUrl} 
+                                className="h-9 w-9 object-contain" 
+                                alt={site.brand.name} 
+                                width={36}
+                                height={36}
+                                priority
+                            />
                         ) : (
                             <div className="h-9 w-9 rounded-xl bg-orange-500 text-black font-bold flex items-center justify-center shadow-lg">
                                 {site.brand.short}

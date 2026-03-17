@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import CateringAvailabilityToggle from "../ui/CateringAvailabilityToggle";
 
@@ -37,9 +37,6 @@ function money(n: number | null) {
     return `$${n.toFixed(0)}`;
 }
 
-function slugify(s: string) {
-    return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
 
 export default function AdminCateringMenuPage() {
     // form state
@@ -56,7 +53,7 @@ export default function AdminCateringMenuPage() {
     const [isVeg, setIsVeg] = useState(false);
     const [isSpicy, setIsSpicy] = useState(false);
     const [isPopular, setIsPopular] = useState(false);
-    const [isAvailable, setIsAvailable] = useState(true);
+    const [isAvailable] = useState(true);
 
     const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -77,9 +74,6 @@ export default function AdminCateringMenuPage() {
     const [q, setQ] = useState("");
     const [fCategory, setFCategory] = useState<string>("All");
 
-    // editing
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editDraft, setEditDraft] = useState<Partial<CateringItem>>({});
 
     // drag to reorder
     const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -116,22 +110,23 @@ export default function AdminCateringMenuPage() {
                 const status = sData.settings?.cateringEnabled ?? sData.cateringEnabled ?? true;
                 setCateringEnabled(status);
             }
-        } catch (e) {
+        } catch {
             console.error("Failed to fetch categories");
         }
     }
 
     useEffect(() => {
-        (async () => {
+        const fetchAll = async () => {
             await fetchCategories();
             await fetchItems();
-        })();
-    }, []);
+        };
+        fetchAll();
+    }, [fetchCategories, fetchItems]);
 
     useEffect(() => {
         const t = setTimeout(() => fetchItems(), 250);
         return () => clearTimeout(t);
-    }, [q, fCategory]);
+    }, [q, fCategory, fetchItems]);
 
     async function addItem(e: React.FormEvent) {
         e.preventDefault();
@@ -202,7 +197,7 @@ export default function AdminCateringMenuPage() {
                 body: JSON.stringify({ itemIds: newItems.map((i) => i.id) }),
             });
             showToast("Order saved", "success");
-        } catch (e) {
+        } catch {
             showToast("Failed to reorder", "error");
             fetchItems();
         }
@@ -282,14 +277,14 @@ export default function AdminCateringMenuPage() {
                         <h2 className="text-lg font-medium">Add New Catering Item</h2>
 
                         <div>
-                            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Name</label>
-                            <input required value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                            <label htmlFor="item-name" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Name</label>
+                            <input id="item-name" required value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                         </div>
 
                         <div>
-                            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Category</label>
+                            <label htmlFor="item-category" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Category</label>
                             <div className="flex gap-2 items-center">
-                                <select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition appearance-none">
+                                <select id="item-category" value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition appearance-none">
                                     {categories.map((c) => (<option key={c.id} value={c.name} className="bg-neutral-900">{c.name}</option>))}
                                 </select>
                                 <button type="button" onClick={() => setIsCatModalOpen(true)} className="mt-1 px-3 py-2.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition text-xs">Manage</button>
@@ -297,8 +292,8 @@ export default function AdminCateringMenuPage() {
                         </div>
 
                         <div>
-                            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Price Kind</label>
-                            <select value={priceKind} onChange={(e) => setPriceKind(e.target.value as PriceKind)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition appearance-none">
+                            <label htmlFor="price-kind" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Price Kind</label>
+                            <select id="price-kind" value={priceKind} onChange={(e) => setPriceKind(e.target.value as PriceKind)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition appearance-none">
                                 <option value="PER_PERSON" className="bg-neutral-900">Per Person</option>
                                 <option value="TRAY" className="bg-neutral-900">Tray (Half/Full)</option>
                                 <option value="FIXED" className="bg-neutral-900">Fixed Price</option>
@@ -308,12 +303,12 @@ export default function AdminCateringMenuPage() {
                         {priceKind === "PER_PERSON" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Amount ($)</label>
-                                    <input type="number" required value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                                    <label htmlFor="amount-pp" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Amount ($)</label>
+                                    <input id="amount-pp" type="number" required value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Min People</label>
-                                    <input type="number" value={minPeople} onChange={(e) => setMinPeople(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                                    <label htmlFor="min-people" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Min People</label>
+                                    <input id="min-people" type="number" value={minPeople} onChange={(e) => setMinPeople(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                                 </div>
                             </div>
                         )}
@@ -321,12 +316,12 @@ export default function AdminCateringMenuPage() {
                         {priceKind === "TRAY" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Half Tray ($)</label>
-                                    <input type="number" value={halfPrice} onChange={(e) => setHalfPrice(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                                    <label htmlFor="half-tray" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Half Tray ($)</label>
+                                    <input id="half-tray" type="number" value={halfPrice} onChange={(e) => setHalfPrice(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Full Tray ($)</label>
-                                    <input type="number" value={fullPrice} onChange={(e) => setFullPrice(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                                    <label htmlFor="full-tray" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Full Tray ($)</label>
+                                    <input id="full-tray" type="number" value={fullPrice} onChange={(e) => setFullPrice(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                                 </div>
                             </div>
                         )}
@@ -334,19 +329,19 @@ export default function AdminCateringMenuPage() {
                         {priceKind === "FIXED" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Amount ($)</label>
-                                    <input type="number" required value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                                    <label htmlFor="amount-fixed" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Amount ($)</label>
+                                    <input id="amount-fixed" type="number" required value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Unit (e.g. dozen)</label>
-                                    <input value={unit} onChange={(e) => setUnit(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                                    <label htmlFor="unit" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Unit (e.g. dozen)</label>
+                                    <input id="unit" value={unit} onChange={(e) => setUnit(e.target.value)} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                                 </div>
                             </div>
                         )}
 
                         <div>
-                            <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Description</label>
-                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                            <label htmlFor="description" className="text-xs font-medium text-gray-400 uppercase tracking-wider">Description</label>
+                            <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                         </div>
 
                         <div className="flex flex-wrap gap-4 text-xs font-medium">
@@ -376,7 +371,7 @@ export default function AdminCateringMenuPage() {
                         <div className="flex-1">
                             <input placeholder="Search items..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
                         </div>
-                        <select value={fCategory} onChange={(e) => setFCategory(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs outline-none">
+                        <select title="Filter by Category" value={fCategory} onChange={(e) => setFCategory(e.target.value)} className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs outline-none">
                             <option value="All" className="bg-neutral-900">All Categories</option>
                             {categories.map(c => <option key={c.id} value={c.name} className="bg-neutral-900">{c.name}</option>)}
                         </select>
@@ -448,12 +443,12 @@ export default function AdminCateringMenuPage() {
 
                         <form onSubmit={addCategory} className="mb-8 space-y-4">
                             <div>
-                                <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">Category Name</label>
-                                <input required value={newCatName} onChange={(e) => setNewCatName(e.target.value)} className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
+                                <label htmlFor="new-cat-name" className="text-xs text-gray-400 font-medium uppercase tracking-wider">Category Name</label>
+                                <input id="new-cat-name" required value={newCatName} onChange={(e) => setNewCatName(e.target.value)} className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" />
                             </div>
                             <div>
-                                <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">Subtitle (Optional)</label>
-                                <input value={newCatSubtitle} onChange={(e) => setNewCatSubtitle(e.target.value)} className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" placeholder="e.g. Spice level available..." />
+                                <label htmlFor="new-cat-subtitle" className="text-xs text-gray-400 font-medium uppercase tracking-wider">Subtitle (Optional)</label>
+                                <input id="new-cat-subtitle" value={newCatSubtitle} onChange={(e) => setNewCatSubtitle(e.target.value)} className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition" placeholder="e.g. Spice level available..." />
                             </div>
                             <button disabled={isSavingCat} className="w-full bg-white text-black font-bold py-2.5 rounded-xl hover:bg-gray-200 transition">Add Category</button>
                         </form>

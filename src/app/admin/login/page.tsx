@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -33,12 +34,12 @@ export default function AdminLoginPage() {
 
     return (
         <div className="mx-auto max-w-md p-6 mt-20">
-            <a href="/" className="inline-block mb-6 text-sm text-orange-500 hover:text-orange-400 transition flex items-center gap-2">
+            <Link href="/" className="inline-block mb-6 text-sm text-orange-500 hover:text-orange-400 transition flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 Back to Website
-            </a>
+            </Link>
             <div className="rounded-2xl border border-white/10 bg-black/40 p-8 backdrop-blur-md">
                 <h1 className="text-2xl font-semibold text-white">Admin Login</h1>
                 <p className="mt-2 text-sm text-gray-400">Enter the admin password to continue.</p>

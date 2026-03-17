@@ -23,8 +23,9 @@ export default function FiltersBar({
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end flex-wrap">
                     <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Search</label>
+                        <label htmlFor="search-input" className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Search</label>
                         <input
+                            id="search-input"
                             className="w-full md:w-72 rounded-xl border border-white/10 bg-black/40 p-2.5 text-sm text-white placeholder:text-gray-600 focus:border-orange-500 outline-none transition"
                             placeholder="Name, email, phone, location..."
                             value={value.q}
@@ -33,11 +34,13 @@ export default function FiltersBar({
                     </div>
 
                     <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Status</label>
+                        <label htmlFor="status-filter" className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Status</label>
                         <select
+                            id="status-filter"
                             className="w-full md:w-40 rounded-xl border border-white/10 bg-black/40 p-2.5 text-sm text-white outline-none focus:border-orange-500 transition appearance-none cursor-pointer"
                             value={value.status}
-                            onChange={(e) => onChange({ ...value, status: e.target.value as any })}
+                            onChange={(e) => onChange({ ...value, status: e.target.value as FiltersState["status"] })}
+                            title="Filter by Status"
                         >
                             <option value="ALL">All Status</option>
                             <option value="NEW">New</option>
@@ -47,11 +50,13 @@ export default function FiltersBar({
                     </div>
 
                     <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
+                        <label htmlFor="sort-select" className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
                         <select
+                            id="sort-select"
                             className="w-full md:w-48 rounded-xl border border-white/10 bg-black/40 p-2.5 text-sm text-white outline-none focus:border-orange-500 transition appearance-none cursor-pointer"
                             value={value.sort}
-                            onChange={(e) => onChange({ ...value, sort: e.target.value as any })}
+                            onChange={(e) => onChange({ ...value, sort: e.target.value as FiltersState["sort"] })}
+                            title="Sort by Category"
                         >
                             <option value="CREATED_DESC">Newest First</option>
                             <option value="CREATED_ASC">Oldest First</option>

@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
 import CateringPrintedMenu from "./ui/CateringPrintedMenu";
@@ -21,30 +21,33 @@ export default function CateringPage() {
     const [drawerItem, setDrawerItem] = useState<CateringItem | null>(null);
     const [notes, setNotes] = useState("");
 
-    // Auto-fill notes from selections
-    useEffect(() => {
-        if (selectedItems.length > 0) {
-            const summary = selectedItems.map((item, idx) => {
+    const prefix = "Selected Catering Items:\n";
+    const separator = "\n\nAdditional Notes:\n";
+
+    const syncNotes = useCallback((items: SelectedItem[], prevNotes: string) => {
+        const summary = items.length > 0
+            ? items.map((item, idx) => {
                 const opts = Object.entries(item.options)
                     .map(([k, v]) => `${k}: ${v}`)
                     .join(" | ");
                 return `${idx + 1}. ${item.name} — ${opts} — Qty ${item.quantity}`;
-            }).join("\n");
+            }).join("\n")
+            : "";
 
-            setNotes((prev) => {
-                const prefix = "Selected Catering Items:\n";
-                const separator = "\n\nAdditional Notes:\n";
-
-                if (!prev || prev.startsWith(prefix)) {
-                    return `${prefix}${summary}`;
-                }
-
-                const parts = prev.split(separator);
-                const existingNotes = parts.length > 1 ? parts[1] : prev;
-                return `${prefix}${summary}${separator}${existingNotes}`;
-            });
+        let existingManualNotes = "";
+        if (prevNotes.includes(separator)) {
+            existingManualNotes = prevNotes.split(separator)[1] || "";
+        } else if (prevNotes.startsWith(prefix)) {
+            existingManualNotes = "";
+        } else {
+            existingManualNotes = prevNotes;
         }
-    }, [selectedItems]);
+
+        if (!summary) return existingManualNotes;
+        return existingManualNotes
+            ? `${prefix}${summary}${separator}${existingManualNotes}`
+            : `${prefix}${summary}`;
+    }, []);
 
 
 
@@ -96,18 +99,22 @@ export default function CateringPage() {
                 setErrorMsg(json.error || "Something went wrong. Try again.");
                 setStatus("error");
             }
-        } catch (err: any) {
-            setErrorMsg(err.message || "Network error. Try again.");
+        } catch (err: unknown) {
+            setErrorMsg(err instanceof Error ? err.message : "Network error. Try again.");
             setStatus("error");
         }
     }
 
     function addSelection(selection: SelectedItem) {
-        setSelectedItems([...selectedItems, selection]);
+        const newItems = [...selectedItems, selection];
+        setSelectedItems(newItems);
+        setNotes(prev => syncNotes(newItems, prev));
     }
 
     function removeSelection(internalId: string) {
-        setSelectedItems(selectedItems.filter(s => s.internalId !== internalId));
+        const newItems = selectedItems.filter(s => s.internalId !== internalId);
+        setSelectedItems(newItems);
+        setNotes(prev => syncNotes(newItems, prev));
     }
 
     return (
@@ -165,6 +172,8 @@ export default function CateringPage() {
                                         <input
                                             name="name"
                                             required
+                                            aria-label="Your name"
+                                            title="Your name"
                                             placeholder="Your name"
                                             className="w-full rounded-2xl bg-black/40 border border-white/10 px-5 py-4 outline-none focus:border-orange-500/50 transition-colors"
                                         />
@@ -175,6 +184,8 @@ export default function CateringPage() {
                                             value={phoneStr}
                                             onChange={handlePhoneChange}
                                             maxLength={14}
+                                            aria-label="Phone number"
+                                            title="Phone number"
                                             placeholder="Phone number"
                                             className="w-full rounded-2xl bg-black/40 border border-white/10 px-5 py-4 outline-none focus:border-orange-500/50 transition-colors"
                                         />
@@ -184,6 +195,8 @@ export default function CateringPage() {
                                         type="email"
                                         name="email"
                                         required
+                                        aria-label="Email address"
+                                        title="Email address"
                                         placeholder="Email address"
                                         className="w-full rounded-2xl bg-black/40 border border-white/10 px-5 py-4 outline-none focus:border-orange-500/50 transition-colors"
                                     />
@@ -193,10 +206,14 @@ export default function CateringPage() {
                                             name="date"
                                             type="date"
                                             required
+                                            aria-label="Event date"
+                                            title="Event date"
                                             className="w-full rounded-2xl bg-black/40 border border-white/10 px-5 py-4 outline-none focus:border-orange-500/50 text-white [&::-webkit-calendar-picker-indicator]:invert transition-colors"
                                         />
                                         <input
                                             name="guests"
+                                            aria-label="Number of guests"
+                                            title="Number of guests"
                                             placeholder="Number of guests"
                                             className="w-full rounded-2xl bg-black/40 border border-white/10 px-5 py-4 outline-none focus:border-orange-500/50 transition-colors"
                                         />
@@ -204,6 +221,8 @@ export default function CateringPage() {
 
                                     <input
                                         name="location"
+                                        aria-label="Event location / address"
+                                        title="Event location / address"
                                         placeholder="Event location / address"
                                         className="w-full rounded-2xl bg-black/40 border border-white/10 px-5 py-4 outline-none focus:border-orange-500/50 transition-colors"
                                     />

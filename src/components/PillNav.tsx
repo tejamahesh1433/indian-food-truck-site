@@ -186,24 +186,28 @@ const PillNav = ({
     }
   };
 
-  const cssVars = {
-    '--base': baseColor,
-    '--pill-bg': pillColor,
-    '--hover-text': hoveredPillTextColor,
-    '--pill-text': pillTextColor
-  } as React.CSSProperties;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.style.setProperty('--base', baseColor);
+      container.style.setProperty('--pill-bg', pillColor);
+      container.style.setProperty('--hover-text', hoveredPillTextColor);
+      container.style.setProperty('--pill-text', pillTextColor);
+    }
+  }, [baseColor, pillColor, hoveredPillTextColor, pillTextColor]);
 
   return (
-    <div className={`pill-nav-container ${className}`} style={cssVars}>
+    <div className={`pill-nav-container ${className}`} ref={containerRef}>
       <nav className="pill-nav" aria-label="Primary">
         <div className="pill-nav-items desktop-only" ref={navItemsRef}>
-          <ul className="pill-list" role="menubar">
+          <ul className="pill-list">
             {items.map((item, i) => {
               const isActive = item.forceActive || pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
               return (
-                <li key={item.href || `item-${i}`} role="none">
+                <li key={item.href || `item-${i}`}>
                   <Link
-                    role="menuitem"
                     href={item.href}
                     className={`pill ${isActive ? 'is-active' : ''}`}
                     aria-label={item.ariaLabel || item.label}

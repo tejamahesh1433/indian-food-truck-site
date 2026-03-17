@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import CustomerChatClient from "./ui/CustomerChatClient";
 import Navbar from "@/components/Navbar";
 import { site } from "@/config/site";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +32,9 @@ export default async function CustomerChatPage({
                     <p className="text-gray-400 mb-6">
                         This catering request chat link is invalid, expired, or has been closed by the admin.
                     </p>
-                    <a href="/" className="inline-block px-6 py-3 rounded-xl bg-orange-500 text-black font-bold hover:bg-orange-600 transition">
+                    <Link href="/" className="inline-block px-6 py-3 rounded-xl bg-orange-500 text-black font-bold hover:bg-orange-600 transition">
                         Return to Homepage
-                    </a>
+                    </Link>
                 </div>
             </main>
         );
@@ -43,7 +44,7 @@ export default async function CustomerChatPage({
         <main className="min-h-screen bg-neutral-900 pb-12 px-6">
             <Navbar />
             <div className="max-w-2xl mx-auto space-y-4 pt-32">
-                <a
+                <Link
                     href="/catering"
                     className="flex items-center gap-2 text-gray-400 hover:text-white transition text-xs font-bold uppercase tracking-wider mb-4 inline-flex"
                 >
@@ -51,7 +52,7 @@ export default async function CustomerChatPage({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Back to Catering
-                </a>
+                </Link>
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-white">Event Chat</h1>

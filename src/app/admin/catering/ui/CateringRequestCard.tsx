@@ -2,6 +2,7 @@
 
 import { CateringRequest } from "@prisma/client";
 import { updateCateringStatus } from "../actions";
+import { SelectedItem } from "@/app/catering/ui/types";
 
 export default function CateringRequestCard({
     request,
@@ -23,7 +24,7 @@ export default function CateringRequestCard({
                     <div className="flex items-center gap-3 mb-1">
                         <h3 className="text-lg font-semibold text-white">{request.name}</h3>
                         {isNew && <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">New</span>}
-                        {(request.selections as any)?.length > 0 && (
+                        {(request.selections as unknown as SelectedItem[])?.length > 0 && (
                             <span className="bg-orange-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
                                 <span className="text-[8px]">🍱</span> Selection
                             </span>
@@ -63,6 +64,8 @@ export default function CateringRequestCard({
                     <select
                         value={request.status}
                         onChange={(e) => updateCateringStatus(request.id, e.target.value)}
+                        title="Change Status"
+                        aria-label="Change Status"
                         className={`w-full md:w-40 appearance-none px-4 py-2 rounded-xl border font-semibold text-sm outline-none cursor-pointer ${isNew ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
                             : isContacted ? 'bg-orange-500/10 border-orange-500/30 text-orange-400'
                                 : 'bg-green-500/10 border-green-500/30 text-green-400'

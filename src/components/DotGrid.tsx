@@ -7,9 +7,9 @@ import './DotGrid.css';
 
 gsap.registerPlugin(InertiaPlugin);
 
-const throttle = (func: any, limit: number) => {
+const throttle = <T extends (...args: never[]) => unknown>(func: T, limit: number) => {
   let lastCall = 0;
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, ...args: Parameters<T>) {
     const now = performance.now();
     if (now - lastCall >= limit) {
       lastCall = now;
@@ -28,6 +28,22 @@ function hexToRgb(hex: string) {
   };
 }
 
+interface DotGridProps {
+  dotSize?: number;
+  gap?: number;
+  baseColor?: string;
+  activeColor?: string;
+  proximity?: number;
+  speedTrigger?: number;
+  shockRadius?: number;
+  shockStrength?: number;
+  maxSpeed?: number;
+  resistance?: number;
+  returnDuration?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
 const DotGrid = ({
   dotSize = 16,
   gap = 32,
@@ -41,11 +57,12 @@ const DotGrid = ({
   resistance = 750,
   returnDuration = 1.5,
   className = '',
-  style
-}: any) => {
+  style = {}
+}: DotGridProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dotsRef = useRef<any[]>([]);
+  const containerRef = useRef<HTMLElement>(null);
+  const dotsRef = useRef<{ cx: number; cy: number; xOffset: number; yOffset: number; _inertiaApplied: boolean }[]>([]);
   const pointerRef = useRef({
     x: 0,
     y: 0,
@@ -57,13 +74,20 @@ const DotGrid = ({
     lastY: 0
   });
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container && style) {
+      Object.assign(container.style, style);
+    }
+  }, [style]);
+
   const baseRgb = useMemo(() => hexToRgb(baseColor), [baseColor]);
   const activeRgb = useMemo(() => hexToRgb(activeColor), [activeColor]);
 
   const circlePath = useMemo(() => {
-    if (typeof window === 'undefined' || !(window as any).Path2D) return null;
+    if (typeof window === 'undefined' || !('Path2D' in window)) return null;
 
-    const p = new (window as any).Path2D();
+    const p = new Path2D();
     p.arc(0, 0, dotSize / 2, 0, Math.PI * 2);
     return p;
   }, [dotSize]);
@@ -154,17 +178,27 @@ const DotGrid = ({
   }, [proximity, baseColor, activeRgb, baseRgb, circlePath]);
 
   useEffect(() => {
-    buildGrid();
-    let ro: any = null;
-    if ('ResizeObserver' in window) {
-      ro = new ResizeObserver(buildGrid);
-      wrapperRef.current && ro.observe(wrapperRef.current);
-    } else {
-      (window as any).addEventListener('resize', buildGrid);
+    let ro: ResizeObserver | null = null;
+    const win: (Window & typeof globalThis) | null = typeof window !== 'undefined' ? window : null;
+
+    const hasResizeObserver = typeof ResizeObserver !== 'undefined';
+
+    if (win) {
+      if (hasResizeObserver) {
+        ro = new ResizeObserver(buildGrid);
+        if (wrapperRef.current) {
+          ro.observe(wrapperRef.current);
+        }
+      } else {
+        win.addEventListener('resize', buildGrid);
+      }
     }
     return () => {
-      if (ro) ro.disconnect();
-      else (window as any).removeEventListener('resize', buildGrid);
+      if (ro) {
+        ro.disconnect();
+      } else if (win) {
+        win.removeEventListener('resize', buildGrid);
+      }
     };
   }, [buildGrid]);
 
@@ -247,17 +281,17 @@ const DotGrid = ({
     };
 
     const throttledMove = throttle(onMove, 50);
-    window.addEventListener('mousemove', throttledMove as any, { passive: true });
+    window.addEventListener('mousemove', throttledMove as unknown as EventListener, { passive: true });
     window.addEventListener('click', onClick);
 
     return () => {
-      window.removeEventListener('mousemove', throttledMove as any);
+      window.removeEventListener('mousemove', throttledMove as unknown as EventListener);
       window.removeEventListener('click', onClick);
     };
   }, [maxSpeed, speedTrigger, proximity, resistance, returnDuration, shockRadius, shockStrength]);
 
   return (
-    <section className={`dot-grid ${className}`} style={style}>
+    <section className={`dot-grid ${className}`} ref={containerRef}>
       <div ref={wrapperRef} className="dot-grid__wrap">
         <canvas ref={canvasRef} className="dot-grid__canvas" />
       </div>

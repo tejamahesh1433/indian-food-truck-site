@@ -75,7 +75,12 @@ export default function AdminChatDrawer({
                             <span>{customerEmail ?? ""}</span>
                         </div>
                     </div>
-                    <button className="rounded-full p-2 hover:bg-white/10 text-gray-400 hover:text-white transition" onClick={onClose}>
+                    <button
+                        className="rounded-full p-2 hover:bg-white/10 text-gray-400 hover:text-white transition"
+                        onClick={onClose}
+                        title="Close chat"
+                        aria-label="Close chat"
+                    >
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -133,6 +138,7 @@ export default function AdminChatDrawer({
                     <textarea
                         className="flex-1 rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-sm text-white placeholder-gray-500 resize-none outline-none focus:border-orange-500/50 transition"
                         placeholder="Reply to customer..."
+                        aria-label="Message text"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         onKeyDown={(e) => {
