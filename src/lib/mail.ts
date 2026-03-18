@@ -289,3 +289,65 @@ export async function sendOrderConfirmationEmail({
         console.error("FAILED_TO_SEND_ORDER_EMAIL_EXCEPTION:", error);
     }
 }
+
+export async function sendOrderNotificationToAdmin({
+    adminEmail,
+    order,
+    adminLink,
+}: {
+    adminEmail: string;
+    order: {
+        id: string;
+        customerName: string;
+        customerEmail: string;
+        customerPhone: string;
+        totalAmount: number;
+        items: { name: string; quantity: number; priceCents: number }[];
+    };
+    adminLink: string;
+}) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) return;
+
+    const resend = new Resend(apiKey);
+    const orderIdShort = order.id.slice(-6).toUpperCase();
+
+    try {
+        const itemsList = order.items.map(item => 
+            `<li><strong>${item.quantity}x</strong> ${item.name} ($${(item.priceCents * item.quantity / 100).toFixed(2)})</li>`
+        ).join("");
+
+        await resend.emails.send({
+            from: "Indian Food Truck <contact@tejainfo.xyz>",
+            to: adminEmail,
+            subject: `🚨 NEW ORDER: #${orderIdShort} - $${(order.totalAmount / 100).toFixed(2)}`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #f97316; padding: 24px; border-radius: 16px;">
+                    <h1 style="color: #f97316; margin-top: 0;">New Order Received!</h1>
+                    <p style="font-size: 18px; font-weight: bold;">Order #${orderIdShort}</p>
+                    
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin: 16px 0;">
+                        <h2 style="font-size: 14px; text-transform: uppercase; color: #64748b; margin-top: 0;">Customer Info</h2>
+                        <p style="margin: 4px 0;"><strong>Name:</strong> ${order.customerName}</p>
+                        <p style="margin: 4px 0;"><strong>Email:</strong> ${order.customerEmail}</p>
+                        <p style="margin: 4px 0;"><strong>Phone:</strong> ${order.customerPhone}</p>
+                    </div>
+
+                    <div style="margin: 16px 0;">
+                        <h2 style="font-size: 14px; text-transform: uppercase; color: #64748b;">Order Items</h2>
+                        <ul style="padding-left: 20px;">
+                            ${itemsList}
+                        </ul>
+                        <p style="font-size: 20px; font-weight: bold; color: #f97316;">Total: $${(order.totalAmount / 100).toFixed(2)}</p>
+                    </div>
+
+                    <a href="${adminLink}" style="display: inline-block; background: #111; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 16px;">
+                        View in Admin Dashboard
+                    </a>
+                </div>
+            `
+        });
+    } catch (error) {
+        console.error("FAILED_TO_SEND_ADMIN_NOTIFICATION:", error);
+    }
+}

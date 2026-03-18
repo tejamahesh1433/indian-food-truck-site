@@ -44,10 +44,11 @@ export async function POST(req: Request) {
                 console.log(`✅ Order ${orderId} successfully marked as PAID in database.`);
 
                 // Send Confirmation Email
-                const { sendOrderConfirmationEmail } = await import("@/lib/mail");
+                const { sendOrderConfirmationEmail, sendOrderNotificationToAdmin } = await import("@/lib/mail");
                 const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
                 const host = headersList.get("host") || "localhost:3000";
                 
+                // 1. Send Customer Email
                 await sendOrderConfirmationEmail({
                     email: updatedOrder.customerEmail,
                     name: updatedOrder.customerName,
@@ -60,8 +61,35 @@ export async function POST(req: Request) {
                     })),
                     trackingLink: `${protocol}://${host}/track/${updatedOrder.chatToken}`
                 });
-                
-                console.log(`📧 Confirmation email sent for Order: ${orderId}`);
+                console.log(`📧 Customer confirmation email sent for Order: ${orderId}`);
+
+                // 2. Send Admin Notification
+                try {
+                    const settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
+                    const adminEmail = settings?.publicEmail || process.env.ADMIN_EMAIL;
+
+                    if (adminEmail) {
+                        await sendOrderNotificationToAdmin({
+                            adminEmail,
+                            order: {
+                                id: updatedOrder.id,
+                                customerName: updatedOrder.customerName,
+                                customerEmail: updatedOrder.customerEmail,
+                                customerPhone: updatedOrder.customerPhone,
+                                totalAmount: updatedOrder.totalAmount,
+                                items: updatedOrder.items.map(i => ({
+                                    name: i.name,
+                                    quantity: i.quantity,
+                                    priceCents: i.priceCents
+                                }))
+                            },
+                            adminLink: `${protocol}://${host}/admin/orders`
+                        });
+                        console.log(`🚨 Admin notification sent to: ${adminEmail}`);
+                    }
+                } catch (adminEmailError) {
+                    console.error("❌ Failed to send admin notification:", adminEmailError);
+                }
             } catch (dbError) {
                 const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
                 console.error(`❌ Fulfillment error for order ${orderId}:`, errorMsg);
