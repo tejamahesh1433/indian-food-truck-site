@@ -59,20 +59,25 @@ export function SiteProvider({ children, settings: initialSettings }: { children
         // 1. Clock timer (updates every minute)
         const clockTimer = setInterval(() => setLiveDate(new Date()), 60000);
 
-        // 2. Settings Poller (updates every 2 minutes to keep sync with admin)
+        // 2. Settings Poller (updates every 10 seconds to keep sync with admin)
         const pollSettings = async () => {
             try {
-                const res = await fetch("/api/settings");
+                // Add timestamp to prevent browser caching
+                const res = await fetch(`/api/settings?t=${Date.now()}`);
                 if (res.ok) {
                     const data = await res.json();
+                    console.log("[SiteProvider] Settings synchronized:", data.businessName, "@", new Date().toLocaleTimeString());
                     setSettings(data);
                 }
             } catch (err) {
-                console.error("Failed to poll settings:", err);
+                console.error("[SiteProvider] Failed to poll settings:", err);
             }
         };
 
-        const settingsTimer = setInterval(pollSettings, 120000);
+        const settingsTimer = setInterval(pollSettings, 10000);
+
+        // Initial fetch on mount to ensure client is in sync with latest DB state immediately 
+        pollSettings();
 
         return () => {
             clearInterval(clockTimer);
