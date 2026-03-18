@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+type DaySchedule = {
+    start: string;
+    end: string;
+    status: string;
+    notes: string;
+};
+
 type StopForm = {
     truckToday: string;
     todayLocation: string;
@@ -15,8 +22,7 @@ type StopForm = {
     nextStart: string;
     nextEnd: string;
     nextNotes: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    weeklySchedule: Record<string, any>;
+    weeklySchedule: Record<string, DaySchedule>;
 };
 
 export default function AdminLocationsPage() {

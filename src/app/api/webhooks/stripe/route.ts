@@ -26,76 +26,81 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: `Webhook Error: ${errorMsg}` }, { status: 400 });
     }
 
-    if (event.type === "checkout.session.completed" || event.type === "payment_intent.succeeded") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const sessionOrIntent = event.data.object as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const orderId = (sessionOrIntent as any).metadata?.orderId || sessionOrIntent.metadata?.orderId;
-
-        console.log(`📦 Processing ${event.type}: ${sessionOrIntent.id} for Order: ${orderId}`);
-
-        if (orderId) {
-            try {
-                const updatedOrder = await prisma.order.update({
-                    where: { id: orderId },
-                    data: { status: "PAID" },
-                    include: { items: true }
-                });
-                console.log(`✅ Order ${orderId} successfully marked as PAID in database.`);
-
-                // Send Confirmation Email
-                const { sendOrderConfirmationEmail, sendOrderNotificationToAdmin } = await import("@/lib/mail");
-                const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-                const host = headersList.get("host") || "localhost:3000";
-                
-                // 1. Send Customer Email
-                await sendOrderConfirmationEmail({
-                    email: updatedOrder.customerEmail,
-                    name: updatedOrder.customerName,
-                    orderId: updatedOrder.id,
-                    amount: updatedOrder.totalAmount,
-                    items: updatedOrder.items.map(i => ({
-                        name: i.name,
-                        quantity: i.quantity,
-                        priceCents: i.priceCents
-                    })),
-                    trackingLink: `${protocol}://${host}/track/${updatedOrder.chatToken}`
-                });
-                console.log(`📧 Customer confirmation email sent for Order: ${orderId}`);
-
-                // 2. Send Admin Notification
-                try {
-                    const settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
-                    const adminEmail = settings?.publicEmail || process.env.ADMIN_EMAIL;
-
-                    if (adminEmail) {
-                        await sendOrderNotificationToAdmin({
-                            adminEmail,
-                            order: {
-                                id: updatedOrder.id,
-                                customerName: updatedOrder.customerName,
-                                customerEmail: updatedOrder.customerEmail,
-                                customerPhone: updatedOrder.customerPhone,
-                                totalAmount: updatedOrder.totalAmount,
-                                items: updatedOrder.items.map(i => ({
-                                    name: i.name,
-                                    quantity: i.quantity,
-                                    priceCents: i.priceCents
-                                }))
-                            },
-                            adminLink: `${protocol}://${host}/admin/orders`
-                        });
-                        console.log(`🚨 Admin notification sent to: ${adminEmail}`);
-                    }
-                } catch (adminEmailError) {
-                    console.error("❌ Failed to send admin notification:", adminEmailError);
-                }
-            } catch (dbError) {
-                const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
-                console.error(`❌ Fulfillment error for order ${orderId}:`, errorMsg);
-            }
-        } 
+    if (event.type === "checkout.session.completed") {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const orderId = session.metadata?.orderId;
+        await handleOrderFulfillment(orderId, session.id, event.type, headersList);
+    } else if (event.type === "payment_intent.succeeded") {
+        const intent = event.data.object as Stripe.PaymentIntent;
+        const orderId = intent.metadata?.orderId;
+        await handleOrderFulfillment(orderId, intent.id, event.type, headersList);
     }
 
     return NextResponse.json({ received: true });
+}
+
+async function handleOrderFulfillment(orderId: string | undefined, sessionId: string, eventType: string, headersList: Headers) {
+    if (!orderId) return;
+
+    console.log(`📦 Processing ${eventType}: ${sessionId} for Order: ${orderId}`);
+
+    try {
+        const updatedOrder = await prisma.order.update({
+            where: { id: orderId },
+            data: { status: "PAID" },
+            include: { items: true }
+        });
+        console.log(`✅ Order ${orderId} successfully marked as PAID in database.`);
+
+        // Send Confirmation Email
+        const { sendOrderConfirmationEmail, sendOrderNotificationToAdmin } = await import("@/lib/mail");
+        const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+        const host = headersList.get("host") || "localhost:3000";
+        
+        // 1. Send Customer Email
+        await sendOrderConfirmationEmail({
+            email: updatedOrder.customerEmail,
+            name: updatedOrder.customerName,
+            orderId: updatedOrder.id,
+            amount: updatedOrder.totalAmount,
+            items: updatedOrder.items.map(i => ({
+                name: i.name,
+                quantity: i.quantity,
+                priceCents: i.priceCents
+            })),
+            trackingLink: `${protocol}://${host}/track/${updatedOrder.chatToken}`
+        });
+        console.log(`📧 Customer confirmation email sent for Order: ${orderId}`);
+
+        // 2. Send Admin Notification
+        try {
+            const settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
+            const adminEmail = settings?.publicEmail || process.env.ADMIN_EMAIL;
+
+            if (adminEmail) {
+                await sendOrderNotificationToAdmin({
+                    adminEmail,
+                    order: {
+                        id: updatedOrder.id,
+                        customerName: updatedOrder.customerName,
+                        customerEmail: updatedOrder.customerEmail,
+                        customerPhone: updatedOrder.customerPhone,
+                        totalAmount: updatedOrder.totalAmount,
+                        items: updatedOrder.items.map(i => ({
+                            name: i.name,
+                            quantity: i.quantity,
+                            priceCents: i.priceCents
+                        }))
+                    },
+                    adminLink: `${protocol}://${host}/admin/orders`
+                });
+                console.log(`🚨 Admin notification sent to: ${adminEmail}`);
+            }
+        } catch (adminEmailError) {
+            console.error("❌ Failed to send admin notification:", adminEmailError);
+        }
+    } catch (dbError) {
+        const errorMsg = dbError instanceof Error ? dbError.message : String(dbError);
+        console.error(`❌ Fulfillment error for order ${orderId}:`, errorMsg);
+    }
 }

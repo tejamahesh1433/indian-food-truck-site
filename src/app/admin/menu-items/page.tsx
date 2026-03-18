@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 
 type MenuItem = {
@@ -31,8 +31,7 @@ function money(cents: number) {
 export default function AdminMenuItemsPage() {
     // form state
     const [name, setName] = useState("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [category, setCategory] = useState<any>("Starters");
+    const [category, setCategory] = useState<string>("Starters");
     const [price, setPrice] = useState<string>("");
     const [description, setDescription] = useState("");
     const [imageUrl, setImageUrl] = useState("");
@@ -114,7 +113,7 @@ export default function AdminMenuItemsPage() {
         setDragOverItemId(null);
     }
 
-    async function fetchItems() {
+    const fetchItems = useCallback(async () => {
         setLoading(true);
         const params = new URLSearchParams();
         if (q.trim()) params.set("q", q.trim());
@@ -138,9 +137,9 @@ export default function AdminMenuItemsPage() {
             showToast("Server returned an invalid JSON block. Check console.", "error");
         }
         setLoading(false);
-    }
+    }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability, sortBy]);
 
-    async function fetchCategories() {
+    const fetchCategories = useCallback(async () => {
         try {
             const res = await fetch("/api/admin/menu-categories");
             const data = await res.json();
@@ -148,21 +147,20 @@ export default function AdminMenuItemsPage() {
         } catch {
             console.error("Failed to fetch categories");
         }
-    }
+    }, []);
 
     useEffect(() => {
-        (async () => {
+        const init = async () => {
             await fetchCategories();
             await fetchItems();
-        })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        };
+        init();
+    }, [fetchItems, fetchCategories]);
 
     useEffect(() => {
         const t = setTimeout(() => fetchItems(), 250);
         return () => clearTimeout(t);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability, sortBy]);
+    }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability, sortBy, fetchItems]);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -258,8 +256,7 @@ export default function AdminMenuItemsPage() {
     }
 
     async function saveEdit(id: string) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const payload: any = { ...editDraft };
+        const payload: Partial<MenuItem & { price: number }> = { ...editDraft };
 
         // convert cents -> dollars field if user changed price via input
         if (typeof payload.priceCents === "number") {
@@ -478,8 +475,7 @@ export default function AdminMenuItemsPage() {
                                     aria-label="Category"
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                     value={category}
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    onChange={(e) => setCategory(e.target.value as any)}
+                                    onChange={(e) => setCategory(e.target.value)}
                                 >
                                     {categories.map((c) => (
                                         <option key={c.id} value={c.name} className="bg-neutral-900">
@@ -596,8 +592,7 @@ export default function AdminMenuItemsPage() {
                                 aria-label="Sort order"
                                 className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-white/30 transition text-white"
                                 value={sortBy}
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                onChange={(e) => setSortBy(e.target.value as any)}
+                                onChange={(e) => setSortBy(e.target.value as "updatedAt" | "priceCents" | "name" | "sortOrder")}
                             >
                                 <option value="sortOrder">Sort: Custom Order</option>
                                 <option value="updatedAt">Sort: Recently Updated</option>
@@ -645,8 +640,7 @@ export default function AdminMenuItemsPage() {
                                     aria-label="Filter by availability"
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white"
                                     value={fAvailability}
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    onChange={(e) => setFAvailability(e.target.value as any)}
+                                    onChange={(e) => setFAvailability(e.target.value as "all" | "available" | "unavailable")}
                                 >
                                     <option value="all" className="bg-neutral-900">All Statuses</option>
                                     <option value="available" className="bg-neutral-900">In Stock</option>
@@ -854,10 +848,8 @@ export default function AdminMenuItemsPage() {
                                                     <td className="px-6 py-4 w-40">
                                                         <div className="flex flex-wrap gap-2">
                                                             {["Veg", "Spicy", "Popular"].map((t) => {
-                                                                const key =
-                                                                    t === "Veg" ? "isVeg" : t === "Spicy" ? "isSpicy" : "isPopular";
-                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                                const val = (it as any)[key] as boolean;
+                                                                const key = t === "Veg" ? "isVeg" : t === "Spicy" ? "isSpicy" : "isPopular";
+                                                                const val = it[key as keyof MenuItem] as boolean;
 
                                                                 const activeColors = t === 'Veg' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                                                                     t === 'Spicy' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
