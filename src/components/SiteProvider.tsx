@@ -114,14 +114,14 @@ export function useSite() {
     const activeNotes = (currentSchedule.notes || "") as string;
 
     // --- Automatic Status Derivation ---
-    const deriveEffectiveStatus = () => {
+    const { status: activeStatus, remainingMins } = (() => {
         // 1. Manual Hard Overrides always take precedence
         if (activeStatusRaw === "SOLD_OUT" || activeStatusRaw === "WEATHER_DELAY") {
-            return activeStatusRaw;
+            return { status: activeStatusRaw, remainingMins: 0 };
         }
 
         // 2. If no hours are set, we can't automate - return CLOSED
-        if (!activeStart || !activeEnd) return "CLOSED";
+        if (!activeStart || !activeEnd) return { status: "CLOSED", remainingMins: 0 };
 
         try {
             const [startH, startM] = activeStart.split(':').map(Number);
@@ -140,30 +140,26 @@ export function useSite() {
             if (nowTotal >= startTotal && nowTotal < endTotal) {
                 // If within last 30 minutes of serving
                 if (nowTotal >= endTotal - 30) {
-                    return "CLOSING_SOON";
+                    return { status: "CLOSING_SOON", remainingMins: endTotal - nowTotal };
                 }
-                return "SERVING";
+                return { status: "SERVING", remainingMins: endTotal - nowTotal };
             }
             
             // 2. Before the serving window
             if (nowTotal < startTotal) {
                 // If within 30 minutes of opening
                 if (nowTotal >= startTotal - 30) {
-                    return "OPENING_SOON";
+                    return { status: "OPENING_SOON", remainingMins: startTotal - nowTotal };
                 }
-                // Otherwise, it's CLOSED regardless of the raw status choice (truly automatic)
-                return "CLOSED";
+                return { status: "CLOSED", remainingMins: 0 };
             }
 
             // 3. Past the serving window (Automated Close)
-            return "CLOSED";
+            return { status: "CLOSED", remainingMins: 0 };
         } catch {
-            // If parsing fails, default to CLOSED as we can't determine status
-            return "CLOSED";
+            return { status: "CLOSED", remainingMins: 0 };
         }
-    };
-
-    const activeStatus = deriveEffectiveStatus();
+    })();
 
     let nextStart = dbSettings.nextStart || "";
     let nextEnd = dbSettings.nextEnd || "";
@@ -220,6 +216,7 @@ export function useSite() {
                 end: activeEnd,
                 status: activeStatus,
                 notes: activeNotes,
+                remainingMins,
                 hours: activeStart && activeEnd
                     ? `${formatTime12h(activeStart)} – ${formatTime12h(activeEnd)}`
                     : activeStatus === "CLOSED" ? "Closed" : defaultSite.truck.today.hours,

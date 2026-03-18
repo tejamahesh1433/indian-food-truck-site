@@ -66,7 +66,9 @@ export default function Location() {
                                         <div className="text-sm text-gray-400 font-bold uppercase tracking-widest">Today</div>
                                         <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${status.color} text-white flex items-center gap-1.5 shadow-lg shadow-${status.color.split('-')[1]}-500/20`}>
                                             {status.animate && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-                                            {status.label}
+                                            {today.status === "CLOSING_SOON"
+                                                ? `Closing in ${today.remainingMins} min${today.remainingMins !== 1 ? 's' : ''}`
+                                                : status.label}
                                         </div>
                                     </div>
 
