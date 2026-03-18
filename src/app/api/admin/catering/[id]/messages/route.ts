@@ -1,20 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { isAdmin } from "@/lib/adminAuth";
 
 function bad(msg: string, status = 400) {
     return NextResponse.json({ error: msg }, { status });
 }
 
-// TODO: Replace with your actual admin auth check
-function assertAdmin() {
-    return true; // We enforce admin via middleware on the route level, or verify cookie here
+async function assertAdmin() {
+    return await isAdmin();
 }
 
 export async function GET(
     _req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    if (!assertAdmin()) return bad("Unauthorized", 401);
+    if (!(await assertAdmin())) return bad("Unauthorized", 401);
 
     const { id } = await params;
 
@@ -37,7 +37,7 @@ export async function POST(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    if (!assertAdmin()) return bad("Unauthorized", 401);
+    if (!(await assertAdmin())) return bad("Unauthorized", 401);
 
     const { id } = await params;
 

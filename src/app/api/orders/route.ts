@@ -23,8 +23,31 @@ export async function POST(req: Request) {
         const body = await req.json();
         const validatedData = OrderSchema.parse(body);
 
-        // Calculate total and verify prices if needed (in a real app, fetch from DB)
-        const subtotalAmount = validatedData.items.reduce((acc, item) => acc + (item.priceCents * item.quantity), 0);
+        // Fetch actual prices from DB to prevent client-side price tampering
+        const itemIds = validatedData.items.map(i => i.id);
+        const dbItems = await prisma.menuItem.findMany({
+            where: { 
+                id: { in: itemIds },
+                isAvailable: true 
+            }
+        });
+
+        if (dbItems.length !== validatedData.items.length) {
+            return NextResponse.json({ 
+                error: "One or more items in your cart are no longer available. Please refresh and try again." 
+            }, { status: 400 });
+        }
+
+        // Map DB items for easy lookup
+        const dbItemMap = new Map(dbItems.map(item => [item.id, item]));
+
+        // Calculate total using verified DB prices
+        const subtotalAmount = validatedData.items.reduce((acc, item) => {
+            const dbItem = dbItemMap.get(item.id);
+            if (!dbItem) return acc; // Should not happen due to length check
+            return acc + (dbItem.priceCents * item.quantity);
+        }, 0);
+
         const taxAmount = Math.round(subtotalAmount * 0.0635); // 6.35% CT Sales Tax
         const serviceFeeAmount = 0;
         const totalAmount = subtotalAmount + taxAmount;
@@ -65,15 +88,18 @@ export async function POST(req: Request) {
                 serviceFeeAmount,
                 totalAmount,
                 status: "PENDING",
-                chatToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), // fallback if cuid() default doesn't trigger
+                chatToken: crypto.randomUUID(), // Secure tracking token
                 userId: (session?.user as { id: string })?.id || null, // Link to user if logged in
                 items: {
-                    create: validatedData.items.map(item => ({
-                        menuItemId: item.id,
-                        name: item.name,
-                        quantity: item.quantity,
-                        priceCents: item.priceCents,
-                    }))
+                    create: validatedData.items.map(item => {
+                        const dbItem = dbItemMap.get(item.id)!;
+                        return {
+                            menuItemId: item.id,
+                            name: dbItem.name, // Use DB name too for consistency
+                            quantity: item.quantity,
+                            priceCents: dbItem.priceCents,
+                        };
+                    })
                 }
             }
         });
@@ -114,11 +140,10 @@ export async function POST(req: Request) {
         // Handle Stripe Errors
         if (error && typeof error === 'object' && 'type' in error && error.type === 'StripeAuthenticationError') {
             return NextResponse.json({
-                error: "Stripe Authentication Error: Your API keys are either missing or invalid. Please update the STRIPE_SECRET_KEY in your .env file."
+                error: "Payment service temporarily unavailable. Please try again later."
             }, { status: 401 });
         }
 
-        const message = error instanceof Error ? error.message : "Internal Server Error";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

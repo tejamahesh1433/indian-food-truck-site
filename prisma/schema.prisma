@@ -234,3 +234,14 @@ model OrderItem {
   priceCents Int
   order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
+
+model AdminLoginAttempt {
+  id        String   @id @default(cuid())
+  ip        String
+  count     Int      @default(1)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ip, expiresAt])
+}

@@ -5,4 +5,6 @@
 
 .magnet-inner {
   will-change: transform;
+  transform: var(--magnet-transform, translate3d(0, 0, 0));
+  transition: var(--magnet-transition, none);
 }

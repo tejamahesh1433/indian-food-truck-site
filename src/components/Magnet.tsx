@@ -67,6 +67,11 @@ const Magnet = ({
 
   const transitionStyle = isActive ? activeTransition : inactiveTransition;
 
+  const magnetStyle = {
+    '--magnet-transform': `translate3d(${position.x}px, ${position.y}px, 0)`,
+    '--magnet-transition': transitionStyle,
+  } as React.CSSProperties;
+
   return (
     <div
       ref={magnetRef}
@@ -75,10 +80,7 @@ const Magnet = ({
     >
       <div
         className={`magnet-inner ${innerClassName}`}
-        style={{
-          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-          transition: transitionStyle,
-        }}
+        style={magnetStyle}
       >
         {children}
       </div>

@@ -26,3 +26,15 @@ export async function verifyAdminToken(token: string) {
 export function getAdminCookieName() {
     return COOKIE_NAME;
 }
+
+export async function isAdmin() {
+    try {
+        const { cookies } = await import("next/headers");
+        const cookieStore = await cookies();
+        const token = cookieStore.get(getAdminCookieName())?.value;
+        if (!token) return false;
+        return await verifyAdminToken(token);
+    } catch {
+        return false;
+    }
+}
