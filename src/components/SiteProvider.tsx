@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { site as defaultSite } from "@/config/site";
 
 export type DbSettings = {
@@ -49,21 +49,34 @@ const formatTime12h = (timeStr?: string | null) => {
     }
 };
 
-const SiteContext = createContext<DbSettings | null>(null);
+const SiteContext = createContext<{ settings: DbSettings | null; liveDate: Date } | null>(null);
 
 export function SiteProvider({ children, settings }: { children: React.ReactNode, settings: DbSettings | null }) {
-    return <SiteContext.Provider value={settings}>{children}</SiteContext.Provider>;
+    const [liveDate, setLiveDate] = useState(new Date());
+
+    useEffect(() => {
+        // We initialize with new Date() during render. 
+        // Subsequent updates happen every minute to keep the status live.
+        const timer = setInterval(() => setLiveDate(new Date()), 60000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <SiteContext.Provider value={{ settings, liveDate }}>
+            {children}
+        </SiteContext.Provider>
+    );
 }
 
 export function useSite() {
-    const dbSettings = useContext(SiteContext);
+    const context = useContext(SiteContext);
+    const dbSettings = context?.settings;
+    const now = context?.liveDate || new Date();
 
     if (!dbSettings) return defaultSite;
 
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     
-    // Use a stable reference for "now" to avoid hydration mismatches
-    const now = new Date();
     const currentDayIndex = now.getDay();
     const currentDayName = dayNames[currentDayIndex];
 
@@ -78,13 +91,13 @@ export function useSite() {
 
     // --- Automatic Status Derivation ---
     const deriveEffectiveStatus = () => {
-        // 1. Manual Overrides always take precedence
+        // 1. Manual Hard Overrides always take precedence
         if (activeStatusRaw === "SOLD_OUT" || activeStatusRaw === "WEATHER_DELAY") {
             return activeStatusRaw;
         }
 
-        // 2. If no hours are set, we can't automate - return current status
-        if (!activeStart || !activeEnd) return activeStatusRaw;
+        // 2. If no hours are set, we can't automate - return CLOSED
+        if (!activeStart || !activeEnd) return "CLOSED";
 
         try {
             const [startH, startM] = activeStart.split(':').map(Number);
@@ -114,14 +127,15 @@ export function useSite() {
                 if (nowTotal >= startTotal - 30) {
                     return "OPENING_SOON";
                 }
-                // Otherwise, return scheduled status (e.g. CLOSED)
-                return activeStatusRaw;
+                // Otherwise, it's CLOSED regardless of the raw status choice (truly automatic)
+                return "CLOSED";
             }
 
-            // 3. Past the serving window
+            // 3. Past the serving window (Automated Close)
             return "CLOSED";
         } catch {
-            return activeStatusRaw;
+            // If parsing fails, default to CLOSED as we can't determine status
+            return "CLOSED";
         }
     };
 
