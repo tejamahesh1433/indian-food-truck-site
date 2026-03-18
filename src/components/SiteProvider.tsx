@@ -73,8 +73,48 @@ export function useSite() {
 
     const activeStart = currentSchedule.start || "";
     const activeEnd = currentSchedule.end || "";
-    const activeStatus = (currentSchedule.status || "CLOSED") as string;
+    const activeStatusRaw = (currentSchedule.status || "CLOSED") as string;
     const activeNotes = (currentSchedule.notes || "") as string;
+
+    // --- Automatic Status Derivation ---
+    const deriveEffectiveStatus = () => {
+        // 1. Manual Overrides always take precedence
+        if (activeStatusRaw === "SOLD_OUT" || activeStatusRaw === "WEATHER_DELAY") {
+            return activeStatusRaw;
+        }
+
+        // 2. If no hours are set, we can't automate - return current status
+        if (!activeStart || !activeEnd) return activeStatusRaw;
+
+        try {
+            const [startH, startM] = activeStart.split(':').map(Number);
+            const [endH, endM] = activeEnd.split(':').map(Number);
+            
+            const nowH = now.getHours();
+            const nowM = now.getMinutes();
+            
+            const startTotal = startH * 60 + startM;
+            const endTotal = endH * 60 + endM;
+            const nowTotal = nowH * 60 + nowM;
+
+            // If we are currently within the window
+            if (nowTotal >= startTotal && nowTotal < endTotal) {
+                return "SERVING";
+            }
+            
+            // If we are past the window
+            if (nowTotal >= endTotal) {
+                return "CLOSED";
+            }
+
+            // Otherwise, we are before the window - keep whatever was scheduled (usually OPENING_SOON or CLOSED)
+            return activeStatusRaw;
+        } catch {
+            return activeStatusRaw;
+        }
+    };
+
+    const activeStatus = deriveEffectiveStatus();
 
     let nextStart = dbSettings.nextStart || "";
     let nextEnd = dbSettings.nextEnd || "";
