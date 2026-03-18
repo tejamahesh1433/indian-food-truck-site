@@ -6,12 +6,10 @@ async function applyPersistentRateLimit(ip: string): Promise<boolean> {
     const windowMs = 15 * 60 * 1000; // 15 minutes
     const maxAttempts = 5;
 
-    // @ts-expect-error - AdminLoginAttempt exists in schema but type might be stale in IDE
     prisma.adminLoginAttempt.deleteMany({
         where: { expiresAt: { lt: now } }
     }).catch(() => {});
 
-    // @ts-expect-error - AdminLoginAttempt exists in schema but type might be stale in IDE
     const record = await prisma.adminLoginAttempt.findFirst({
         where: { 
             ip: `pin_${ip}`, // Separate prefix for PIN limit
@@ -20,7 +18,6 @@ async function applyPersistentRateLimit(ip: string): Promise<boolean> {
     });
 
     if (!record) {
-        // @ts-expect-error - AdminLoginAttempt exists in schema but type might be stale in IDE
         await prisma.adminLoginAttempt.create({
             data: {
                 ip: `pin_${ip}`,
@@ -35,7 +32,6 @@ async function applyPersistentRateLimit(ip: string): Promise<boolean> {
         return false;
     }
 
-    // @ts-expect-error - AdminLoginAttempt exists in schema but type might be stale in IDE
     await prisma.adminLoginAttempt.update({
         where: { id: record.id },
         data: { count: record.count + 1 }
