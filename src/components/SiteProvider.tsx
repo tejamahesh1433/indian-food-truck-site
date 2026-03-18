@@ -51,14 +51,33 @@ const formatTime12h = (timeStr?: string | null) => {
 
 const SiteContext = createContext<{ settings: DbSettings | null; liveDate: Date } | null>(null);
 
-export function SiteProvider({ children, settings }: { children: React.ReactNode, settings: DbSettings | null }) {
+export function SiteProvider({ children, settings: initialSettings }: { children: React.ReactNode, settings: DbSettings | null }) {
     const [liveDate, setLiveDate] = useState(new Date());
+    const [settings, setSettings] = useState<DbSettings | null>(initialSettings);
 
     useEffect(() => {
-        // We initialize with new Date() during render. 
-        // Subsequent updates happen every minute to keep the status live.
-        const timer = setInterval(() => setLiveDate(new Date()), 60000);
-        return () => clearInterval(timer);
+        // 1. Clock timer (updates every minute)
+        const clockTimer = setInterval(() => setLiveDate(new Date()), 60000);
+
+        // 2. Settings Poller (updates every 2 minutes to keep sync with admin)
+        const pollSettings = async () => {
+            try {
+                const res = await fetch("/api/settings");
+                if (res.ok) {
+                    const data = await res.json();
+                    setSettings(data);
+                }
+            } catch (err) {
+                console.error("Failed to poll settings:", err);
+            }
+        };
+
+        const settingsTimer = setInterval(pollSettings, 120000);
+
+        return () => {
+            clearInterval(clockTimer);
+            clearInterval(settingsTimer);
+        };
     }, []);
 
     return (
