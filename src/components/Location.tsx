@@ -11,10 +11,18 @@ export default function Location() {
 
     const statusConfig: Record<string, { label: string; color: string; animate: boolean }> = {
         SERVING: { label: "Serving Now", color: "bg-green-500", animate: true },
-        OPENING_SOON: { label: "Opening Soon", color: "bg-blue-500", animate: true },
+        OPENING_SOON: { 
+            label: today.remainingMins > 0 ? `Opening in ${today.remainingMins} minute${today.remainingMins !== 1 ? 's' : ''}` : "Opening Soon", 
+            color: "bg-blue-500", 
+            animate: true 
+        },
         SOLD_OUT: { label: "Sold Out", color: "bg-red-500", animate: false },
         WEATHER_DELAY: { label: "Weather Delay", color: "bg-orange-500", animate: false },
-        CLOSING_SOON: { label: "Closing in 30 minutes", color: "bg-orange-500", animate: true },
+        CLOSING_SOON: { 
+            label: today.remainingMins > 0 ? `Closing in ${today.remainingMins} minute${today.remainingMins !== 1 ? 's' : ''}` : "Closing Soon", 
+            color: "bg-orange-500", 
+            animate: true 
+        },
         CLOSED: { label: "Closed", color: "bg-gray-500", animate: false },
     };
 
@@ -66,9 +74,7 @@ export default function Location() {
                                         <div className="text-sm text-gray-400 font-bold uppercase tracking-widest">Today</div>
                                         <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${status.color} text-white flex items-center gap-1.5 shadow-lg shadow-${status.color.split('-')[1]}-500/20`}>
                                             {status.animate && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-                                            {today.status === "CLOSING_SOON"
-                                                ? `Closing in ${today.remainingMins} min${today.remainingMins !== 1 ? 's' : ''}`
-                                                : status.label}
+                                            {status.label}
                                         </div>
                                     </div>
 
