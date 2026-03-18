@@ -176,6 +176,111 @@ erDiagram
     }
 ```
 
+### Use Case Diagram
+
+```mermaid
+graph TD
+    subgraph "External Actors"
+        G[Guest / Visitor]
+        U[Authenticated Customer]
+        A[Admin / Owner]
+    end
+
+    subgraph "Indian Food Truck System"
+        UC1(Browse Menu & Location)
+        UC2(Place Online Order)
+        UC3(Track Order & Chat)
+        UC4(Submit Catering Inquiry)
+        UC5(Catering Chat via Token)
+        UC6(Sign Up / Sign In)
+        UC7(View Order History)
+        UC8(Manage Orders & Status)
+        UC9(Manage Menu & Categories)
+        UC10(Manage Catering Requests)
+        UC11(Update Truck Schedule)
+        UC12(Configure Site Settings)
+    end
+
+    G --> UC1
+    G --> UC2
+    G --> UC4
+    G --> UC5
+    G --> UC6
+
+    U --> UC1
+    U --> UC2
+    U --> UC3
+    U --> UC4
+    U --> UC5
+    U --> UC7
+
+    A --> UC8
+    A --> UC9
+    A --> UC10
+    A --> UC11
+    A --> UC12
+    A --> UC3
+    A --> UC5
+```
+
+### Sequence Diagram — Catering Request Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Customer (Browser)
+    participant S as Next.js Server
+    participant DB as Prisma / PostgreSQL
+    participant E as Resend Email
+    participant A as Admin (Dashboard)
+
+    C->>C: Select catering items in CateringPage
+    C->>C: Fill out event inquiry form
+
+    C->>S: POST /api/catering (selections + event data)
+
+    critical Server-Side Checks
+        S->>S: Zod schema validation
+        S->>S: Honeypot field check (bot protection)
+        S->>S: Rate limit check (3 per 15 min per IP)
+        S->>DB: Check cateringEnabled in SiteSettings
+        DB-->>S: cateringEnabled = true
+    end
+
+    S->>DB: Create CateringRequest (status: NEW, chatToken: UUID)
+    DB-->>S: Record created
+
+    S->>E: sendChatLinkEmail (customer confirmation + chat link)
+    E-->>C: Email with link to /catering/chat/[token]
+
+    S-->>C: 200 OK { ok: true, chatToken }
+
+    Note over A,DB: Admin sees new request in inbox
+    A->>S: GET /api/admin/catering
+    S->>DB: Fetch all requests
+    DB-->>S: Requests list
+    S-->>A: Renders catering inbox
+
+    A->>A: Reviews event details & selections
+    A->>S: POST /api/admin/catering/[id]/messages
+    S->>DB: Save message (sender: ADMIN)
+    DB-->>S: Message saved
+    S-->>A: { ok: true }
+
+    C->>S: GET /api/chat/[token]/messages (polling)
+    S->>DB: Fetch messages for token
+    DB-->>S: Messages including admin reply
+    S-->>C: Customer sees admin message
+
+    C->>S: POST /api/chat/[token]/messages (customer reply)
+    S->>DB: Save message (sender: CUSTOMER)
+    S-->>C: { ok: true }
+
+    A->>S: PATCH /api/admin/catering (status: CONTACTED)
+    S->>DB: Update status
+    S-->>A: Updated
+```
+
 ### Key Design Decisions
 
 - **Price snapshots on OrderItem**: Item prices and names are copied at order time, ensuring historical accuracy even as menu prices change.
@@ -191,6 +296,52 @@ erDiagram
 ### 1. Online Ordering & Payment Flow
 
 The ordering system is built around Stripe Payment Intents for a modern, reliable payment experience.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Customer
+    participant S as Next.js Server
+    participant DB as PostgreSQL
+    participant ST as Stripe
+    participant E as Resend Email
+    participant A as Admin
+
+    C->>S: POST /api/orders
+    S->>S: Validate (Zod + DB prices)
+    S->>DB: Create Order (PENDING)
+    S->>ST: Create PaymentIntent
+    ST-->>S: clientSecret
+    S-->>C: clientSecret + orderId
+
+    C->>ST: Confirm payment (Stripe Elements)
+    ST-->>C: Payment succeeded
+
+    ST->>S: Webhook: payment_intent.succeeded
+    S->>S: Verify signature
+    S->>DB: Order status → PAID
+    S->>E: Customer confirmation email
+    S->>E: Admin notification email
+    E-->>C: Confirmation + tracking link
+    E-->>A: New order alert
+
+    C->>C: Redirect → /track/[token]
+```
+
+#### Order Status Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING : POST /api/orders
+    PENDING --> PAID : Stripe webhook
+    PENDING --> CANCELLED : Admin cancels
+    PAID --> PREPARING : Admin action
+    PREPARING --> READY : Admin action
+    READY --> COMPLETED : Admin action
+    READY --> CANCELLED : Admin cancels
+    COMPLETED --> [*]
+    CANCELLED --> [*]
+```
 
 Flow:
 1. Customer adds items to cart (localStorage-persisted, auth-aware).

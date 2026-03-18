@@ -64,6 +64,66 @@ The flow:
 
 ## 2. Online Order Lifecycle
 
+### Sequence Diagram — Online Order Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Customer (Browser)
+    participant Cart as CartProvider
+    participant S as Next.js Server
+    participant DB as Prisma / PostgreSQL
+    participant ST as Stripe
+    participant E as Resend Email
+    participant A as Admin
+
+    C->>Cart: Add items to cart
+    Cart-->>C: Cart state updated (localStorage)
+
+    C->>S: POST /api/orders (items, contact info)
+
+    critical Server-Side Validation
+        S->>S: Zod schema validation
+        S->>DB: Fetch live prices for item IDs
+        DB-->>S: Real prices (client prices discarded)
+        S->>DB: Idempotency check (10s window)
+        DB-->>S: No duplicate found
+    end
+
+    S->>DB: Create Order (status: PENDING, chatToken: UUID)
+    DB-->>S: Order created
+
+    S->>ST: Create PaymentIntent (server-calculated total)
+    ST-->>S: clientSecret
+
+    S-->>C: { clientSecret, orderId, totalAmount }
+
+    C->>ST: Confirm payment (Stripe Elements)
+    ST-->>C: Payment processing...
+    ST-->>C: Payment succeeded
+
+    Note over ST,S: Stripe fires webhook (async)
+    ST->>S: POST /api/webhooks/stripe (payment_intent.succeeded)
+
+    critical Webhook Fulfillment
+        S->>S: Verify webhook signature
+        S->>DB: Update Order status → PAID
+        DB-->>S: Order updated
+        S->>E: sendOrderConfirmationEmail (customer)
+        S->>DB: Fetch adminEmail from SiteSettings
+        DB-->>S: Admin email
+        S->>E: sendOrderNotificationToAdmin
+        E-->>C: Confirmation email with tracking link
+        E-->>A: New order notification email
+    end
+
+    S-->>ST: 200 OK { received: true }
+
+    C->>C: Redirect to /order-success
+    C->>S: GET /track/[chatToken]
+    S-->>C: Order status page
+```
+
 When a customer places an order:
 
 1. **Cart**: Customer adds items in `CartDrawer`. Cart state is managed in `CartProvider` with localStorage persistence (keyed by user email if logged in).
@@ -110,7 +170,51 @@ Revalidation strategy:
 
 ---
 
-## 5. Order Chat & Catering Chat Synchronization
+## 5. Order Status State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING : Customer initiates checkout\nPOST /api/orders
+
+    PENDING --> PAID : Stripe webhook fires\npayment_intent.succeeded
+    PENDING --> CANCELLED : Admin cancels\n(payment not completed)
+
+    PAID --> PREPARING : Admin updates status\n"Start Preparing"
+
+    PREPARING --> READY : Admin updates status\n"Mark Ready"
+
+    READY --> COMPLETED : Admin updates status\n"Complete Order"
+    READY --> CANCELLED : Admin cancels\n(e.g. customer no-show)
+
+    COMPLETED --> [*]
+    CANCELLED --> [*]
+
+    note right of PENDING
+        Order exists in DB.
+        Awaiting payment confirmation
+        from Stripe webhook.
+    end note
+
+    note right of PAID
+        Webhook received.
+        Customer & admin emails sent.
+        Visible in admin Orders dashboard.
+    end note
+
+    note right of PREPARING
+        Kitchen is working on the order.
+        Customer sees "Preparing" on
+        tracking page.
+    end note
+
+    note right of READY
+        Order is ready for pickup.
+        Customer sees "Ready!" on
+        tracking page.
+    end note
+```
+
+## 6. Order Chat & Catering Chat Synchronization
 
 Both chat systems follow the same pattern:
 
