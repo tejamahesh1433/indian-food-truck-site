@@ -7,300 +7,296 @@
 4. [User Interface Design & Aesthetics](#user-interface-design--aesthetics)
 5. [Database Architecture & Schema](#database-architecture--schema)
 6. [Core Module Deep-Dives](#core-module-deep-dives)
-7. [API & Integration Layer](#api--integration-layer)
-8. [Testing & Quality Assurance](#testing--quality-assurance)
-9. [Deployment & DevOps](#deployment--devops)
-10. [Conclusion & Future Roadmap](#conclusion--future-roadmap)
+7. [Security Architecture](#security-architecture)
+8. [API & Integration Layer](#api--integration-layer)
+9. [Testing & Quality Assurance](#testing--quality-assurance)
+10. [Deployment & DevOps](#deployment--devops)
+11. [Conclusion & Future Roadmap](#conclusion--future-roadmap)
 
 ---
 
 ## Executive Summary
-The **Indian Food Truck Management System** is a sophisticated, full-stack enterprise solution designed to modernize mobile food operations. By integrating consumer-facing discovery tools with powerful administrative logistics, the system streamlines the catering inquiry lifecycle, automates real-time schedule publishing, and provides a premium digital presence for the business. This report details the architectural decisions, design philosophies, and engineering rigors applied to build this portfolio-standard application.
+
+The **Indian Food Truck Management System** is a sophisticated, production-ready full-stack platform designed to modernize mobile food operations. It integrates a premium consumer-facing storefront with a comprehensive admin control panel, delivering end-to-end functionality: online menu browsing, Stripe-powered ordering and payment, real-time order tracking, professional catering inquiry management, and a fully configurable business dashboard. This report details the architectural decisions, security engineering, design philosophy, and technical rigor applied throughout development.
 
 ---
 
 ## Project Introduction
-In the rapidly evolving mobile food industry, businesses often struggle with fragmented communication and manual logistics. This project was conceived to solve three primary pain points:
-1. **Discovery**: Providing customers with a real-time "live" view of the truck's location.
-2. **Catering Logistics**: Transitioning from informal emails to a structured, professional selection and quote flow.
-3. **Operational Control**: Giving owners a centralized dashboard to manage menu availability, site settings, and client inquiries without touching code.
+
+In the mobile food industry, businesses struggle with fragmented communication, manual logistics, and missed revenue from customers who cannot reach the truck. This project was conceived to solve four primary pain points:
+
+1. **Discovery**: Providing customers a real-time view of the truck's current location and schedule.
+2. **Online Ordering**: Enabling direct-to-truck ordering with secure payment processing — eliminating lost sales from queue-shy customers.
+3. **Catering Logistics**: Transitioning from informal emails to a structured, professional item selection and quote flow.
+4. **Operational Control**: Giving owners a centralized dashboard to manage all aspects of the business without touching code.
 
 ---
 
 ## System Architecture
-The application is built on the **Next.js 15 App Router** architecture, leveraging server-side rendering for performance and client-side interactivity for a seamless user experience.
+
+The application is built on the **Next.js 16 App Router** architecture, combining server-side rendering for performance with client-side interactivity for a seamless user experience.
 
 ### Technical Stack
-- **Languages**: TypeScript (Full-stack type safety)
-- **Framework**: Next.js (Server Components & Actions)
+
+- **Languages**: TypeScript (full-stack type safety)
+- **Framework**: Next.js 16 (App Router, Server & Client Components)
 - **Database**: PostgreSQL (Supabase) with Prisma ORM
-- **Styling**: Tailwind CSS with custom Glassmorphism layers
-- **Testing**: Vitest (Unit/Integration) & Playwright (E2E)
+- **Authentication**: NextAuth.js (customer accounts) + custom JWT (admin)
+- **Payments**: Stripe (Payment Intents + Webhooks)
+- **Email**: Resend (transactional emails)
+- **Styling**: Tailwind CSS with custom glassmorphism layers
+- **Animation**: Framer Motion + GSAP
+- **Analytics**: Vercel Analytics (privacy-friendly, no cookies)
+- **Testing**: Vitest (unit/integration) & Playwright (E2E)
+- **Deployment**: Vercel (CI/CD on every push)
 
-## System Visualizations
-
-### 1. System Architecture Diagram
-The system follows a multi-tier architecture, separating external services, the Next.js application layer, and the Supabase persistence layer.
+### System Architecture Diagram
 
 ```mermaid
 graph TD
     subgraph "External Entities"
-        Guest([Guest User])
+        Guest([Customer])
+        AuthUser([Authenticated User])
         Owner([Admin User])
-        EmailSvc[Resend Email API]
+        StripeSvc[Stripe]
+        EmailSvc[Resend]
         MapsAPI[Google Maps]
     end
 
-    subgraph "Next.js Application (Vercel)"
+    subgraph "Next.js Application - Vercel"
         direction TB
         subgraph "Frontend Layer"
             Pages[App Router Pages]
             Comps[React Components]
-            Providers[Context Providers]
+            Providers[SiteProvider / CartProvider / AuthProvider]
         end
         subgraph "Logic Layer"
-            Actions[Server Actions]
             API[REST API Routes]
-            Auth[Middleware / Admin Auth]
+            Middleware[middleware.ts - Admin Guard]
+            NextAuth[NextAuth.js]
+            Webhook[Stripe Webhook]
         end
     end
 
-    subgraph "Persistence Layer (Supabase)"
+    subgraph "Persistence Layer - Supabase"
         Prisma[Prisma ORM]
-        DB[(PostgreSQL Database)]
+        DB[(PostgreSQL)]
     end
 
-    Guest --> |View Menu/Catering| Pages
-    Guest --> |Submit Inquiry| API
-    Owner --> |Login/Manage| Auth
-    Owner --> |CRUD Operations| Actions
+    Guest --> Pages
+    Guest --> API
+    AuthUser --> NextAuth
+    Owner --> Middleware
+    Owner --> API
 
-    Pages --> Comps
-    Comps --> Providers
-    Actions --> Prisma
     API --> Prisma
+    NextAuth --> Prisma
     Prisma --> DB
 
-    API --> |Trigger SMTP| EmailSvc
-    Comps --> |Embed Locations| MapsAPI
+    API --> StripeSvc
+    StripeSvc --> Webhook
+    Webhook --> Prisma
+    Webhook --> EmailSvc
+    API --> EmailSvc
+    Comps --> MapsAPI
 ```
 
-### 2. ER (Entity Relationship) Diagram
-The database schema is optimized for relational integrity and efficient querying.
+---
+
+## User Interface Design & Aesthetics
+
+The design language is a "Premium Dark Mode" aesthetic — inspired by Indian spice colors and elevated dining experiences.
+
+### Design System Highlights
+
+- **Glassmorphism**: Cards styled with `bg-white/5 border border-white/10 backdrop-blur-xl` create depth and layering.
+- **Spice Color Palette**: Primary CTAs in saffron orange (`#f97316`). Ambient radial glows in turmeric orange, chili red, and ginger yellow throughout `globals.css`.
+- **Animation**: Framer Motion scroll-reveal animations on all page sections (fade + slide-up). GSAP powers the hero text split animation.
+- **Typography**: Geist Sans variable font for clean, modern heading and body text.
+- **Responsive**: Mobile-first layout using Tailwind CSS breakpoints across all pages.
+
+---
+
+## Database Architecture & Schema
+
+### Entity Relationship Diagram
 
 ```mermaid
 erDiagram
+    User ||--o{ Order : "places"
+    User ||--o{ Account : "has"
+    Order ||--o{ OrderItem : "contains"
+    Order ||--o{ OrderMessage : "has"
     CateringRequest ||--o{ CateringMessage : "has"
     MenuItem }|--|| MenuCategory : "categorised_by"
     CateringItem }|--|| CateringCategory : "categorised_by"
-    SiteSettings ||--o{ SavedLocation : "references"
+
+    User {
+        string id PK
+        string email "Unique"
+        string password "bcrypt hashed"
+    }
+
+    Order {
+        string id PK
+        string userId FK
+        int totalAmount "In cents"
+        enum status "PENDING|PAID|PREPARING|READY|COMPLETED|CANCELLED"
+        string stripeSessionId
+        string chatToken "UUID for tracking"
+    }
+
+    OrderItem {
+        string id PK
+        string orderId FK
+        string name "Price snapshot"
+        int priceCents "Price snapshot"
+        int quantity
+    }
 
     CateringRequest {
         string id PK
-        string status "NEW | CONTACTED | DONE"
+        string status "NEW|CONTACTED|DONE"
         string chatToken "Unique access key"
-        json selections "Array of item customisations"
-    }
-
-    CateringMessage {
-        string id PK
-        string requestId FK
-        enum sender "CUSTOMER | ADMIN"
-        string text
+        json selections
     }
 
     MenuItem {
         string id PK
-        string name
         int priceCents
-        string category
         boolean isAvailable
-    }
-
-    CateringItem {
-        string id PK
-        string name
-        string priceKind
-        float halfPrice
-        float fullPrice
+        int sortOrder
     }
 
     SiteSettings {
-        string id PK "global"
-        string businessName
+        string id PK "Always 'global'"
         boolean cateringEnabled
-        string todayStatus
+        string todayStatus "OPEN|CLOSED"
+        string adminAccessPin
     }
 ```
 
-### 3. Use Case Diagram
-High-level interactions between specific user roles and system functionalities.
+### Key Design Decisions
 
-```mermaid
-graph TD
-    subgraph "External Actors"
-        U1[Guest User]
-        U2[Admin User]
-    end
-
-    subgraph "Indian Food Truck System"
-        UC1(View Menu & Locations)
-        UC2(Submit Catering Inquiry)
-        UC3(Real-time Chat)
-        UC4(Manage Inventory & Schedule)
-        UC5(Update Site Settings)
-        UC6(Respond to Lead Inquiries)
-    end
-
-    U1 --> UC1
-    U1 --> UC2
-    U1 --> UC3
-
-    U2 --> UC4
-    U2 --> UC5
-    U2 --> UC6
-    U2 --> UC3
-```
-
-### 4. Sequence Diagram (Catering Request Flow)
-Details the step-by-step logic and communication flow when a customer submits an inquiry.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant C as Customer (Browser)
-    participant S as Next.js Server
-    participant P as Prisma / DB
-    participant E as Resend API
-
-    C->>S: POST /api/catering (Inquiry Data)
-    critical Server-Side Logic
-        S->>S: Validate Data (Zod Schema Check)
-        S->>S: Rate Limit & Honeypot Verification
-    end
-    S->>P: Create CateringRequest Entry
-    P-->>S: Success (Persistent Record Created)
-    S->>E: Send Confirmation Email (Async Task)
-    S-->>C: 200 OK (Registration Complete)
-    E-->>C: Customer receives chat access link
-```
-
-### 5. Data Flow Diagram (DFD Level 1)
-Illustrates how data flows between external entities, processes, and data stores.
-
-```mermaid
-graph LR
-    subgraph "External"
-        U[Customer]
-        A[Admin]
-    end
-
-    subgraph "System Processes"
-        P1[Inquiry Processing]
-        P2[Inventory Sync]
-        P3[Schedule Management]
-        P4[Email/Chat Service]
-    end
-
-    subgraph "Data Storage"
-        D1[(PostgreSQL DB)]
-    end
-
-    U -->|Selection Data| P1
-    P1 -->|Save Request| D1
-    P1 -->|Trigger| P4
-    P4 -->|Sent Link| U
-
-    A -->|Update Item| P2
-    P2 -->|Update Records| D1
-    
-    A -->|Set Location| P3
-    P3 -->|Save Schedule| D1
-    
-    D1 -->|Read Settings| P1
-```
-
-### 6. Component Diagram
-Shows the structural relationship and dependencies between major software modules.
-
-```mermaid
-graph TB
-    subgraph "User Interface Layer"
-        BC[Common UI Components]
-        CC[Catering Feature Module]
-        AC[Admin Dashboard Module]
-    end
-
-    subgraph "Cross-Cutting Utilities"
-        Utils[Shared Logic lib/utils]
-        Providers[Global Context SiteProvider]
-    end
-
-    subgraph "Backend Framework"
-        Layout[App Router Layout]
-        Prisma[Prisma Data Services]
-        Auth[Admin Auth Actions]
-    end
-
-    Layout --> Providers
-    Providers --> BC
-    Providers --> CC
-    Providers --> AC
-    
-    BC --> Utils
-    CC --> Utils
-    AC --> Utils
-    
-    AC --> Auth
-    Auth --> Prisma
-    CC --> Prisma
-```
+- **Price snapshots on OrderItem**: Item prices and names are copied at order time, ensuring historical accuracy even as menu prices change.
+- **Server-side price verification**: The orders API fetches live prices from the database and ignores client-submitted prices entirely, preventing cart tampering.
+- **Cents-as-integers**: All monetary values stored as `Int` (cents) to eliminate floating-point precision issues.
+- **Dual auth systems**: NextAuth handles customer sessions; a separate custom JWT system handles admin auth — keeping them fully isolated.
+- **AdminLoginAttempt table**: Persistent rate limiting across serverless function instances (unlike in-memory maps which reset on cold starts).
 
 ---
 
 ## Core Module Deep-Dives
 
-### 1. Professional Catering selection Flow
-The crown jewel of the customer experience. Unlike standard forms, this module allows users to configure complex orders (e.g., "Half Tray" vs "Full Tray") with real-time feedback.
-- **Logic**: Implements `minPeople` validation for event packages.
-- **Persistence**: Selections are stored as JSON in the database, allowing for flexible future expansions without schema migrations.
+### 1. Online Ordering & Payment Flow
 
-### 2. Admin Logistics Dashboard
-A secure command center for the owner.
-- **Schedule Manager**: Allows for one-click deployment updates.
-- **Inquiry Inbox**: A real-time chat interface that bridges the gap between the admin and the customer via secure tokens.
+The ordering system is built around Stripe Payment Intents for a modern, reliable payment experience.
+
+Flow:
+1. Customer adds items to cart (localStorage-persisted, auth-aware).
+2. `POST /api/orders` validates the request, fetches DB prices, creates a `PENDING` order, and returns a Stripe `clientSecret`.
+3. Customer completes payment in the Stripe Elements form.
+4. Stripe fires `payment_intent.succeeded` to the webhook endpoint.
+5. Webhook marks the order as `PAID`, sends a customer confirmation email, and sends an admin notification email.
+6. Customer is redirected to `/track/[token]` for live status updates and chat.
+
+### 2. Professional Catering Selection Flow
+
+Unlike standard inquiry forms, this module allows customers to configure complex orders with real-time feedback before submitting.
+
+- `CateringItemDrawer` handles "Half Tray" vs "Full Tray" pricing logic and enforces `minPeople` for packages.
+- `CateringSelectionSummary` shows a running total and submits the full selection as JSON.
+- On submission, a chat token is generated and emailed to the customer as a unique link to `/catering/chat/[token]`.
+
+### 3. Admin Dashboard
+
+A secure, feature-rich control center for managing all aspects of the business.
+
+- **Orders module**: View paid orders, update statuses through the fulfillment lifecycle, chat with customers.
+- **Menu management**: Full CRUD with drag-to-reorder, availability toggles, and bulk operations.
+- **Catering inbox**: Status tracking, internal notes, and per-request chat threads.
+- **Schedule manager**: Today/next-stop location, hours, notes, and saved location presets.
+- **Site settings**: Global configuration including announcement banner, catering toggle, and access PIN gate.
+
+### 4. Cart System
+
+The `CartProvider` uses React Context with localStorage persistence. Carts are keyed by user email when authenticated, ensuring cart contents persist across sessions and switch cleanly on login/logout.
+
+---
+
+## Security Architecture
+
+Security was treated as a first-class concern throughout development.
+
+- **Admin middleware**: `src/middleware.ts` protects all `/admin`, `/truckadmin`, and `/api/admin` routes via JWT verification on every request.
+- **Timing-safe comparison**: Admin password comparison uses `crypto.timingSafeEqual` with SHA-256 hashing to prevent timing attacks.
+- **Database-backed rate limiting**: Admin login and PIN verification are rate-limited (5 attempts / 15 min per IP) using the `AdminLoginAttempt` table — reliable across serverless cold starts unlike in-memory solutions.
+- **Server-side price verification**: Order totals are calculated entirely from database prices. Client-submitted prices are discarded.
+- **Stripe webhook signature verification**: All webhook events validated via `stripe.webhooks.constructEvent` before processing.
+- **Secure cookies**: Admin JWT cookies set with `httpOnly: true`, `secure: true` (production), `sameSite: lax`.
+- **Zod validation**: All API endpoints validate incoming data with Zod schemas before processing.
+- **Honeypot + rate limiting**: Catering form protected against bots.
+- **Error boundary**: `src/app/error.tsx` catches unexpected runtime errors and shows a graceful error page.
+
+---
+
+## API & Integration Layer
+
+The system exposes a comprehensive REST API across three categories:
+
+**Public endpoints**: Menu, settings, catering submission, order creation, order tracking, chat.
+
+**Authenticated endpoints** (NextAuth session): User order history.
+
+**Admin endpoints** (JWT cookie): Full CRUD for menu, catering, orders, settings, saved locations.
+
+**Webhook**: Stripe `payment_intent.succeeded` and `checkout.session.completed` handled at `/api/webhooks/stripe`.
+
+All endpoints use Next.js Route Handlers in the App Router. No raw SQL is used — all database access goes through Prisma ORM, eliminating SQL injection risk.
 
 ---
 
 ## Testing & Quality Assurance
-To reach portfolio-quality reliability, a 3-layer testing strategy was implemented.
 
-### Layers:
-1. **Unit**: Verifying price formatting and phone normalization logic.
-2. **Integration**: Testing Prisma CRUD operations and API response codes.
-3. **E2E (Playwright)**: Full browser simulation of the catering inquiry submission and admin login flows.
+A 3-layer automated testing strategy ensures reliability across logic, database, and browser interactions.
 
-### Reliability Guards:
-- **Production Guard**: A custom block in the test helper specifically prevents data wipes if the suite is accidentally pointed at a production database URL (Supabase/AWS).
+Layers:
+1. **Unit (Vitest)**: Price formatting, phone normalization, utility functions.
+2. **Integration (Vitest)**: Prisma CRUD operations and API response codes against a test database.
+3. **E2E (Playwright)**: Full browser simulation of customer ordering flow, catering submission, and admin login.
+
+### Reliability Guards
+
+- **Production Guard**: `tests/helpers/db.ts` aborts the test suite if it detects a production Supabase/AWS URL — preventing accidental data wipes.
+- **Admin fixture**: Custom `adminPage` Playwright fixture auto-logs into the admin panel, avoiding repetitive login logic in E2E tests.
+- **Database helpers**: `resetDatabase()` and `seedBasicData()` functions ensure a clean, consistent state before each test run.
 
 ---
 
 ## Deployment & DevOps
+
 The system is deployed on **Vercel** with a continuous integration pipeline.
-- **CI/CD**: Automatic builds on push with TypeScript verification.
-- **Cache Sync**: Implementation of `revalidatePath` ensures that admin updates are reflected on the public site within milliseconds of a database change.
-- **Security**: Environment variables are managed securely at the provider level, including JWT secrets and password hashes.
+
+- **CI/CD**: Automatic builds triggered on every push to `main`. TypeScript compilation and Prisma client generation run as part of the build.
+- **Build command**: `prisma generate && next build` — ensures the Prisma client is always up to date in the deployed environment.
+- **Cache sync**: `revalidatePath()` called after admin mutations ensures public pages reflect changes within milliseconds without a full redeploy.
+- **Environment isolation**: All secrets managed via Vercel environment variables. `.env` is gitignored and never committed.
+- **SEO**: `sitemap.xml`, `robots.txt`, Open Graph meta tags, Twitter card meta, favicon, and Apple touch icon configured for production.
 
 ---
 
 ## Conclusion & Future Roadmap
-The Indian Food Truck Management System demonstrates the power of combining modern full-stack technologies with premium design and rigorous testing.
 
-### The Road Ahead:
-- **Phase 4**: Integrated online ordering and payment processing.
-- **Phase 5**: SMS alerts for catering inquiries via Twilio.
-- **Phase 6**: Advanced analytics dashboard surfacing sales trends and peak regional performance.
+The Indian Food Truck Management System delivers a complete, production-ready digital platform for a mobile food business — from first-time visitor to repeat customer, from inquiry to fulfilled order. The combination of a premium UI, a secure and scalable backend, full payment integration, and a powerful admin panel sets a high bar for what a food truck website can be.
+
+### The Road Ahead
+
+- **Phase 6**: Analytics dashboard with revenue trends and dish popularity charts.
+- **Phase 7**: SMS order status notifications via Twilio, push notifications via Web Push API.
+- **Phase 8**: Customer loyalty program with points and promo codes.
+- **Phase 9**: Multi-truck support and role-based admin permissions.
+- **Phase 10**: Email verification, enhanced password policies, and audit logs.
 
 ---
 **Author**: Teja Mahesh Neerukonda
-**Project Link**: [GitHub Repository](https://github.com/tejamahesh1433/indian-food-truck-site)
+**GitHub**: [github.com/tejamahesh1433/indian-food-truck-site](https://github.com/tejamahesh1433/indian-food-truck-site)
