@@ -97,18 +97,29 @@ export function useSite() {
             const endTotal = endH * 60 + endM;
             const nowTotal = nowH * 60 + nowM;
 
-            // If we are currently within the window
+            // --- Window Checks ---
+
+            // 1. Within the active serving window
             if (nowTotal >= startTotal && nowTotal < endTotal) {
+                // If within last 30 minutes of serving
+                if (nowTotal >= endTotal - 30) {
+                    return "CLOSING_SOON";
+                }
                 return "SERVING";
             }
             
-            // If we are past the window
-            if (nowTotal >= endTotal) {
-                return "CLOSED";
+            // 2. Before the serving window
+            if (nowTotal < startTotal) {
+                // If within 30 minutes of opening
+                if (nowTotal >= startTotal - 30) {
+                    return "OPENING_SOON";
+                }
+                // Otherwise, return scheduled status (e.g. CLOSED)
+                return activeStatusRaw;
             }
 
-            // Otherwise, we are before the window - keep whatever was scheduled (usually OPENING_SOON or CLOSED)
-            return activeStatusRaw;
+            // 3. Past the serving window
+            return "CLOSED";
         } catch {
             return activeStatusRaw;
         }

@@ -14,6 +14,7 @@ export default function Location() {
         OPENING_SOON: { label: "Opening Soon", color: "bg-blue-500", animate: true },
         SOLD_OUT: { label: "Sold Out", color: "bg-red-500", animate: false },
         WEATHER_DELAY: { label: "Weather Delay", color: "bg-orange-500", animate: false },
+        CLOSING_SOON: { label: "Closing in 30 minutes", color: "bg-orange-500", animate: true },
         CLOSED: { label: "Closed", color: "bg-gray-500", animate: false },
     };
 
