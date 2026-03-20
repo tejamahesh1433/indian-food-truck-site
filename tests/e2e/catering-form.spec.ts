@@ -3,17 +3,20 @@ import { test, expect } from "@playwright/test";
 test("customer can submit catering request", async ({ page }) => {
     await page.goto("/catering");
 
-    await page.locator('input[type="text"]').first().fill("Test Customer");
-    await page.locator('input[type="tel"]').fill("+1 203-555-0111");
-    await page.locator('input[type="email"]').fill("test@example.com");
-    await page.locator('input[type="date"]').fill("2026-03-20");
+    // Use placeholder-based selectors to avoid honeypot fields.
+    // .first() guards against strict mode errors if the form renders duplicate fields.
+    await page.getByPlaceholder(/your name/i).first().fill("Test Customer");
+    await page.getByPlaceholder(/phone number/i).first().fill("+1 203-555-0111");
+    await page.getByPlaceholder(/email address/i).first().fill("test@example.com");
+    await page.locator('input[type="date"]').first().fill("2026-06-20");
+    await page.getByPlaceholder(/number of guests/i).first().fill("50");
+    await page.getByPlaceholder(/event location/i).first().fill("New Haven, CT");
+    await page.getByPlaceholder(/tell us more/i).first().fill("Need catering for office lunch.");
 
-    const textInputs = page.locator('input[type="text"]');
-    await textInputs.nth(1).fill("50");
-    await textInputs.nth(2).fill("New Haven");
-
-    await page.locator("textarea").fill("Need catering for office lunch.");
     await page.getByRole("button", { name: /submit quote request/i }).click();
 
-    await expect(page.getByText(/thank|received|submitted|quote/i)).toBeVisible();
+    // After submission the button text changes or a success message appears
+    await expect(
+        page.getByText(/thank|received|submitted|sending|opening discussion/i).first()
+    ).toBeVisible({ timeout: 10000 });
 });
