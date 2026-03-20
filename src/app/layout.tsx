@@ -49,15 +49,27 @@ export const metadata: Metadata = {
     description: "Authentic Indian street food on wheels in Hartford, CT. View the menu, find today’s location, and book catering.",
     images: ["/og-image.png"],
   },
+  // PWA / app icons
   icons: {
-    icon: "/icon.png",
-    apple: "/apple-icon.png",
+    icon: [
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192.png",   sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png",   sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
+  // iOS standalone PWA appearance
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Indian Food Truck",
+  },
 };
 
 import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/components/AuthProvider";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 export default async function RootLayout({
   children,
@@ -78,6 +90,7 @@ export default async function RootLayout({
         <AuthProvider>
           <CartProvider>
             <SiteProvider settings={settings}>
+              <ServiceWorkerRegistration />
               <AnnouncementBanner />
               {children}
               <CartDrawer />
