@@ -40,11 +40,22 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7 }}
+                        className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 backdrop-blur-md mb-2 shadow-[0_0_20px_rgba(249,115,22,0.1)]"
+                    >
+                        <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse shadow-[0_0_12px_rgba(249,115,22,0.8)]" />
+                        <span className="text-xs font-black text-orange-400 uppercase tracking-[0.2em]">
+                            Opening Soon
+                        </span>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7, delay: 0.1 }}
                         className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-md"
                     >
-                        <span className="h-2.5 w-2.5 rounded-full bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.8)]" />
                         <span className="text-sm font-medium text-white/80">
-                            {site.brand.city} • Indian Street Food
+                            {site.brand.city} • Authentic Street Food
                         </span>
                     </motion.div>
 

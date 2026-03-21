@@ -20,6 +20,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        console.error("DEBUG [NEWSLETTER POST]:", error);
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
         }

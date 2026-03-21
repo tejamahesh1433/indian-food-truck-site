@@ -17,8 +17,8 @@ export const site = {
     },
 
     banner: {
-        enabled: false,
-        text: "",
+        enabled: true,
+        text: "🚨 Opening Soon in Hartford! Get ready for authentic flavors.",
     },
 
     footer: {

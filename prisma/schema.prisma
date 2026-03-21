@@ -131,49 +131,34 @@ model CateringCategory {
   createdAt DateTime @default(now())
 }
 
-enum ChatSender {
-  CUSTOMER
-  ADMIN
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  PREPARING
-  READY
-  COMPLETED
-  CANCELLED
-}
-
 model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  password      String?
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  password      String?
+  accounts      Account[]
+  orders        Order[]
+  sessions      Session[]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -195,23 +180,23 @@ model VerificationToken {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  userId          String?
-  customerName    String
-  customerEmail   String
-  customerPhone   String
-  subtotalAmount  Int      @default(0)
-  taxAmount       Int      @default(0)
-  serviceFeeAmount Int     @default(0)
-  totalAmount     Int // In cents
-  stripeSessionId String?     @unique
-  status          OrderStatus @default(PENDING)
-  items           OrderItem[]
-  messages        OrderMessage[]
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  user            User?       @relation(fields: [userId], references: [id])
-  chatToken       String?
+  id               String         @id @default(cuid())
+  customerName     String
+  customerEmail    String
+  customerPhone    String
+  totalAmount      Int
+  stripeSessionId  String?        @unique
+  status           OrderStatus    @default(PENDING)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  userId           String?
+  chatToken        String?
+  serviceFeeAmount Int            @default(0)
+  subtotalAmount   Int            @default(0)
+  taxAmount        Int            @default(0)
+  user             User?          @relation(fields: [userId], references: [id])
+  items            OrderItem[]
+  messages         OrderMessage[]
 }
 
 model OrderMessage {
@@ -245,7 +230,7 @@ model NewsletterSubscriber {
 model Review {
   id         String   @id @default(cuid())
   name       String
-  rating     Int      // 1–5
+  rating     Int
   text       String
   isApproved Boolean  @default(false)
   createdAt  DateTime @default(now())
@@ -260,4 +245,18 @@ model AdminLoginAttempt {
   updatedAt DateTime @updatedAt
 
   @@index([ip, expiresAt])
+}
+
+enum ChatSender {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
 }
