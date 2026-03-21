@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: "Indian Food Truck | Hartford, CT",
   description:
     "Authentic Indian street food on wheels in Hartford, CT. View the menu, find today’s location, and book catering.",
-  metadataBase: new URL("https://indian-food-truck-site.vercel.app"),
+  metadataBase: new URL("https://tejainfo.xyz"),
   alternates: {
     canonical: "/",
   },
@@ -81,8 +81,43 @@ export default async function RootLayout({
     settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
   } catch { }
 
+  const businessName = settings?.businessName || "Indian Food Truck";
+  const cityState    = settings?.cityState    || "Hartford, CT";
+  const phone        = settings?.phone        || "";
+  const baseUrl      = process.env.NEXT_PUBLIC_BASE_URL || "https://tejainfo.xyz";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FoodEstablishment",
+    name: businessName,
+    description: `Authentic Indian street food on wheels in ${cityState}. View the menu, find today's location, and book catering.`,
+    url: baseUrl,
+    telephone: phone,
+    servesCuisine: "Indian",
+    priceRange: "$$",
+    image: `${baseUrl}/og-image.png`,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: cityState.split(",")[0]?.trim() || "Hartford",
+      addressRegion:   cityState.split(",")[1]?.trim() || "CT",
+      addressCountry:  "US",
+    },
+    hasMenu: `${baseUrl}/menu`,
+    potentialAction: {
+      "@type": "OrderAction",
+      target: `${baseUrl}/menu`,
+    },
+    sameAs: settings?.instagramUrl ? [settings.instagramUrl] : [],
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning

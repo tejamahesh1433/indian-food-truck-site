@@ -5,18 +5,26 @@ import Link from "next/link";
 import { useCart, type CartItem } from "@/lib/cart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useSite } from "@/components/SiteProvider";
 
 export default function CartDrawer() {
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { items, updateQuantity, removeFromCart, clearCart, totalCents } = useCart();
     const { data: session } = useSession();
+    const site = useSite();
+
+    const truckStatus = site.truck.today.status;
+    const isTruckOpen = truckStatus === "SERVING" || truckStatus === "CLOSING_SOON";
 
     const [customerInfo, setCustomerInfo] = useState({
         name: "",
         email: "",
         phone: "",
     });
+
+    const [fieldErrors, setFieldErrors] = useState({ name: "", email: "", phone: "" });
+    const [checkoutError, setCheckoutError] = useState("");
 
     // Pre-fill from session
     useEffect(() => {
@@ -36,6 +44,36 @@ export default function CartDrawer() {
     }, []);
 
     const cartCount = items.reduce((acc: number, i: CartItem) => acc + i.quantity, 0);
+
+    const handleChange = (field: keyof typeof customerInfo, value: string) => {
+        setCustomerInfo(prev => ({ ...prev, [field]: value }));
+        if (fieldErrors[field]) setFieldErrors(prev => ({ ...prev, [field]: "" }));
+        if (checkoutError) setCheckoutError("");
+    };
+
+    const validate = (): boolean => {
+        const errors = { name: "", email: "", phone: "" };
+        let valid = true;
+
+        if (!customerInfo.name.trim()) {
+            errors.name = "Full name is required";
+            valid = false;
+        }
+        if (!customerInfo.email.trim()) {
+            errors.email = "Email address is required";
+            valid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerInfo.email)) {
+            errors.email = "Please enter a valid email";
+            valid = false;
+        }
+        if (!customerInfo.phone.trim()) {
+            errors.phone = "Phone number is required";
+            valid = false;
+        }
+
+        setFieldErrors(errors);
+        return valid;
+    };
 
     return (
         <AnimatePresence>
@@ -139,28 +177,75 @@ export default function CartDrawer() {
                                                     </Link>
                                                 )}
                                             </div>
-                                            <div className="space-y-3">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Full Name"
-                                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition placeholder:text-gray-700"
-                                                    value={customerInfo.name}
-                                                    onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                                                />
-                                                <input
-                                                    type="email"
-                                                    placeholder="Email Address"
-                                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition placeholder:text-gray-700"
-                                                    value={customerInfo.email}
-                                                    onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                                                />
-                                                <input
-                                                    type="tel"
-                                                    placeholder="Phone Number"
-                                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition placeholder:text-gray-700"
-                                                    value={customerInfo.phone}
-                                                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                                                />
+                                            <div className="space-y-2">
+                                                {/* Name */}
+                                                <div>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Full Name"
+                                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-sm outline-none transition placeholder:text-gray-700 ${
+                                                            fieldErrors.name
+                                                                ? "border-red-500/70 focus:border-red-500"
+                                                                : "border-white/10 focus:border-orange-500/50"
+                                                        }`}
+                                                        value={customerInfo.name}
+                                                        onChange={(e) => handleChange("name", e.target.value)}
+                                                    />
+                                                    {fieldErrors.name && (
+                                                        <p className="mt-1 text-[11px] text-red-400 font-medium flex items-center gap-1">
+                                                            <svg className="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                            </svg>
+                                                            {fieldErrors.name}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Email */}
+                                                <div>
+                                                    <input
+                                                        type="email"
+                                                        placeholder="Email Address"
+                                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-sm outline-none transition placeholder:text-gray-700 ${
+                                                            fieldErrors.email
+                                                                ? "border-red-500/70 focus:border-red-500"
+                                                                : "border-white/10 focus:border-orange-500/50"
+                                                        }`}
+                                                        value={customerInfo.email}
+                                                        onChange={(e) => handleChange("email", e.target.value)}
+                                                    />
+                                                    {fieldErrors.email && (
+                                                        <p className="mt-1 text-[11px] text-red-400 font-medium flex items-center gap-1">
+                                                            <svg className="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                            </svg>
+                                                            {fieldErrors.email}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Phone */}
+                                                <div>
+                                                    <input
+                                                        type="tel"
+                                                        placeholder="Phone Number"
+                                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-sm outline-none transition placeholder:text-gray-700 ${
+                                                            fieldErrors.phone
+                                                                ? "border-red-500/70 focus:border-red-500"
+                                                                : "border-white/10 focus:border-orange-500/50"
+                                                        }`}
+                                                        value={customerInfo.phone}
+                                                        onChange={(e) => handleChange("phone", e.target.value)}
+                                                    />
+                                                    {fieldErrors.phone && (
+                                                        <p className="mt-1 text-[11px] text-red-400 font-medium flex items-center gap-1">
+                                                            <svg className="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                            </svg>
+                                                            {fieldErrors.phone}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
 
@@ -171,16 +256,42 @@ export default function CartDrawer() {
                                             </span>
                                         </div>
 
+                                        {/* Checkout error banner */}
+                                        {checkoutError && (
+                                            <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+                                                <svg className="h-4 w-4 text-red-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                </svg>
+                                                <p className="text-[12px] text-red-400 font-medium leading-relaxed">{checkoutError}</p>
+                                            </div>
+                                        )}
+
+                                        {/* Truck closed banner */}
+                                        {!isTruckOpen && (
+                                            <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+                                                <span className="text-xl">🕐</span>
+                                                <div>
+                                                    <p className="text-[11px] font-black uppercase tracking-widest text-gray-300">
+                                                        {truckStatus === "SOLD_OUT" ? "Sold Out Today" :
+                                                         truckStatus === "WEATHER_DELAY" ? "Weather Delay" :
+                                                         truckStatus === "OPENING_SOON" ? "Opening Soon" :
+                                                         "Truck is Closed"}
+                                                    </p>
+                                                    <p className="text-[10px] text-gray-500 mt-0.5">
+                                                        Orders accepted during serving hours only
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <button
                                             className="w-full bg-orange-600 text-white py-5 rounded-2xl font-black uppercase tracking-[0.15em] hover:bg-orange-500 transition shadow-[0_12px_40px_rgba(249,115,22,0.25)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
-                                            disabled={isSubmitting || items.length === 0}
+                                            disabled={isSubmitting || items.length === 0 || !isTruckOpen}
                                             onClick={async () => {
-                                                if (!customerInfo.name || !customerInfo.email || !customerInfo.phone) {
-                                                    alert("Please fill in all contact details (Name, Email, Phone)");
-                                                    return;
-                                                }
+                                                if (!validate()) return;
 
                                                 setIsSubmitting(true);
+                                                setCheckoutError("");
                                                 try {
                                                     const res = await fetch("/api/orders", {
                                                         method: "POST",
@@ -215,8 +326,7 @@ export default function CartDrawer() {
                                                 } catch (err: unknown) {
                                                     console.error("Checkout error", err);
                                                     const rawMsg = err instanceof Error ? err.message : "An error occurred during checkout";
-                                                    const message = rawMsg.length > 150 ? rawMsg.slice(0, 150) + "…" : rawMsg;
-                                                    alert(message);
+                                                    setCheckoutError(rawMsg.length > 150 ? rawMsg.slice(0, 150) + "…" : rawMsg);
                                                     setIsSubmitting(false);
                                                 }
                                             }}

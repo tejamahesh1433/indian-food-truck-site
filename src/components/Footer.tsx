@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
+import NewsletterForm from "@/components/NewsletterForm";
 
 export default function Footer() {
     const site = useSite();
@@ -61,6 +62,9 @@ export default function Footer() {
                             <Link href="/catering" className="hover:text-white transition">
                                 Catering
                             </Link>
+                            <Link href="/about" className="hover:text-white transition">
+                                Our Story
+                            </Link>
                         </div>
 
                         <div className="mt-8 text-sm font-semibold text-gray-200">Hours</div>
@@ -76,8 +80,14 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* CTA */}
-                    <div className="card p-6">
+                    {/* Newsletter + CTA */}
+                    <div className="space-y-6">
+                        <div className="card p-6">
+                            <div className="text-sm font-semibold text-gray-200 mb-1">Stay in the loop</div>
+                            <p className="text-xs text-gray-400 mb-4">Get notified about new locations, specials, and events.</p>
+                            <NewsletterForm />
+                        </div>
+                        <div className="card p-6">
                         <div className="text-xl font-semibold">Catering & Events</div>
                         <p className="mt-2 text-gray-300">
                             Offices, birthdays, weddings, campus events. We’ll make it easy.
@@ -95,6 +105,7 @@ export default function Footer() {
                                 Text us
                             </a>
                             .
+                        </div>
                         </div>
                     </div>
                 </div>

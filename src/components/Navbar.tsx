@@ -33,6 +33,7 @@ export default function Navbar() {
     const navItems = [
         { label: "Menu", href: "/menu" },
         { label: "Catering", href: "/catering" },
+        { label: "About", href: "/about" },
         { label: "Find the Truck", href: "/#location", forceActive: atLocation },
     ];
 
