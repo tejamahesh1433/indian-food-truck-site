@@ -212,7 +212,12 @@ export default function CateringPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <input
                                             name="date"
-                                            type="date"
+                                            type="text"
+                                            placeholder="Event date"
+                                            onFocus={(e) => (e.target.type = "date")}
+                                            onBlur={(e) => {
+                                                if (!e.target.value) e.target.type = "text";
+                                            }}
                                             required
                                             aria-label="Event date"
                                             title="Event date"
@@ -220,14 +225,15 @@ export default function CateringPage() {
                                         />
                                         <input
                                             name="guests"
-                                            type="number"
-                                            min="1"
-                                            onKeyDown={(e) => {
-                                                if (["e", "E", "+", "-", "."].includes(e.key)) e.preventDefault();
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            placeholder="Number of guests"
+                                            onChange={(e) => {
+                                                e.target.value = e.target.value.replace(/[^0-9]/g, "");
                                             }}
                                             aria-label="Number of guests"
                                             title="Number of guests"
-                                            placeholder="Number of guests"
                                             className="w-full rounded-2xl bg-black/40 border border-white/10 px-5 py-4 outline-none focus:border-orange-500/50 transition-colors"
                                         />
                                     </div>
