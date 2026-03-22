@@ -34,7 +34,7 @@ export default function Hero() {
               />
             </div>
 
-            <div className="container-shell">
+            <div className="container-shell relative z-10">
                 <div className="max-w-2xl">
                     <motion.div
                         initial={{ opacity: 0, y: 16 }}
