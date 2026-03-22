@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSite } from "@/components/SiteProvider";
 import OrderModal from "@/components/OrderModal";
 import { useCart, type CartItem } from "@/lib/cart";
@@ -30,12 +30,12 @@ export default function Navbar() {
         return () => io.disconnect();
     }, []);
 
-    const navItems = [
+    const navItems = useMemo(() => [
         { label: "Menu", href: "/menu" },
         { label: "Catering", href: "/catering" },
         { label: "About", href: "/about" },
         { label: "Find the Truck", href: "/#location", forceActive: atLocation },
-    ];
+    ], [atLocation]);
 
     return (
         <>

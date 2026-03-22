@@ -66,8 +66,14 @@ export function SiteProvider({ children, settings: initialSettings }: { children
                 const res = await fetch(`/api/settings?t=${Date.now()}`);
                 if (res.ok) {
                     const data = await res.json();
-                    console.log("[SiteProvider] Settings synchronized:", data.businessName, "@", new Date().toLocaleTimeString());
-                    setSettings(data);
+                    
+                    // Only update and log if something actually changed
+                    // (prevents unnecessary re-renders project-wide)
+                    setSettings(prev => {
+                        if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+                        console.log("[SiteProvider] Settings synchronized:", data.businessName, "@", new Date().toLocaleTimeString());
+                        return data;
+                    });
                 }
             } catch (err) {
                 console.error("[SiteProvider] Failed to poll settings:", err);
