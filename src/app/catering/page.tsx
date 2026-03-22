@@ -220,6 +220,11 @@ export default function CateringPage() {
                                         />
                                         <input
                                             name="guests"
+                                            type="number"
+                                            min="1"
+                                            onKeyDown={(e) => {
+                                                if (["e", "E", "+", "-", "."].includes(e.key)) e.preventDefault();
+                                            }}
                                             aria-label="Number of guests"
                                             title="Number of guests"
                                             placeholder="Number of guests"
