@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 
 const OrderSchema = z.object({
     customerName: z.string().min(2),
@@ -22,6 +23,10 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions);
         const body = await req.json();
         const validatedData = OrderSchema.parse(body);
+
+        if (!isWellRecognizedEmail(validatedData.customerEmail)) {
+            return NextResponse.json({ error: EMAIL_DOMAIN_ERROR }, { status: 400 });
+        }
 
         // Fetch actual prices from DB to prevent client-side price tampering
         const itemIds = validatedData.items.map(i => i.id);

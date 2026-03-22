@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -26,6 +27,12 @@ export default function LoginPage() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+
+        if (!isWellRecognizedEmail(formData.email)) {
+            setError(EMAIL_DOMAIN_ERROR);
+            setIsLoading(false);
+            return;
+        }
 
         try {
             if (mode === "signup") {

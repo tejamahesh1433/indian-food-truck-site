@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { makeChatToken } from "@/lib/tokens";
@@ -46,6 +47,13 @@ export async function POST(req: Request) {
     if (!parsed.success) {
         return NextResponse.json(
             { ok: false, error: "Invalid form data" },
+            { status: 400 }
+        );
+    }
+
+    if (!isWellRecognizedEmail(parsed.data.email)) {
+        return NextResponse.json(
+            { ok: false, error: EMAIL_DOMAIN_ERROR },
             { status: 400 }
         );
     }

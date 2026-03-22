@@ -106,10 +106,8 @@ const PillNav = ({
       document.fonts.ready.then(layout).catch(() => {});
     }
 
-    const menu = mobileMenuRef.current;
-    if (menu && !isMobileMenuOpen) {
-      gsap.set(menu, { visibility: 'hidden', opacity: 0, scaleY: 0.8 });
-    }
+    // CSS now handles the initial hidden state (visibility, opacity, scale)
+    // to prevent the 10s settings-polling jump.
 
     if (initialLoadAnimation) {
       const navItems = navItemsRef.current;

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 import { z } from "zod";
+import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 
 const SignupSchema = z.object({
     name: z.string().min(2),
@@ -13,6 +14,10 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { name, email, password } = SignupSchema.parse(body);
+
+        if (!isWellRecognizedEmail(email)) {
+            return NextResponse.json({ error: EMAIL_DOMAIN_ERROR }, { status: 400 });
+        }
 
         // Check if user exists
         const existingUser = await prisma.user.findUnique({

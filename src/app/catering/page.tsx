@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/Navbar";
 import { useState, useCallback } from "react";
+import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
 import CateringPrintedMenu from "./ui/CateringPrintedMenu";
@@ -68,6 +69,13 @@ export default function CateringPage() {
 
         const form = e.currentTarget;
         const data = new FormData(form);
+        const email = data.get("email") as string;
+
+        if (!isWellRecognizedEmail(email)) {
+            setErrorMsg(EMAIL_DOMAIN_ERROR);
+            setStatus("error");
+            return;
+        }
 
         try {
             const res = await fetch("/api/catering", {

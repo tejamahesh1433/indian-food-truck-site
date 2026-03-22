@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 
 export default function NewsletterForm() {
     const [email, setEmail] = useState("");
@@ -10,6 +11,12 @@ export default function NewsletterForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email.trim()) return;
+        
+        if (!isWellRecognizedEmail(email)) {
+            setStatus("error");
+            setErrorMsg(EMAIL_DOMAIN_ERROR);
+            return;
+        }
 
         setStatus("loading");
         setErrorMsg("");

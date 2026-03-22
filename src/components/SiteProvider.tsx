@@ -70,7 +70,17 @@ export function SiteProvider({ children, settings: initialSettings }: { children
                     // Only update and log if something actually changed
                     // (prevents unnecessary re-renders project-wide)
                     setSettings(prev => {
-                        if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+                        // Exclude updatedAt from comparison as it changes on every save 
+                        // but doesn't necessarily mean a visual change occurred.
+                        const sanitize = (obj: any) => {
+                            if (!obj) return {};
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            const { updatedAt, ...rest } = obj;
+                            return rest;
+                        };
+
+                        if (JSON.stringify(sanitize(prev)) === JSON.stringify(sanitize(data))) return prev;
+                        
                         console.log("[SiteProvider] Settings synchronized:", data.businessName, "@", new Date().toLocaleTimeString());
                         return data;
                     });

@@ -6,6 +6,7 @@ import { useCart, type CartItem } from "@/lib/cart";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useSite } from "@/components/SiteProvider";
+import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 
 export default function CartDrawer() {
     const [isOpen, setIsOpen] = useState(false);
@@ -64,6 +65,9 @@ export default function CartDrawer() {
             valid = false;
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerInfo.email)) {
             errors.email = "Please enter a valid email";
+            valid = false;
+        } else if (!isWellRecognizedEmail(customerInfo.email)) {
+            errors.email = EMAIL_DOMAIN_ERROR;
             valid = false;
         }
         if (!customerInfo.phone.trim()) {
