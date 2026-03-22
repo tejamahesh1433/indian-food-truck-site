@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { SiteProvider } from "@/components/SiteProvider";
 import CartDrawer from "@/components/CartDrawer";
+import FloatingCart from "@/components/FloatingCart";
 import { Analytics } from "@vercel/analytics/react";
 import { prisma } from "@/lib/prisma";
 
@@ -127,6 +128,7 @@ export default async function RootLayout({
             <SiteProvider settings={settings}>
               <ServiceWorkerRegistration />
               <AnnouncementBanner />
+              <FloatingCart />
               {children}
               <CartDrawer />
               <Footer />
