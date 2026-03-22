@@ -281,13 +281,6 @@ const PillNav = ({
                 Login
               </Link>
             )}
-            <a
-              href={`tel:${site.contact.phoneE164}`}
-              className="bg-orange-500 text-black px-6 py-3 rounded-xl font-bold text-center text-sm"
-              onClick={() => toggleMobileMenu()}
-            >
-              Call the Truck
-            </a>
           </li>
         </ul>
       </div>
