@@ -72,7 +72,7 @@ export function SiteProvider({ children, settings: initialSettings }: { children
                     setSettings(prev => {
                         // Exclude updatedAt from comparison as it changes on every save 
                         // but doesn't necessarily mean a visual change occurred.
-                        const sanitize = (obj: any) => {
+                        const sanitize = (obj: Record<string, unknown> | null) => {
                             if (!obj) return {};
                             // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             const { updatedAt, ...rest } = obj;

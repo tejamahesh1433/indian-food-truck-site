@@ -29,6 +29,7 @@ export async function PATCH(
     }
 
     if (body.isVeg !== undefined) data.isVeg = !!body.isVeg;
+    if (body.isNonVeg !== undefined) data.isNonVeg = !!body.isNonVeg;
     if (body.isSpicy !== undefined) data.isSpicy = !!body.isSpicy;
     if (body.isPopular !== undefined) data.isPopular = !!body.isPopular;
     if (body.isAvailable !== undefined) data.isAvailable = !!body.isAvailable;

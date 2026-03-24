@@ -36,6 +36,12 @@ export default function Hero() {
 
             <div className="container-shell relative z-10">
                 <div className="max-w-2xl">
+                    <div className="flex items-center gap-3 mb-8">
+                        <span className="inline-block bg-orange-500 text-black text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1.5 rounded-full shadow-[0_10px_30px_rgba(249,115,22,0.3)]">
+                            Authentic Experience
+                        </span>
+                        <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                    </div>
                     <motion.div
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}

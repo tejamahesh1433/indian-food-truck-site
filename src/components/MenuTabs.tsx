@@ -14,6 +14,7 @@ interface MenuItem {
     imageUrl: string;
     category: string;
     isVeg: boolean;
+    isNonVeg: boolean;
     isSpicy: boolean;
     isPopular: boolean;
 }
@@ -45,31 +46,48 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                             </div>
                         )}
                     </div>
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onAdd(item);
-                        }}
-                        className="bg-orange-500 text-black px-4 py-2 rounded-xl font-bold hover:bg-orange-400 transition shadow-lg active:scale-95"
-                    >
-                        + Add
-                    </button>
+                    <div className="flex flex-col items-end gap-2 relative z-10">
+                        <div className="flex gap-1 absolute bottom-[115%] right-0">
+                            {item.isVeg && (
+                                <div title="Vegetarian" className="flex flex-col items-center justify-center border-2 border-green-700 rounded-sm bg-white/95 w-7 h-7 flex-shrink-0 shadow-md">
+                                    <div className="w-3 h-3 bg-green-700 rounded-full mb-0.5" />
+                                    <span className="text-[5px] font-bold text-green-700 leading-none">VEG</span>
+                                </div>
+                            )}
+                            {item.isNonVeg && (
+                                <div title="Non-Vegetarian" className="flex flex-col items-center justify-center border-2 border-red-700 rounded-sm bg-white/95 w-7 h-7 flex-shrink-0 shadow-md">
+                                    <div className="w-3 h-3 bg-red-700 rounded-full mb-0.5" />
+                                    <span className="text-[4px] font-bold text-red-700 leading-none tracking-tighter">NON-VEG</span>
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                onAdd(item);
+                            }}
+                            className="bg-orange-500 text-black px-4 py-2 rounded-xl font-bold hover:bg-orange-400 transition shadow-lg active:scale-95"
+                        >
+                            + Add
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div className="p-6">
                 <p className="text-sm text-gray-300 line-clamp-2">{item.description}</p>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                    {([item.isVeg && "Veg", item.isSpicy && "Spicy", item.isPopular && "Popular"].filter(Boolean) as string[])
-                        .map((t) => (
-                            <span
-                                key={t}
-                                className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-black/40 border border-white/10 text-gray-400"
-                            >
-                                {t}
-                            </span>
-                        ))}
+                <div className="mt-4 flex flex-wrap gap-2 items-center">
+                    {item.isSpicy && (
+                        <span title="Spicy" className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-black/40 border border-white/10 text-orange-500">
+                            Spicy
+                        </span>
+                    )}
+                    {item.isPopular && (
+                        <span title="Popular" className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-black/40 border border-white/10 text-yellow-500">
+                            Popular
+                        </span>
+                    )}
                 </div>
             </div>
         </div>
@@ -80,6 +98,7 @@ export default function MenuTabs() {
     const [active, setActive] = useState<string>("All");
     const [query, setQuery] = useState("");
     const [vegOnly, setVegOnly] = useState(false);
+    const [nonVegOnly, setNonVegOnly] = useState(false);
     const [spicyOnly, setSpicyOnly] = useState(false);
     const [popularOnly, setPopularOnly] = useState(false);
 
@@ -115,9 +134,10 @@ export default function MenuTabs() {
         const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase()) ||
             item.description.toLowerCase().includes(query.toLowerCase());
         const matchesVeg = !vegOnly || item.isVeg;
+        const matchesNonVeg = !nonVegOnly || item.isNonVeg;
         const matchesSpicy = !spicyOnly || item.isSpicy;
         const matchesPopular = !popularOnly || item.isPopular;
-        return matchesCat && matchesQuery && matchesVeg && matchesSpicy && matchesPopular;
+        return matchesCat && matchesQuery && matchesVeg && matchesNonVeg && matchesSpicy && matchesPopular;
     });
 
     return (
@@ -198,10 +218,20 @@ export default function MenuTabs() {
                             onClick={() => setVegOnly((v) => !v)}
                             className={[
                                 "px-5 py-2 rounded-full border transition text-sm font-medium",
-                                vegOnly ? "bg-white text-black border-white" : "border-white/15 hover:border-white/40 text-gray-200",
+                                vegOnly ? "bg-green-600 text-white border-green-600" : "border-white/15 hover:border-white/40 text-gray-200",
                             ].join(" ")}
                         >
                             Veg
+                        </button>
+
+                        <button
+                            onClick={() => setNonVegOnly((v) => !v)}
+                            className={[
+                                "px-5 py-2 rounded-full border transition text-sm font-medium",
+                                nonVegOnly ? "bg-red-600 text-white border-red-600" : "border-white/15 hover:border-white/40 text-gray-200",
+                            ].join(" ")}
+                        >
+                            Non-Veg
                         </button>
 
                         <button
@@ -218,6 +248,7 @@ export default function MenuTabs() {
                             onClick={() => {
                                 setQuery("");
                                 setVegOnly(false);
+                                setNonVegOnly(false);
                                 setSpicyOnly(false);
                                 setPopularOnly(false);
                                 setActive("All");

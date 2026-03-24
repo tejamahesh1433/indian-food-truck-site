@@ -7,7 +7,7 @@
  *  - API routes & admin pages: Network-only (always fresh, never cached)
  */
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v6";
 const STATIC_CACHE  = `ift-static-${CACHE_VERSION}`;
 const PAGES_CACHE   = `ift-pages-${CACHE_VERSION}`;
 

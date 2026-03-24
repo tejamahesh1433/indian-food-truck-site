@@ -11,6 +11,7 @@ export async function GET(req: Request) {
     const q = (searchParams.get("q") ?? "").trim();
     const category = searchParams.get("category") ?? "All";
     const veg = searchParams.get("veg") === "1";
+    const nonVeg = searchParams.get("nonVeg") === "1";
     const spicy = searchParams.get("spicy") === "1";
     const popular = searchParams.get("popular") === "1";
     const available = searchParams.get("available"); // "1" | "0" | null
@@ -36,6 +37,7 @@ export async function GET(req: Request) {
                     : {}),
                 ...(category !== "All" ? { category } : {}),
                 ...(veg ? { isVeg: true } : {}),
+                ...(nonVeg ? { isNonVeg: true } : {}),
                 ...(spicy ? { isSpicy: true } : {}),
                 ...(popular ? { isPopular: true } : {}),
                 ...(available === "1" ? { isAvailable: true } : {}),
@@ -81,6 +83,7 @@ export async function POST(req: Request) {
             priceCents,
             imageUrl,
             isVeg: !!body.isVeg,
+            isNonVeg: !!body.isNonVeg,
             isSpicy: !!body.isSpicy,
             isPopular: !!body.isPopular,
             isAvailable: body.isAvailable !== false,

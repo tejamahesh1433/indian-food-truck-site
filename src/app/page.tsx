@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import TodaysSpecial from "@/components/TodaysSpecial";
 import SignatureDishes from "@/components/SignatureDishes";
 import Location from "@/components/Location";
 import InstagramGrid from "@/components/InstagramGrid";
@@ -10,6 +11,7 @@ export default function Home() {
     <main className="bg-black text-white">
       <Navbar />
       <Hero />
+      <TodaysSpecial />
       <SignatureDishes />
       <Location />
       <ReviewsSection />

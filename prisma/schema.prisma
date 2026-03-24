@@ -47,6 +47,7 @@ model MenuItem {
   imageUrl    String?
   category    String
   isVeg       Boolean  @default(false)
+  isNonVeg    Boolean  @default(false)
   isSpicy     Boolean  @default(false)
   isPopular   Boolean  @default(false)
   isAvailable Boolean  @default(true)
@@ -259,4 +260,19 @@ enum OrderStatus {
   READY
   COMPLETED
   CANCELLED
+}
+
+model TodaysSpecial {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  priceCents  Int
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  isVeg       Boolean  @default(false)
+  isNonVeg    Boolean  @default(false)
+  isSpicy     Boolean  @default(false)
+  isPopular   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  updatedAt   DateTime @updatedAt
 }

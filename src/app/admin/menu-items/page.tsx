@@ -2,21 +2,23 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
-type MenuItem = {
+interface MenuItem {
     id: string;
     name: string;
     category: string;
     priceCents: number;
     description: string;
     isVeg: boolean;
+    isNonVeg: boolean;
     isSpicy: boolean;
     isPopular: boolean;
     isAvailable: boolean;
     inPos: boolean;
     sortOrder: number;
     imageUrl: string | null;
-};
+}
 
 type Category = {
     id: string;
@@ -38,11 +40,13 @@ export default function AdminMenuItemsPage() {
     const [isVeg, setIsVeg] = useState(false);
     const [isSpicy, setIsSpicy] = useState(false);
     const [isPopular, setIsPopular] = useState(false);
+    const [isNonVeg, setIsNonVeg] = useState(false);
     const [isAvailable, setIsAvailable] = useState(true);
     const [inPos, setInPos] = useState(true);
 
     const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     // list state
     const [items, setItems] = useState<MenuItem[]>([]);
@@ -62,6 +66,7 @@ export default function AdminMenuItemsPage() {
     const [q, setQ] = useState("");
     const [fCategory, setFCategory] = useState<string>("All");
     const [fVeg, setFVeg] = useState(false);
+    const [fNonVeg, setFNonVeg] = useState(false);
     const [fSpicy, setFSpicy] = useState(false);
     const [fPopular, setFPopular] = useState(false);
     const [fAvailability, setFAvailability] = useState<"all" | "available" | "unavailable">("all");
@@ -112,6 +117,33 @@ export default function AdminMenuItemsPage() {
         setDraggedItemId(null);
         setDragOverItemId(null);
     }
+    async function handleFileUpload(file: File, target: "add" | "edit") {
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await fetch("/api/admin/upload", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.url) {
+                if (target === "add") {
+                    setImageUrl(data.url);
+                } else {
+                    setEditDraft((d) => ({ ...d, imageUrl: data.url }));
+                }
+                showToast("Image uploaded!", "success");
+            } else {
+                showToast(data.error || "Upload failed", "error");
+            }
+        } catch {
+            showToast("Error uploading file", "error");
+        } finally {
+            setIsUploading(false);
+        }
+    }
 
     const fetchItems = useCallback(async () => {
         setLoading(true);
@@ -119,6 +151,7 @@ export default function AdminMenuItemsPage() {
         if (q.trim()) params.set("q", q.trim());
         if (fCategory !== "All") params.set("category", fCategory);
         if (fVeg) params.set("veg", "1");
+        if (fNonVeg) params.set("nonVeg", "1");
         if (fSpicy) params.set("spicy", "1");
         if (fPopular) params.set("popular", "1");
         if (fAvailability === "available") params.set("available", "1");
@@ -137,7 +170,7 @@ export default function AdminMenuItemsPage() {
             showToast("Server returned an invalid JSON block. Check console.", "error");
         }
         setLoading(false);
-    }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability, sortBy]);
+    }, [q, fCategory, fVeg, fNonVeg, fSpicy, fPopular, fAvailability, sortBy]);
 
     const fetchCategories = useCallback(async () => {
         try {
@@ -160,23 +193,25 @@ export default function AdminMenuItemsPage() {
     useEffect(() => {
         const t = setTimeout(() => fetchItems(), 250);
         return () => clearTimeout(t);
-    }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability, sortBy, fetchItems]);
+    }, [q, fCategory, fVeg, fNonVeg, fSpicy, fPopular, fAvailability, sortBy, fetchItems]);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
         if (q) count++;
         if (fCategory !== "All") count++;
         if (fVeg) count++;
+        if (fNonVeg) count++;
         if (fSpicy) count++;
         if (fPopular) count++;
         if (fAvailability !== "all") count++;
         return count;
-    }, [q, fCategory, fVeg, fSpicy, fPopular, fAvailability]);
+    }, [q, fCategory, fVeg, fNonVeg, fSpicy, fPopular, fAvailability]);
 
     function resetFilters() {
         setQ("");
         setFCategory("All");
         setFVeg(false);
+        setFNonVeg(false);
         setFSpicy(false);
         setFPopular(false);
         setFAvailability("all");
@@ -207,6 +242,7 @@ export default function AdminMenuItemsPage() {
                 description,
                 imageUrl,
                 isVeg,
+                isNonVeg,
                 isSpicy,
                 isPopular,
                 isAvailable,
@@ -226,6 +262,7 @@ export default function AdminMenuItemsPage() {
         setDescription("");
         setImageUrl("");
         setIsVeg(false);
+        setIsNonVeg(false);
         setIsSpicy(false);
         setIsPopular(false);
         setIsAvailable(true);
@@ -248,6 +285,7 @@ export default function AdminMenuItemsPage() {
             imageUrl: item.imageUrl,
             priceCents: item.priceCents,
             isVeg: item.isVeg,
+            isNonVeg: item.isNonVeg,
             isSpicy: item.isSpicy,
             isPopular: item.isPopular,
             isAvailable: item.isAvailable,
@@ -303,6 +341,7 @@ export default function AdminMenuItemsPage() {
                 description: editDraft.description || "",
                 imageUrl: editDraft.imageUrl || "",
                 isVeg: editDraft.isVeg || false,
+                isNonVeg: editDraft.isNonVeg || false,
                 isSpicy: editDraft.isSpicy || false,
                 isPopular: editDraft.isPopular || false,
                 isAvailable: editDraft.isAvailable ?? true,
@@ -436,7 +475,11 @@ export default function AdminMenuItemsPage() {
 
             <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-semibold mb-2">Menu Management</h1>
+                    <h1 className="text-3xl font-semibold mb-2">
+                        {fPopular && !fVeg && !fNonVeg && !fSpicy && fCategory === "All" && !q 
+                            ? "Signature Dishes" 
+                            : "Menu Management"}
+                    </h1>
                     <p className="text-sm text-gray-400">
                         {activeFiltersCount > 0
                             ? `Showing ${items.length} of ${totals.total} items (Filters active)`
@@ -453,8 +496,8 @@ export default function AdminMenuItemsPage() {
                             <h2 className="text-xl font-medium">Add New Menu Item</h2>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-4">
-                            <div className="md:col-span-2">
+                        <div className="flex flex-col gap-5">
+                            <div>
                                 <label className="text-sm font-medium text-gray-300">Name <span className="text-red-400">*</span></label>
                                 <input
                                     required
@@ -465,63 +508,83 @@ export default function AdminMenuItemsPage() {
                                 />
                             </div>
 
-                            <div>
-                                <div className="flex items-center justify-between">
-                                    <label className="text-sm font-medium text-gray-300">Category</label>
-                                    <button type="button" onClick={() => setIsCatModalOpen(true)} className="text-xs text-orange-400 hover:text-orange-300 transition underline">Manage</button>
-                                </div>
-                                <select
-                                    title="Category"
-                                    aria-label="Category"
-                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                >
-                                    {categories.map((c) => (
-                                        <option key={c.id} value={c.name} className="bg-neutral-900">
-                                            {c.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="text-sm font-medium text-gray-300">Price ($) <span className="text-red-400">*</span></label>
-                                <input
-                                    required
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                                    value={price}
-                                    onChange={(e) => setPrice(e.target.value)}
-                                    placeholder="e.g. 5.99"
-                                />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="text-sm font-medium text-gray-300">Image URL</label>
-                                <input
-                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    placeholder="/images/menu/naan.png"
-                                />
-                                {imageUrl && (
-                                    <div className="mt-3 flex items-center gap-3 animate-fade-in">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={imageUrl}
-                                            alt="Preview"
-                                            className="h-14 w-14 rounded-lg border border-white/10 object-cover bg-black/50"
-                                            onError={(e) => ((e.currentTarget.style.display = "none"))}
-                                        />
-                                        <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">Preview</p>
+                            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
+                                <div>
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-300">Category</label>
+                                        <button type="button" onClick={() => setIsCatModalOpen(true)} className="text-xs text-orange-400 hover:text-orange-300 transition underline">Manage</button>
                                     </div>
-                                )}
+                                    <select
+                                        title="Category"
+                                        aria-label="Category"
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
+                                        value={category}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                    >
+                                        {categories.map((c) => (
+                                            <option key={c.id} value={c.name} className="bg-neutral-900">
+                                                {c.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium text-gray-300">Price ($) <span className="text-red-400">*</span></label>
+                                    <input
+                                        required
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                        value={price}
+                                        onChange={(e) => setPrice(e.target.value)}
+                                        placeholder="e.g. 5.99"
+                                    />
+                                </div>
                             </div>
 
-                            <div className="md:col-span-4">
+                            <div>
+                                <label className="text-sm font-medium text-gray-300">Image URL / Upload</label>
+                                <div className="space-y-3 mt-1">
+                                    <input
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 text-sm"
+                                        value={imageUrl}
+                                        onChange={(e) => setImageUrl(e.target.value)}
+                                        placeholder="Enter URL or upload below..."
+                                    />
+                                    <div className="flex items-center gap-3">
+                                        <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/20 cursor-pointer hover:bg-white/5 transition ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "add")}
+                                                disabled={isUploading}
+                                            />
+                                            <svg className="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                            </svg>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                                {isUploading ? "Uploading..." : "Upload Photo"}
+                                            </span>
+                                        </label>
+                                        {imageUrl && (
+                                            <div className="h-10 w-10 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/50 relative">
+                                                <Image
+                                                    src={imageUrl}
+                                                    alt="Preview"
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
                                 <label className="text-sm font-medium text-gray-300">Description</label>
                                 <textarea
                                     className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
@@ -533,10 +596,14 @@ export default function AdminMenuItemsPage() {
                             </div>
                         </div>
 
-                        <div className="mt-4 flex flex-wrap gap-6 text-sm">
+                        <div className="mt-5 flex flex-wrap gap-6 text-sm">
                             <label className="flex items-center gap-2 cursor-pointer group">
                                 <input type="checkbox" checked={isVeg} onChange={(e) => setIsVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
                                 <span className="text-gray-300 group-hover:text-white transition">Veg</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" checked={isNonVeg} onChange={(e) => setIsNonVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                <span className="text-gray-300 group-hover:text-white transition">Non-Veg</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer group">
                                 <input type="checkbox" checked={isSpicy} onChange={(e) => setIsSpicy(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
@@ -575,6 +642,7 @@ export default function AdminMenuItemsPage() {
                                     {fCategory !== "All" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fCategory} <button title="Remove category filter" aria-label="Remove category filter" onClick={() => setFCategory("All")} className="hover:text-red-400">&times;</button></span>}
                                     {fAvailability !== "all" && <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-medium shrink-0 flex items-center gap-2">{fAvailability === "available" ? "In Stock" : "Out of Stock"} <button title="Remove availability filter" aria-label="Remove availability filter" onClick={() => setFAvailability("all")} className="hover:text-red-400">&times;</button></span>}
                                     {fVeg && <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Veg <button title="Remove veg filter" aria-label="Remove veg filter" onClick={() => setFVeg(false)} className="hover:text-white">&times;</button></span>}
+                                    {fNonVeg && <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Non-Veg <button title="Remove non-veg filter" aria-label="Remove non-veg filter" onClick={() => setFNonVeg(false)} className="hover:text-white">&times;</button></span>}
                                     {fSpicy && <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Spicy <button title="Remove spicy filter" aria-label="Remove spicy filter" onClick={() => setFSpicy(false)} className="hover:text-white">&times;</button></span>}
                                     {fPopular && <span className="px-3 py-1 bg-yellow-500/20 text-yellow-500 rounded-full text-xs font-medium shrink-0 flex items-center gap-2">Popular <button title="Remove popular filter" aria-label="Remove popular filter" onClick={() => setFPopular(false)} className="hover:text-white">&times;</button></span>}
                                 </>
@@ -652,6 +720,10 @@ export default function AdminMenuItemsPage() {
                                 <label className="flex items-center gap-2 text-sm cursor-pointer group">
                                     <input type="checkbox" checked={fVeg} onChange={(e) => setFVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
                                     <span className="text-gray-300 group-hover:text-white transition">Veg</span>
+                                </label>
+                                <label className="flex items-center gap-2 text-sm cursor-pointer group">
+                                    <input type="checkbox" checked={fNonVeg} onChange={(e) => setFNonVeg(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                    <span className="text-gray-300 group-hover:text-white transition">Non-Veg</span>
                                 </label>
                                 <label className="flex items-center gap-2 text-sm cursor-pointer group">
                                     <input type="checkbox" checked={fSpicy} onChange={(e) => setFSpicy(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
@@ -803,16 +875,15 @@ export default function AdminMenuItemsPage() {
                                                     <td className="py-3">
                                                         <div className="h-10 w-10 overflow-hidden rounded-lg border border-white/10 bg-black/40 flex items-center justify-center">
                                                             {it.imageUrl ? (
-                                                                // eslint-disable-next-line @next/next/no-img-element
-                                                                <img
-                                                                    src={it.imageUrl}
-                                                                    alt={it.name}
-                                                                    className="h-full w-full object-cover"
-                                                                    onError={(e) => {
-                                                                        // fallback to placeholder if image fails
-                                                                        (e.currentTarget as HTMLImageElement).style.display = "none";
-                                                                    }}
-                                                                />
+                                                                <div className="relative h-full w-full">
+                                                                    <Image
+                                                                        src={it.imageUrl}
+                                                                        alt={it.name}
+                                                                        fill
+                                                                        className="object-cover"
+                                                                        unoptimized
+                                                                    />
+                                                                </div>
                                                             ) : (
                                                                 <span className="text-gray-300 text-lg">🍛</span>
                                                             )}
@@ -832,6 +903,22 @@ export default function AdminMenuItemsPage() {
                                                                 <div className="font-semibold text-white mb-1">{it.name}</div>
                                                                 <div className="text-xs text-gray-500 max-w-[250px] truncate whitespace-normal break-words line-clamp-2">
                                                                     {it.description}
+                                                                </div>
+                                                                <div className="flex gap-1 mt-1 flex-wrap">
+                                                                    {it.isVeg && (
+                                                                        <div title="Vegetarian" className="flex flex-col items-center justify-center border border-green-700 rounded-sm bg-white w-6 h-6 flex-shrink-0">
+                                                                            <div className="w-2.5 h-2.5 bg-green-700 rounded-full mb-0.5" />
+                                                                            <span className="text-[4px] font-bold text-green-700 leading-none">VEG</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {it.isNonVeg && (
+                                                                        <div title="Non-Vegetarian" className="flex flex-col items-center justify-center border border-red-700 rounded-sm bg-white w-6 h-6 flex-shrink-0">
+                                                                            <div className="w-2.5 h-2.5 bg-red-700 rounded-full mb-0.5" />
+                                                                            <span className="text-[4px] font-bold text-red-700 leading-none tracking-tighter">NON-VEG</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {it.isSpicy && <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500 text-[10px] font-bold uppercase"><span className="h-1.5 w-1.5 rounded-full bg-orange-500" /> Spicy</span>}
+                                                                    {it.isPopular && <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 text-[10px] font-bold uppercase"><span className="h-1.5 w-1.5 rounded-full bg-yellow-500" /> Popular</span>}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -975,25 +1062,43 @@ export default function AdminMenuItemsPage() {
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="text-sm font-medium text-gray-300">Image URL</label>
-                                    <input
-                                        placeholder="/images/menu/item.png"
-                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
-                                        value={(editDraft.imageUrl as string) ?? ""}
-                                        onChange={(e) => setEditDraft((d) => ({ ...d, imageUrl: e.target.value }))}
-                                    />
-                                    {editDraft.imageUrl && (
-                                        <div className="mt-3 flex items-center gap-3 animate-fade-in">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={editDraft.imageUrl}
-                                                alt="Preview"
-                                                className="h-14 w-14 rounded-lg border border-white/10 object-cover bg-black/50"
-                                                onError={(e) => ((e.currentTarget.style.display = "none"))}
-                                            />
-                                            <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">Preview</p>
+                                    <label className="text-sm font-medium text-gray-300">Image URL / Upload</label>
+                                    <div className="space-y-3">
+                                        <input
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 text-sm"
+                                            value={(editDraft.imageUrl as string) ?? ""}
+                                            onChange={(e) => setEditDraft((d) => ({ ...d, imageUrl: e.target.value }))}
+                                            placeholder="Enter URL or upload below..."
+                                        />
+                                        <div className="flex items-center gap-3">
+                                            <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/20 cursor-pointer hover:bg-white/5 transition ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "edit")}
+                                                    disabled={isUploading}
+                                                />
+                                                <svg className="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                </svg>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                                    {isUploading ? "Uploading..." : "Upload Photo"}
+                                                </span>
+                                            </label>
+                                            {editDraft.imageUrl && (
+                                                <div className="h-10 w-10 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/50 relative">
+                                                    <Image
+                                                        src={editDraft.imageUrl}
+                                                        alt="Preview"
+                                                        fill
+                                                        className="object-cover"
+                                                        unoptimized
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
 
                                 <div className="md:col-span-4">
@@ -1006,21 +1111,66 @@ export default function AdminMenuItemsPage() {
                                         rows={2}
                                     />
                                 </div>
-                            </div>
 
-                            <div className="mt-6 flex flex-wrap gap-6 text-sm">
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" checked={editDraft.isVeg ?? false} onChange={(e) => setEditDraft((d) => ({ ...d, isVeg: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                                    <span className="text-gray-300 group-hover:text-white transition">Veg</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" checked={editDraft.isSpicy ?? false} onChange={(e) => setEditDraft((d) => ({ ...d, isSpicy: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                                    <span className="text-gray-300 group-hover:text-white transition">Spicy</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input type="checkbox" checked={editDraft.isPopular ?? false} onChange={(e) => setEditDraft((d) => ({ ...d, isPopular: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                                    <span className="text-gray-300 group-hover:text-white transition">Popular</span>
-                                </label>
+                                <div className="md:col-span-4">
+                                    <label className="text-sm font-medium text-gray-300 block mb-4">Dietary & Status</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <label className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:bg-black/60 transition group">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
+                                                checked={!!editDraft.isVeg}
+                                                onChange={(e) => setEditDraft((d) => ({ ...d, isVeg: e.target.checked }))}
+                                            />
+                                            <span className="text-sm text-gray-400 group-hover:text-white transition">Vegetarian</span>
+                                        </label>
+                                        <label className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:bg-black/60 transition group">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
+                                                checked={!!editDraft.isNonVeg}
+                                                onChange={(e) => setEditDraft((d) => ({ ...d, isNonVeg: e.target.checked }))}
+                                            />
+                                            <span className="text-sm text-gray-400 group-hover:text-white transition">Non-Vegetarian</span>
+                                        </label>
+                                        <label className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:bg-black/60 transition group">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
+                                                checked={!!editDraft.isSpicy}
+                                                onChange={(e) => setEditDraft((d) => ({ ...d, isSpicy: e.target.checked }))}
+                                            />
+                                            <span className="text-sm text-gray-400 group-hover:text-white transition">Spicy</span>
+                                        </label>
+                                        <label className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:bg-black/60 transition group">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
+                                                checked={!!editDraft.isPopular}
+                                                onChange={(e) => setEditDraft((d) => ({ ...d, isPopular: e.target.checked }))}
+                                            />
+                                            <span className="text-sm text-gray-400 group-hover:text-white transition">Popular</span>
+                                        </label>
+                                        <label className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:bg-black/60 transition group">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
+                                                checked={editDraft.isAvailable !== false}
+                                                onChange={(e) => setEditDraft((d) => ({ ...d, isAvailable: e.target.checked }))}
+                                            />
+                                            <span className="text-sm text-gray-400 group-hover:text-white transition">Website Availability</span>
+                                        </label>
+                                        <label className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/10 cursor-pointer hover:bg-black/60 transition group">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
+                                                checked={editDraft.inPos !== false}
+                                                onChange={(e) => setEditDraft((d) => ({ ...d, inPos: e.target.checked }))}
+                                            />
+                                            <span className="text-sm text-gray-400 group-hover:text-white transition">In POS</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

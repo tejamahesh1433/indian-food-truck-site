@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { isAdmin } from "@/lib/adminAuth";
 
 const ReviewSchema = z.object({
     name: z.string().min(2).max(60),
@@ -28,20 +29,28 @@ export async function POST(req: Request) {
         const body = await req.json();
         const data = ReviewSchema.parse(body);
 
+        // Auto-approve if the submitter is an admin
+        const isAutoApproved = await isAdmin();
+
         const review = await prisma.review.create({
             data: {
                 name: data.name,
                 rating: data.rating,
                 text: data.text,
-                isApproved: false,
+                isApproved: isAutoApproved,
             },
         });
 
-        return NextResponse.json({ success: true, id: review.id });
+        return NextResponse.json({ 
+            success: true, 
+            id: review.id,
+            isApproved: isAutoApproved 
+        });
     } catch (error) {
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: "Please check your review and try again." }, { status: 400 });
         }
+        console.error("Review Submission Error:", error);
         return NextResponse.json({ error: "Could not submit review. Please try again." }, { status: 500 });
     }
 }

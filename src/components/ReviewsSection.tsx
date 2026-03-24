@@ -12,6 +12,7 @@ function StarRating({ rating, interactive = false, onChange }: { rating: number;
                 <button
                     key={star}
                     type={interactive ? "button" : undefined}
+                    title={interactive ? `Rate ${star} stars` : undefined}
                     onClick={() => interactive && onChange?.(star)}
                     onMouseEnter={() => interactive && setHovered(star)}
                     onMouseLeave={() => interactive && setHovered(0)}
@@ -35,6 +36,7 @@ function StarRating({ rating, interactive = false, onChange }: { rating: number;
 function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
     const [form, setForm] = useState({ name: "", rating: 5, text: "" });
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [isApproved, setIsApproved] = useState(false);
     const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +51,8 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
                 body: JSON.stringify(form),
             });
             if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+            const data = await res.json();
+            setIsApproved(data.isApproved);
             setStatus("success");
             onSubmitted();
         } catch (err) {
@@ -59,10 +63,27 @@ function ReviewForm({ onSubmitted }: { onSubmitted: () => void }) {
 
     if (status === "success") {
         return (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 text-center">
-                <div className="text-3xl mb-2">🙏</div>
-                <p className="font-black text-sm text-green-400 uppercase tracking-widest">Thank you!</p>
-                <p className="text-xs text-gray-400 mt-1">Your review is being reviewed and will appear shortly.</p>
+            <div className={`${isApproved ? "bg-orange-500/10 border-orange-500/20" : "bg-green-500/10 border-green-500/20"} border rounded-2xl p-6 text-center`}>
+                <div className="text-3xl mb-2">{isApproved ? "✨" : "🙏"}</div>
+                <p className={`font-black text-sm ${isApproved ? "text-orange-400" : "text-green-400"} uppercase tracking-widest`}>
+                    {isApproved ? "Published!" : "Thank you!"}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                    {isApproved 
+                        ? "Your review is now live on the site." 
+                        : "Your review is being reviewed and will appear shortly."}
+                </p>
+                {!isApproved && (
+                    <div className="mt-4 pt-4 border-t border-white/5">
+                        <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">Are you the owner?</p>
+                        <a 
+                            href="/truckadmin/reviews" 
+                            className="inline-block text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 underline decoration-orange-500/30 underline-offset-4 transition"
+                        >
+                            Go to Admin to Approve
+                        </a>
+                    </div>
+                )}
             </div>
         );
     }
