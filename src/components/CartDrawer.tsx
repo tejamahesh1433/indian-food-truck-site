@@ -88,7 +88,7 @@ export default function CartDrawer() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setIsOpen(false)}
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm print:hidden"
                     />
 
                     <div className="fixed inset-y-0 right-0 flex max-w-full">
@@ -97,7 +97,7 @@ export default function CartDrawer() {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="w-screen max-w-md bg-[#0b0b0b] border-l border-white/10 shadow-2xl"
+                            className="w-screen max-w-md bg-[#0b0b0b] border-l border-white/10 shadow-2xl print:hidden"
                         >
                             <div className="flex h-full flex-col">
                                 <div className="flex items-center justify-between p-6 border-b border-white/10">

@@ -9,7 +9,7 @@ export default function FloatingCart() {
     if (count === 0) return null;
 
     return (
-        <div className="fixed bottom-6 left-0 right-0 z-[60] px-4 pointer-events-none flex justify-center">
+        <div className="fixed bottom-6 left-0 right-0 z-[60] px-4 pointer-events-none flex justify-center print:hidden">
             <button
                 onClick={() => window.dispatchEvent(new CustomEvent("open-cart"))}
                 className="pointer-events-auto flex items-center gap-4 bg-orange-500 text-black px-6 py-4 rounded-full shadow-[0_20px_50px_rgba(249,115,22,0.3)] hover:scale-105 active:scale-95 transition-all group border-2 border-white/20 backdrop-blur-md"

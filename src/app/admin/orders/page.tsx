@@ -40,8 +40,19 @@ export default async function AdminOrdersPage() {
                     <div className="grid gap-4">
                         {orders.map((order) => (
                             <div key={order.id} className="border border-white/10 rounded-3xl bg-white/5 p-8 hover:bg-white/10 transition group relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-8">
+                                <div className="absolute top-0 right-0 p-8 flex flex-col items-end gap-2">
                                     <div className="text-3xl font-black text-orange-500 italic tracking-tighter">${(order.totalAmount / 100).toFixed(2)}</div>
+                                    <a 
+                                        href={`/invoice/${order.id}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        Print Invoice
+                                    </a>
                                 </div>
 
                                 <div className="space-y-6">
