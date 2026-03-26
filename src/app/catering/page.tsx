@@ -126,7 +126,7 @@ export default function CateringPage() {
     }
 
     return (
-        <main className="min-h-screen bg-black text-white selection:bg-orange-500/30">
+        <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 pb-32 md:pb-0">
             <Navbar />
 
             <section className="section-shell">
@@ -214,7 +214,10 @@ export default function CateringPage() {
                                             name="date"
                                             type="text"
                                             placeholder="Event date"
-                                            onFocus={(e) => (e.target.type = "date")}
+                                            onFocus={(e) => {
+                                                e.target.type = "date";
+                                                e.target.min = new Date().toISOString().split("T")[0];
+                                            }}
                                             onBlur={(e) => {
                                                 if (!e.target.value) e.target.type = "text";
                                             }}

@@ -21,8 +21,8 @@ interface MenuItem {
 
 function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => void }) {
     return (
-        <div className="group rounded-3xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/10 transition">
-            <div className="relative h-44">
+        <div className="group rounded-2xl md:rounded-3xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/10 transition flex flex-col h-full">
+            <div className="relative h-28 md:h-44">
                 {item.imageUrl ? (
                     <Image
                         src={item.imageUrl}
@@ -37,27 +37,27 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                     </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                    <div>
-                        <h3 className="text-xl font-semibold">{item.name}</h3>
+                <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 right-2 md:right-4 flex items-end justify-between gap-2 md:gap-3">
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-xs md:text-xl font-semibold truncate md:whitespace-normal">{item.name}</h3>
                         {item.priceCents > 0 && (
-                            <div className="mt-1 text-orange-400 font-semibold">
+                            <div className="mt-0.5 md:mt-1 text-orange-400 font-semibold text-[10px] md:text-base">
                                 ${(item.priceCents / 100).toFixed(2)}
                             </div>
                         )}
                     </div>
-                    <div className="flex flex-col items-end gap-2 relative z-10">
-                        <div className="flex gap-1 absolute bottom-[115%] right-0">
+                    <div className="flex flex-col items-end gap-1 md:gap-2 relative z-10">
+                        <div className="flex gap-0.5 md:gap-1 absolute bottom-[115%] right-0">
                             {item.isVeg && (
-                                <div title="Vegetarian" className="flex flex-col items-center justify-center border-2 border-green-700 rounded-sm bg-white/95 w-7 h-7 flex-shrink-0 shadow-md">
-                                    <div className="w-3 h-3 bg-green-700 rounded-full mb-0.5" />
-                                    <span className="text-[5px] font-bold text-green-700 leading-none">VEG</span>
+                                <div title="Vegetarian" className="flex flex-col items-center justify-center border-2 border-green-700 rounded-sm bg-white/95 w-5 h-5 md:w-7 md:h-7 flex-shrink-0 shadow-md">
+                                    <div className="w-2 h-2 md:w-3 md:h-3 bg-green-700 rounded-full mb-0.5" />
+                                    <span className="hidden md:block text-[5px] font-bold text-green-700 leading-none">VEG</span>
                                 </div>
                             )}
                             {item.isNonVeg && (
-                                <div title="Non-Vegetarian" className="flex flex-col items-center justify-center border-2 border-red-700 rounded-sm bg-white/95 w-7 h-7 flex-shrink-0 shadow-md">
-                                    <div className="w-3 h-3 bg-red-700 rounded-full mb-0.5" />
-                                    <span className="text-[4px] font-bold text-red-700 leading-none tracking-tighter">NON-VEG</span>
+                                <div title="Non-Vegetarian" className="flex flex-col items-center justify-center border-2 border-red-700 rounded-sm bg-white/95 w-5 h-5 md:w-7 md:h-7 flex-shrink-0 shadow-md">
+                                    <div className="w-2 h-2 md:w-3 md:h-3 bg-red-700 rounded-full mb-0.5" />
+                                    <span className="hidden md:block text-[4px] font-bold text-red-700 leading-none tracking-tighter">NON-VEG</span>
                                 </div>
                             )}
                         </div>
@@ -66,7 +66,7 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                                 e.preventDefault();
                                 onAdd(item);
                             }}
-                            className="bg-orange-500 text-black px-4 py-2 rounded-xl font-bold hover:bg-orange-400 transition shadow-lg active:scale-95"
+                            className="bg-orange-500 text-black px-2 md:px-4 py-1 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-base font-bold hover:bg-orange-400 transition shadow-lg active:scale-95"
                         >
                             + Add
                         </button>
@@ -74,17 +74,17 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                 </div>
             </div>
 
-            <div className="p-6">
-                <p className="text-sm text-gray-300 line-clamp-2">{item.description}</p>
+            <div className="p-3 md:p-6 flex-1">
+                <p className="text-[10px] md:text-sm text-gray-300 line-clamp-2">{item.description}</p>
 
-                <div className="mt-4 flex flex-wrap gap-2 items-center">
+                <div className="mt-2 md:mt-4 flex flex-wrap gap-1 md:gap-2 items-center">
                     {item.isSpicy && (
-                        <span title="Spicy" className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-black/40 border border-white/10 text-orange-500">
+                        <span title="Spicy" className="text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-black/40 border border-white/10 text-orange-500">
                             Spicy
                         </span>
                     )}
                     {item.isPopular && (
-                        <span title="Popular" className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-black/40 border border-white/10 text-yellow-500">
+                        <span title="Popular" className="text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-black/40 border border-white/10 text-yellow-500">
                             Popular
                         </span>
                     )}
@@ -267,7 +267,7 @@ export default function MenuTabs() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -12 }}
                         transition={{ duration: 0.25 }}
-                        className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                        className="mt-6 md:mt-10 grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6"
                     >
                         {loading ? (
                             <div className="col-span-full py-20 text-center text-gray-400">Loading menu...</div>
