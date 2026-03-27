@@ -22,7 +22,7 @@ interface MenuItem {
 function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => void }) {
     return (
         <div className="group rounded-2xl md:rounded-3xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/10 transition flex flex-col h-full">
-            <div className="relative h-28 md:h-44">
+            <div className="relative h-28 sm:h-36 md:h-44">
                 {item.imageUrl ? (
                     <Image
                         src={item.imageUrl}
@@ -37,11 +37,11 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                     </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 right-2 md:right-4 flex items-end justify-between gap-2 md:gap-3">
+                <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4 flex items-end justify-between gap-2 md:gap-3">
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-xs md:text-xl font-semibold truncate md:whitespace-normal">{item.name}</h3>
+                        <h3 className="text-xs sm:text-base md:text-xl font-semibold truncate md:whitespace-normal">{item.name}</h3>
                         {item.priceCents > 0 && (
-                            <div className="mt-0.5 md:mt-1 text-orange-400 font-semibold text-[10px] md:text-base">
+                            <div className="mt-0.5 md:mt-1 text-orange-400 font-semibold text-[10px] sm:text-sm md:text-base">
                                 ${(item.priceCents / 100).toFixed(2)}
                             </div>
                         )}
@@ -75,7 +75,7 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
             </div>
 
             <div className="p-3 md:p-6 flex-1">
-                <p className="text-[10px] md:text-sm text-gray-300 line-clamp-2">{item.description}</p>
+                <p className="text-[10px] sm:text-xs md:text-sm text-gray-300 line-clamp-2">{item.description}</p>
 
                 <div className="mt-2 md:mt-4 flex flex-wrap gap-1 md:gap-2 items-center">
                     {item.isSpicy && (
