@@ -19,6 +19,8 @@ export default async function AdminDashboardPage() {
         }
     });
 
+    const newsletterCount = await prisma.newsletterSubscriber.count();
+
     return (
         <main className="mx-auto max-w-4xl px-6 py-12">
             <div className="flex items-start justify-between mb-10 border-b border-white/10 pb-6">
@@ -192,6 +194,27 @@ export default async function AdminDashboardPage() {
                     <div className="font-semibold text-lg text-white">Signature Dishes</div>
                     <div className="mt-2 text-sm text-gray-400">
                         Manage which items appear in the featured &quot;Signature&quot; section on the home page.
+                    </div>
+                </Link>
+
+                <Link
+                    href="/admin/newsletter"
+                    className="group rounded-2xl border border-pink-500/30 bg-pink-500/5 p-6 hover:bg-pink-500/10 transition shadow-[0_0_40px_rgba(236,72,153,0.05)]"
+                >
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="h-10 w-10 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center border border-pink-500/30">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="bg-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                {newsletterCount} TOTAL
+                            </span>
+                            <span className="text-white/30 group-hover:text-white/60 transition group-hover:translate-x-1 duration-300">→</span>
+                        </div>
+                    </div>
+                    <div className="font-semibold text-lg text-white">Newsletter Subscribers</div>
+                    <div className="mt-2 text-sm text-gray-400">
+                        View, export, and manage your email subscriber list.
                     </div>
                 </Link>
             </div>
