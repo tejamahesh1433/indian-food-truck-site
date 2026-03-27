@@ -276,3 +276,23 @@ model TodaysSpecial {
   sortOrder   Int      @default(0)
   updatedAt   DateTime @updatedAt
 }
+
+model SupportChat {
+  id        String           @id @default(cuid())
+  email     String           @unique
+  name      String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  messages  SupportMessage[]
+}
+
+model SupportMessage {
+  id        String      @id @default(cuid())
+  chatId    String
+  sender    ChatSender
+  text      String
+  createdAt DateTime    @default(now())
+  chat      SupportChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId, createdAt])
+}

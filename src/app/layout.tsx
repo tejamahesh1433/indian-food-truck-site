@@ -71,6 +71,9 @@ export const metadata: Metadata = {
 import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/components/AuthProvider";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import SupportChatWidgetWrapper from "@/components/SupportChatWidgetWrapper";
+import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export default async function RootLayout({
   children,
@@ -126,13 +129,18 @@ export default async function RootLayout({
         <AuthProvider>
           <CartProvider>
             <SiteProvider settings={settings}>
-              <ServiceWorkerRegistration />
-              <AnnouncementBanner />
-              <FloatingCart />
-              {children}
-              <CartDrawer />
-              <Footer />
-              <Analytics />
+              <ConfirmProvider>
+                <ToastProvider>
+                  <ServiceWorkerRegistration />
+                  <AnnouncementBanner />
+                  <FloatingCart />
+                  {children}
+                  <CartDrawer />
+                  <Footer />
+                  <SupportChatWidgetWrapper />
+                  <Analytics />
+                </ToastProvider>
+              </ConfirmProvider>
             </SiteProvider>
           </CartProvider>
         </AuthProvider>

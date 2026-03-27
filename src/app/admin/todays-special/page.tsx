@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 interface SpecialDish {
     id: string;
@@ -18,6 +19,7 @@ interface SpecialDish {
 }
 
 export default function TodaysSpecialAdminPage() {
+    const { confirm } = useConfirm();
     const [specials, setSpecials] = useState<SpecialDish[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -104,7 +106,8 @@ export default function TodaysSpecialAdminPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this special?")) return;
+        const ok = await confirm({ title: "Delete Special", message: "This dish will be removed from Today's Special.", confirmLabel: "Delete", variant: "danger" });
+        if (!ok) return;
         try {
             const res = await fetch(`/api/admin/todays-special?id=${id}`, { method: "DELETE" });
             if (res.ok) {

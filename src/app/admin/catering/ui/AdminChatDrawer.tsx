@@ -104,7 +104,7 @@ export default function AdminChatDrawer({
                                 <div className="text-[10px] font-bold tracking-wider uppercase opacity-50 mb-1.5 flex items-center gap-2">
                                     {m.sender === "ADMIN" ? "You" : customerName}
                                     <span className="font-normal normal-case opacity-75">
-                                        {mounted ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
+                                        {mounted ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : ""}
                                     </span>
                                 </div>
                                 <div className="leading-relaxed">{m.text}</div>

@@ -20,6 +20,7 @@ export default async function AdminDashboardPage() {
     });
 
     const newsletterCount = await prisma.newsletterSubscriber.count();
+    const supportChatCount = await prisma.supportChat.count();
 
     return (
         <main className="mx-auto max-w-4xl px-6 py-12">
@@ -194,6 +195,29 @@ export default async function AdminDashboardPage() {
                     <div className="font-semibold text-lg text-white">Signature Dishes</div>
                     <div className="mt-2 text-sm text-gray-400">
                         Manage which items appear in the featured &quot;Signature&quot; section on the home page.
+                    </div>
+                </Link>
+
+                <Link
+                    href="/admin/support"
+                    className="group rounded-2xl border border-blue-500/30 bg-blue-500/5 p-6 hover:bg-blue-500/10 transition shadow-[0_0_40px_rgba(59,130,246,0.05)]"
+                >
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="h-10 w-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {supportChatCount > 0 && (
+                                <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+                                    {supportChatCount} ACTIVE
+                                </span>
+                            )}
+                            <span className="text-white/30 group-hover:text-white/60 transition group-hover:translate-x-1 duration-300">→</span>
+                        </div>
+                    </div>
+                    <div className="font-semibold text-lg text-white">Support Chats</div>
+                    <div className="mt-2 text-sm text-gray-400">
+                        Reply to customer questions from the FAQ support widget.
                     </div>
                 </Link>
 

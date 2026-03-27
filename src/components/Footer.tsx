@@ -65,6 +65,9 @@ export default function Footer() {
                             <Link href="/about" className="hover:text-white transition">
                                 Our Story
                             </Link>
+                            <Link href="/faq" className="hover:text-white transition">
+                                FAQ
+                            </Link>
                         </div>
 
                         <div className="mt-8 text-sm font-semibold text-gray-200">Hours</div>

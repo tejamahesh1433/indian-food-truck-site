@@ -52,7 +52,7 @@ export default function OrderTrackingCard({ order: initialOrder }: { order: any 
                             {order.status}
                         </span>
                         <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                            Placed {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            Placed {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                         </span>
                     </div>
                     <h2 className="text-xl font-black text-white italic tracking-tight uppercase">Customer: {order.customerName}</h2>

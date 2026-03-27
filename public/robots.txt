@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /truckadmin/
+Disallow: /api/
 
-Sitemap: https://indian-food-truck-site.vercel.app/sitemap.xml
+Sitemap: https://tejainfo.xyz/sitemap.xml

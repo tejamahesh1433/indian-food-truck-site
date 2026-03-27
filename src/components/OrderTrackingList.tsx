@@ -78,7 +78,7 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
                                         </span>
                                     </div>
                                     <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none">
-                                        {new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })} at {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })} at {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                     </p>
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-2">

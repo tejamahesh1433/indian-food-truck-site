@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface Subscriber {
     id: string;
@@ -10,6 +12,8 @@ interface Subscriber {
 }
 
 export default function NewsletterClient({ initialSubscribers }: { initialSubscribers: Subscriber[] }) {
+    const { confirm } = useConfirm();
+    const { toast } = useToast();
     const [subscribers, setSubscribers] = useState<Subscriber[]>(initialSubscribers);
     const [search, setSearch] = useState("");
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -20,7 +24,8 @@ export default function NewsletterClient({ initialSubscribers }: { initialSubscr
     );
 
     async function handleDelete(id: string) {
-        if (!confirm("Are you sure you want to remove this subscriber?")) return;
+        const ok = await confirm({ title: "Remove Subscriber", message: "This email will be removed from your newsletter list.", confirmLabel: "Remove", variant: "danger" });
+        if (!ok) return;
         setIsDeleting(id);
         
         try {
@@ -28,11 +33,11 @@ export default function NewsletterClient({ initialSubscribers }: { initialSubscr
             if (res.ok) {
                 setSubscribers(prev => prev.filter(s => s.id !== id));
             } else {
-                alert("Failed to delete subscriber.");
+                toast.error("Failed to remove subscriber.");
             }
         } catch (err) {
             console.error(err);
-            alert("Error deleting subscriber.");
+            toast.error("Something went wrong. Please try again.");
         } finally {
             setIsDeleting(null);
         }
@@ -43,7 +48,7 @@ export default function NewsletterClient({ initialSubscribers }: { initialSubscr
         const rows = filtered.map(s => [
             s.email,
             s.name || "",
-            new Date(s.createdAt).toLocaleDateString()
+            new Date(s.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
         ]);
 
         const csvContent = [
@@ -99,7 +104,7 @@ export default function NewsletterClient({ initialSubscribers }: { initialSubscr
                                     <td className="px-6 py-4 font-medium">{s.email}</td>
                                     <td className="px-6 py-4 text-gray-400">{s.name || "-"}</td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
-                                        {new Date(s.createdAt).toLocaleDateString()}
+                                        {new Date(s.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <button

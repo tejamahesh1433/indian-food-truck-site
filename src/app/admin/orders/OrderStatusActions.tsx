@@ -4,6 +4,8 @@ import { OrderStatus } from "@prisma/client";
 import { updateOrderStatus } from "./actions";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 export default function OrderStatusActions({
     orderId,
@@ -12,6 +14,8 @@ export default function OrderStatusActions({
     orderId: string;
     currentStatus: OrderStatus
 }) {
+    const { confirm } = useConfirm();
+    const { toast } = useToast();
     const [loading, setLoading] = useState(false);
 
     const handleUpdate = async (newStatus: OrderStatus) => {
@@ -20,7 +24,7 @@ export default function OrderStatusActions({
             await updateOrderStatus(orderId, newStatus);
         } catch (err) {
             console.error("Failed to update status", err);
-            alert("Failed to update status");
+            toast.error("Failed to update order status.");
         } finally {
             setLoading(false);
         }
@@ -95,10 +99,9 @@ export default function OrderStatusActions({
                     {renderActionButtons()}
 
                     <button
-                        onClick={() => {
-                            if (confirm("Are you sure you want to cancel this order?")) {
-                                handleUpdate("CANCELLED");
-                            }
+                        onClick={async () => {
+                            const ok = await confirm({ title: "Cancel Order", message: "Are you sure you want to cancel this order? This cannot be undone.", confirmLabel: "Cancel Order", variant: "danger" });
+                            if (ok) handleUpdate("CANCELLED");
                         }}
                         disabled={loading}
                         className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition active:scale-95 disabled:opacity-50 italic"

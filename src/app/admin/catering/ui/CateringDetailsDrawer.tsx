@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { CateringRequest } from "@prisma/client";
 import { updateInternalNotes, updateCateringStatus, archiveCateringRequest } from "../actions";
 import { SelectedItem } from "@/app/catering/ui/types";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 export default function CateringDetailsDrawer({
     request,
@@ -45,6 +47,8 @@ export default function CateringDetailsDrawer({
 
 function DrawerContent({ request, onClose }: { request: CateringRequest; onClose: () => void }) {
     const [internalNotes, setInternalNotes] = useState(request.internalNotes || "");
+    const { confirm } = useConfirm();
+    const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSaveNotes = async () => {
@@ -55,7 +59,8 @@ function DrawerContent({ request, onClose }: { request: CateringRequest; onClose
     };
 
     const handleArchive = async () => {
-        if (confirm("Are you sure you want to archive this catering request? It will be safely removed from your active inbox.")) {
+        const ok = await confirm({ title: "Archive Request", message: "This catering request will be safely removed from your active inbox.", confirmLabel: "Archive", variant: "warning" });
+        if (ok) {
             setIsSaving(true);
             await archiveCateringRequest(request.id);
             setIsSaving(false);
@@ -72,7 +77,7 @@ Email: ${request.email}
 Phone: ${request.phone || "N/A"}`;
 
         navigator.clipboard.writeText(details);
-        alert("Details copied to clipboard!");
+        toast.info("Details copied to clipboard!");
     };
 
     const selections = (request.selections as unknown as SelectedItem[]) || [];

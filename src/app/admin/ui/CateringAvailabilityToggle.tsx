@@ -2,12 +2,14 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { updateCateringEnabled } from "../catering/actions";
+import { useToast } from "@/components/ui/Toast";
 
 export default function CateringAvailabilityToggle({
     initialEnabled
 }: {
     initialEnabled: boolean
 }) {
+    const { toast } = useToast();
     const [isEnabled, setIsEnabled] = useState(initialEnabled);
     const [isPending, startTransition] = useTransition();
 
@@ -25,7 +27,7 @@ export default function CateringAvailabilityToggle({
             } catch {
                 // Revert on error
                 setIsEnabled(!next);
-                alert("Failed to update catering status. Please try again.");
+                toast.error("Failed to update catering status. Please try again.");
             }
         });
     };

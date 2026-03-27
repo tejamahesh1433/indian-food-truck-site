@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 type DaySchedule = {
     start: string;
@@ -26,6 +28,8 @@ type StopForm = {
 };
 
 export default function AdminLocationsPage() {
+    const { confirm } = useConfirm();
+    const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
@@ -93,11 +97,11 @@ export default function AdminLocationsPage() {
 
         if (form.nextLocation) {
             if (!form.nextDate || !form.nextStart || !form.nextEnd) {
-                alert("Please set Date, Start, and End times for the Next stop.");
+                toast.error("Please set Date, Start, and End times for the Next stop.");
                 return;
             }
             if (form.nextEnd <= form.nextStart) {
-                alert("Next stop End time must be after Start time.");
+                toast.error("Next stop End time must be after Start time.");
                 return;
             }
         }
@@ -148,10 +152,10 @@ export default function AdminLocationsPage() {
         else setForm({ ...form, nextStart: times.start, nextEnd: times.end });
     };
 
-    const handleDiscard = () => {
-        if (initialForm && confirm("Discard all unsaved changes?")) {
-            setForm(initialForm);
-        }
+    const handleDiscard = async () => {
+        if (!initialForm) return;
+        const ok = await confirm({ title: "Discard Changes", message: "All unsaved changes will be lost.", confirmLabel: "Discard", variant: "warning" });
+        if (ok) setForm(initialForm);
     };
 
     const formatTime = (timeStr: string) => {

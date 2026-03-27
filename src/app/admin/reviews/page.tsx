@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 type Review = { id: string; name: string; rating: number; text: string; isApproved: boolean; createdAt: string };
 
@@ -17,6 +19,8 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export default function AdminReviewsPage() {
+    const { confirm } = useConfirm();
+    const { toast } = useToast();
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<"all" | "pending" | "approved">("pending");
@@ -40,7 +44,8 @@ export default function AdminReviewsPage() {
     };
 
     const del = async (id: string) => {
-        if (!confirm("Delete this review?")) return;
+        const ok = await confirm({ title: "Delete Review", message: "This review will be permanently removed.", confirmLabel: "Delete", variant: "danger" });
+        if (!ok) return;
         await fetch("/api/admin/reviews", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },

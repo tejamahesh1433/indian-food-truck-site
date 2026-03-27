@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 interface MenuItem {
     id: string;
@@ -31,6 +32,7 @@ function money(cents: number) {
 }
 
 export default function AdminMenuItemsPage() {
+    const { confirm } = useConfirm();
     // form state
     const [name, setName] = useState("");
     const [category, setCategory] = useState<string>("Starters");
@@ -317,7 +319,7 @@ export default function AdminMenuItemsPage() {
     }
 
     async function removeItem(id: string) {
-        const perform = window.confirm("Delete this menu item entirely? This action cannot be reversed.");
+        const perform = await confirm({ title: "Delete Menu Item", message: "This item will be permanently removed from your menu. This action cannot be reversed.", confirmLabel: "Delete", variant: "danger" });
         if (!perform) return;
         const res = await fetch(`/api/admin/menu-items/${id}`, { method: "DELETE" });
         const data = await res.json();
@@ -403,7 +405,8 @@ export default function AdminMenuItemsPage() {
         const count = items.filter(i => i.category === name).length;
         if (count > 0) return showToast(`${count} items still use this category. You must reassign them first!`, "error");
 
-        if (!window.confirm(`Delete category "${name}"?`)) return;
+        const okCat = await confirm({ title: `Delete "${name}"`, message: "This category will be permanently removed.", confirmLabel: "Delete", variant: "danger" });
+        if (!okCat) return;
         setIsSavingCat(true);
         try {
             const res = await fetch(`/api/admin/menu-categories/${id}`, { method: "DELETE" });
@@ -421,8 +424,8 @@ export default function AdminMenuItemsPage() {
         if (selectedIds.length === 0) return;
 
         if (action === "delete") {
-            const confirm = window.confirm(`Are you sure you want to permanently delete ${selectedIds.length} items?`);
-            if (!confirm) return;
+            const okBulk = await confirm({ title: `Delete ${selectedIds.length} Items`, message: `${selectedIds.length} menu items will be permanently deleted. This cannot be undone.`, confirmLabel: "Delete All", variant: "danger" });
+            if (!okBulk) return;
         }
 
         setIsBulkLoading(true);

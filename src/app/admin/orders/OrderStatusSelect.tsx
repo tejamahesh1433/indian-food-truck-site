@@ -3,6 +3,7 @@
 import { OrderStatus } from "@prisma/client";
 import { updateOrderStatus } from "./actions";
 import { useState } from "react";
+import { useToast } from "@/components/ui/Toast";
 
 export default function OrderStatusSelect({
     orderId,
@@ -11,6 +12,7 @@ export default function OrderStatusSelect({
     orderId: string;
     currentStatus: OrderStatus
 }) {
+    const { toast } = useToast();
     const [loading, setLoading] = useState(false);
 
     const statusColors: Record<OrderStatus, string> = {
@@ -31,7 +33,7 @@ export default function OrderStatusSelect({
             await updateOrderStatus(orderId, newStatus);
         } catch (err) {
             console.error("Failed to update status", err);
-            alert("Failed to update status");
+            toast.error("Failed to update order status.");
         } finally {
             setLoading(false);
         }

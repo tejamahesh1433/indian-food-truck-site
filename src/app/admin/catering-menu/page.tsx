@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CateringAvailabilityToggle from "../ui/CateringAvailabilityToggle";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 type PriceKind = "PER_PERSON" | "TRAY" | "FIXED";
 
@@ -39,6 +40,7 @@ function money(n: number | null) {
 
 
 export default function AdminCateringMenuPage() {
+    const { confirm } = useConfirm();
     // form state
     const [name, setName] = useState("");
     const [category, setCategory] = useState("");
@@ -208,7 +210,8 @@ export default function AdminCateringMenuPage() {
     }
 
     async function removeItem(id: string) {
-        if (!window.confirm("Delete this item?")) return;
+        const ok = await confirm({ title: "Delete Item", message: "This catering item will be permanently removed.", confirmLabel: "Delete", variant: "danger" });
+        if (!ok) return;
         const res = await fetch(`/api/admin/catering-items/${id}`, { method: "DELETE" });
         if (res.ok) {
             showToast("Item deleted", "success");
@@ -244,7 +247,8 @@ export default function AdminCateringMenuPage() {
     }
 
     async function deleteCategory(id: string) {
-        if (!window.confirm("Delete category?")) return;
+        const ok = await confirm({ title: "Delete Category", message: "This category will be permanently removed.", confirmLabel: "Delete", variant: "danger" });
+        if (!ok) return;
         const res = await fetch(`/api/admin/catering-categories/${id}`, { method: "DELETE" });
         if (res.ok) {
             fetchCategories();
