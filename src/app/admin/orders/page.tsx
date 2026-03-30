@@ -26,8 +26,8 @@ export default async function AdminOrdersPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <Link href="/admin" className="text-orange-500 hover:underline text-sm mb-2 inline-block">← Back to Dashboard</Link>
-                    <h1 className="text-3xl font-bold italic tracking-tighter uppercase">Kitchen Display</h1>
-                    <p className="text-gray-400 mt-1 uppercase tracking-widest text-xs font-medium">Manage and track live food orders</p>
+                    <h1 className="text-3xl font-bold italic tracking-tighter uppercase">Order History</h1>
+                    <p className="text-gray-400 mt-1 uppercase tracking-widest text-xs font-medium">View all historical orders</p>
                 </div>
             </div>
 

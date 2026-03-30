@@ -41,7 +41,7 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
     const { toast } = useToast();
 
     useEffect(() => {
-        // Poll for updates every 30 seconds
+        // Poll for updates every 8 seconds for near real-time order tracking
         const pollInterval = setInterval(async () => {
             try {
                 const res = await fetch("/api/user/orders", { cache: 'no-store' });
@@ -52,7 +52,7 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
             } catch (err) {
                 console.error("Polling error:", err);
             }
-        }, 30000);
+        }, 8000);
 
         return () => clearInterval(pollInterval);
     }, []);

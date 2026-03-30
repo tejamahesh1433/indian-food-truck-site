@@ -74,6 +74,7 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import SupportChatWidgetWrapper from "@/components/SupportChatWidgetWrapper";
 import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
 import { ToastProvider } from "@/components/ui/Toast";
+import HideOnAdmin from "@/components/HideOnAdmin";
 
 export default async function RootLayout({
   children,
@@ -132,12 +133,16 @@ export default async function RootLayout({
               <ConfirmProvider>
                 <ToastProvider>
                   <ServiceWorkerRegistration />
-                  <AnnouncementBanner />
-                  <FloatingCart />
+                  <HideOnAdmin>
+                    <AnnouncementBanner />
+                    <FloatingCart />
+                  </HideOnAdmin>
                   {children}
-                  <CartDrawer />
-                  <Footer />
-                  <SupportChatWidgetWrapper />
+                  <HideOnAdmin>
+                    <CartDrawer />
+                    <Footer />
+                    <SupportChatWidgetWrapper />
+                  </HideOnAdmin>
                   <Analytics />
                 </ToastProvider>
               </ConfirmProvider>
