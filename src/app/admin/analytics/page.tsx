@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { OrderStatus } from "@prisma/client";
 import Link from "next/link";
 import AnalyticsClient from "./AnalyticsClient";
 
@@ -21,7 +22,7 @@ function startOf(unit: "day" | "week" | "month" | "year") {
 }
 
 export default async function AnalyticsPage() {
-    const PAID_STATUSES = ["PAID", "PREPARING", "READY", "COMPLETED"];
+    const PAID_STATUSES: OrderStatus[] = ["PAID", "PREPARING", "READY", "COMPLETED"];
 
     // Revenue windows
     const [todayOrders, weekOrders, monthOrders, allOrders] = await Promise.all([
