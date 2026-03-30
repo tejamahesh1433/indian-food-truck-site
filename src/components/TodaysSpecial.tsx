@@ -47,7 +47,7 @@ export default function TodaysSpecial() {
     return (
         <section className="section-shell relative overflow-hidden">
             {/* Background design elements */}
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 -z-10 h-[600px] w-[600px] rounded-full bg-orange-500/5 blur-[100px]" />
+            <div className="hidden md:block absolute top-1/2 left-0 -translate-y-1/2 -z-10 h-[600px] w-[600px] rounded-full bg-orange-500/5 blur-[100px]" />
             
             <Reveal>
                 <div className="container-shell">
