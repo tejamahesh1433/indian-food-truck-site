@@ -145,7 +145,19 @@ export default function ReviewsSection() {
         } finally { setLoading(false); }
     };
 
-    useEffect(() => { fetchReviews(); }, []);
+    useEffect(() => { 
+        fetchReviews(); 
+        
+        // Auto-refresh reviews every 10 seconds
+        const pollInterval = setInterval(() => {
+            fetch("/api/reviews", { cache: "no-store" })
+                .then(res => res.json())
+                .then(d => setReviews(d.reviews || []))
+                .catch(err => console.error("Failed to poll reviews:", err));
+        }, 10000);
+        
+        return () => clearInterval(pollInterval);
+    }, []);
 
     if (loading) return null;
     if (reviews.length === 0 && !showForm) {
