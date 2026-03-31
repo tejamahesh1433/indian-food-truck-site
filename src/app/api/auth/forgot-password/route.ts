@@ -16,8 +16,10 @@ export async function POST(req: Request) {
         });
 
         if (!user) {
-            // Return success even if user doesn't exist to prevent email enumeration attacks
-            return NextResponse.json({ success: true, message: "If an account exists, a reset link has been sent." });
+            return NextResponse.json(
+                { error: "No account found with this email address. Please check your spelling or register for a new account." },
+                { status: 404 }
+            );
         }
 
         // Generate a secure random token
