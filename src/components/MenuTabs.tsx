@@ -17,6 +17,8 @@ interface MenuItem {
     isNonVeg: boolean;
     isSpicy: boolean;
     isPopular: boolean;
+    avgRating?: number;
+    reviewCount?: number;
 }
 
 function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => void }) {
@@ -36,6 +38,18 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                         <span className="text-white/20 text-sm">No Image</span>
                     </div>
                 )}
+                <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-20">
+                        <span className={`inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase px-2 py-0.5 sm:py-1 rounded-full border backdrop-blur-md shadow-lg ${
+                            item.reviewCount! > 0 
+                                ? "bg-black/60 border-white/10 text-yellow-400" 
+                                : "bg-black/40 border-white/5 text-gray-500"
+                        }`}>
+                            <svg className={`w-2 sm:w-2.5 h-2 sm:h-2.5 ${item.reviewCount! > 0 ? "text-yellow-400" : "text-gray-600"}`} fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            {item.reviewCount! > 0 ? `${item.avgRating} (${item.reviewCount})` : "0.0"}
+                        </span>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4 flex items-end justify-between gap-2 md:gap-3">
                     <div className="flex-1 min-w-0">

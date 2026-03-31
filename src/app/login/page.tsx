@@ -150,7 +150,7 @@ export default function LoginPage() {
                                     />
                                 </div>
 
-                                <div className="space-y-1">
+                                    <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-2">Password</label>
                                     <div className="relative">
                                         <input
@@ -181,6 +181,32 @@ export default function LoginPage() {
                                         </button>
                                     </div>
 
+                                    {mode === "signup" && formData.password.length > 0 && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            className="px-2 pt-3 pb-2 space-y-2"
+                                        >
+                                            <div className="text-[10px] uppercase tracking-widest font-black text-gray-500 mb-1">Security Checklist</div>
+                                            <div className="grid grid-cols-1 gap-1.5">
+                                                {[
+                                                    { label: "8+ Characters", met: formData.password.length >= 8 },
+                                                    { label: "Uppercase Letter", met: /[A-Z]/.test(formData.password) },
+                                                    { label: "Lowercase Letter", met: /[a-z]/.test(formData.password) },
+                                                    { label: "Number", met: /[0-9]/.test(formData.password) },
+                                                    { label: "Special Character", met: /[^A-Za-z0-9]/.test(formData.password) },
+                                                ].map((req) => (
+                                                    <div key={req.label} className="flex items-center gap-2">
+                                                        <div className={`h-1.5 w-1.5 rounded-full transition-colors ${req.met ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-white/10"}`} />
+                                                        <span className={`text-[10px] font-bold tracking-tight transition-colors ${req.met ? "text-green-400/80" : "text-gray-600"}`}>
+                                                            {req.label}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+
                                     {mode === "login" && (
                                         <div className="flex justify-center mt-4">
                                             <Link
@@ -206,7 +232,7 @@ export default function LoginPage() {
                         )}
 
                         <button
-                            disabled={isLoading}
+                            disabled={isLoading || (mode === "signup" && !(formData.password.length >= 8 && /[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password)))}
                             className="w-full bg-orange-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-orange-500 transition shadow-[0_12px_40px_rgba(249,115,22,0.25)] flex items-center justify-center gap-2 group disabled:opacity-50"
                         >
                             {isLoading ? (

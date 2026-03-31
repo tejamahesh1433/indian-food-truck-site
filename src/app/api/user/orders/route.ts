@@ -18,7 +18,18 @@ export async function GET() {
                 userId: (session.user as { id: string }).id
             },
             orderBy: { createdAt: "desc" },
-            include: { items: true }
+            include: { 
+                items: true,
+                reviews: { 
+                    select: { 
+                        id: true,
+                        rating: true,
+                        text: true,
+                        menuItemId: true,
+                        createdAt: true
+                    } 
+                }
+            }
         });
 
         return NextResponse.json(userOrders);

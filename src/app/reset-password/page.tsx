@@ -113,18 +113,43 @@ function ResetPasswordForm() {
                         className="space-y-6"
                     >
                         <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1">
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2 ml-1">
                                 New Password
                             </label>
                             <input
                                 type="password"
                                 required
-                                minLength={6}
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="Min 6 characters"
+                                placeholder="Create a strong password"
                                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-500/50 outline-none transition placeholder:text-gray-700"
                             />
+
+                            {newPassword.length > 0 && (
+                                <motion.div 
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    className="px-2 pt-3 pb-2 space-y-2"
+                                >
+                                    <div className="text-[10px] uppercase tracking-widest font-black text-gray-500 mb-1">Security Checklist</div>
+                                    <div className="grid grid-cols-1 gap-1.5">
+                                        {[
+                                            { label: "8+ Characters", met: newPassword.length >= 8 },
+                                            { label: "Uppercase Letter", met: /[A-Z]/.test(newPassword) },
+                                            { label: "Lowercase Letter", met: /[a-z]/.test(newPassword) },
+                                            { label: "Number", met: /[0-9]/.test(newPassword) },
+                                            { label: "Special Character", met: /[^A-Za-z0-9]/.test(newPassword) },
+                                        ].map((req) => (
+                                            <div key={req.label} className="flex items-center gap-2">
+                                                <div className={`h-1.2 w-1.2 rounded-full transition-colors ${req.met ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-white/10"}`} />
+                                                <span className={`text-[9px] font-black tracking-tight transition-colors ${req.met ? "text-green-400/80" : "text-gray-600"}`}>
+                                                    {req.label}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
                         </div>
 
                         <div>
@@ -152,7 +177,13 @@ function ResetPasswordForm() {
 
                         <button
                             type="submit"
-                            disabled={status === "loading" || !newPassword || !confirmPassword}
+                            disabled={
+                                status === "loading" || 
+                                !newPassword || 
+                                !confirmPassword || 
+                                newPassword !== confirmPassword || 
+                                !(newPassword.length >= 8 && /[A-Z]/.test(newPassword) && /[a-z]/.test(newPassword) && /[0-9]/.test(newPassword) && /[^A-Za-z0-9]/.test(newPassword))
+                            }
                             className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest transition shadow-[0_10px_20px_rgba(249,115,22,0.2)]"
                         >
                             {status === "loading" ? "Updating..." : "Update Password"}

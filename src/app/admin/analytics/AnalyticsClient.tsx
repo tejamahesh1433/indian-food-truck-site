@@ -433,43 +433,53 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
 
                 {view === "catering" && catering && (
                     <>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                        {/* ── Metrics ─────────────────────────────────────── */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="rounded-3xl border border-white/10 bg-white/5 p-10 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl transition-all group-hover:bg-white/10" />
+                                <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-gray-500 mb-4">
+                                    <div className="h-8 w-8 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                                    </div>
                                     Total Requests
                                 </div>
-                                <div className="text-3xl font-black text-white">{catering.total}</div>
-                                <div className="text-[10px] text-gray-600 mt-1 font-bold italic tracking-tighter uppercase">{PERIOD_LABELS[period]}</div>
+                                <div className="text-6xl font-black text-white tracking-tighter">{catering.total}</div>
+                                <div className="text-xs text-gray-600 mt-2 font-bold italic tracking-tighter uppercase">{PERIOD_LABELS[period]}</div>
                             </div>
 
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <div className="rounded-3xl border border-white/10 bg-white/5 p-10 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 blur-3xl transition-all group-hover:bg-blue-500/10" />
+                                <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-gray-500 mb-4">
+                                    <div className="h-8 w-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
                                     Engagement Rate
                                 </div>
-                                <div className="text-3xl font-black text-blue-400">{catering.engagementRate}%</div>
-                                <div className="mt-2 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000" style={{ width: `${catering.engagementRate}%` }} />
+                                <div className="text-6xl font-black text-blue-400 tracking-tighter">{catering.engagementRate}%</div>
+                                <div className="mt-4 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all duration-1000" style={{ width: `${catering.engagementRate}%` }} />
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <div className="rounded-3xl border border-white/10 bg-white/5 p-10 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full -mr-16 -mt-16 blur-3xl transition-all group-hover:bg-orange-500/10" />
+                                <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-gray-500 mb-4">
+                                    <div className="h-8 w-8 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    </div>
                                     Avg Response
                                 </div>
-                                <div className="text-3xl font-black text-orange-400">{catering.avgResponseTime}h</div>
-                                <div className="text-[10px] text-gray-600 mt-1 font-bold uppercase tracking-widest">Time to first reply</div>
+                                <div className="text-6xl font-black text-orange-400 tracking-tighter">{catering.avgResponseTime}<span className="text-3xl ml-1 text-orange-400/50">h</span></div>
+                                <div className="text-xs text-gray-600 mt-2 font-bold uppercase tracking-widest">Time to first reply</div>
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-                            <div className="mb-8">
-                                <div className="text-lg font-bold text-white">Request Volume</div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-10">
+                            <div className="mb-10">
+                                <div className="text-2xl font-bold text-white">Request Volume</div>
                                 <div className="text-xs text-gray-500 uppercase tracking-widest font-black mt-1">Catering leads over the last 30 days</div>
                             </div>
-                            <div className="h-48 flex items-end gap-1.5">
+                            <div className="h-64 flex items-end gap-1.5">
                                 {dailyRevenue.map((d) => {
                                     const max = Math.max(...dailyRevenue.map(v => v.catering || 0), 1);
                                     const h = d.catering ? (d.catering / max) * 100 : 0;
@@ -488,25 +498,25 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-                            <div className="mb-6">
-                                <div className="text-lg font-bold text-white">Event Type Distribution</div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-10">
+                            <div className="mb-8">
+                                <div className="text-2xl font-bold text-white">Event Type Distribution</div>
                                 <div className="text-xs text-gray-500 uppercase tracking-widest font-black mt-1">Which niches are driving requests</div>
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 {catering.topTypes.map((type) => {
                                     const pct = Math.round((type.value / (catering.total || 1)) * 100);
                                     return (
-                                        <div key={type.label} className="flex items-center gap-4">
-                                            <div className="w-24 text-[10px] font-black uppercase tracking-widest text-gray-400 truncate">{type.label}</div>
-                                            <div className="flex-1 h-3 bg-white/5 rounded-full overflow-hidden">
+                                        <div key={type.label} className="flex items-center gap-6">
+                                            <div className="w-32 text-xs font-black uppercase tracking-widest text-gray-400 truncate">{type.label}</div>
+                                            <div className="flex-1 h-4 bg-white/5 rounded-full overflow-hidden">
                                                 <div 
-                                                    className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000" 
+                                                    className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 shadow-[0_0_10px_rgba(59,130,246,0.3)]" 
                                                     style={{ width: `${pct}%` }}
                                                 />
                                             </div>
-                                            <div className="w-12 text-right text-xs font-black text-white">{type.value}</div>
-                                            <div className="w-10 text-right text-[9px] font-bold text-gray-600 italic tracking-tighter">{pct}%</div>
+                                            <div className="w-16 text-right text-sm font-black text-white">{type.value}</div>
+                                            <div className="w-12 text-right text-[10px] font-bold text-gray-500 italic tracking-tighter">{pct}%</div>
                                         </div>
                                     );
                                 })}

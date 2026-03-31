@@ -3,14 +3,31 @@ import { OrderStatus } from "@prisma/client";
 import Link from "next/link";
 import OrderStatusActions from "./OrderStatusActions";
 import AdminOrderChat from "./AdminOrderChat";
+import Pagination from "./Pagination";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminOrdersPage() {
-    const orders = await prisma.order.findMany({
-        orderBy: { createdAt: "desc" },
-        include: { items: true }
-    });
+interface Props {
+    searchParams: Promise<{ page?: string }>;
+}
+
+export default async function AdminOrdersPage({ searchParams }: Props) {
+    const { page: pageStr } = await searchParams;
+    const page = Number(pageStr) || 1;
+    const pageSize = 15;
+    const skip = (page - 1) * pageSize;
+
+    const [orders, totalCount] = await Promise.all([
+        prisma.order.findMany({
+            skip,
+            take: pageSize,
+            orderBy: { createdAt: "desc" },
+            include: { items: true }
+        }),
+        prisma.order.count()
+    ]);
+
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     const statusColors: Record<OrderStatus, string> = {
         PENDING: "bg-gray-500/10 text-gray-400 border-gray-500/20",
@@ -23,18 +40,27 @@ export default async function AdminOrdersPage() {
 
     return (
         <main className="mx-auto max-w-6xl px-6 py-12 text-white">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-8 text-white">
                 <div>
-                    <Link href="/admin" className="text-orange-500 hover:underline text-sm mb-2 inline-block">← Back to Dashboard</Link>
+                    <Link href="/admin" className="text-orange-500 hover:underline text-sm mb-2 inline-block font-bold uppercase tracking-widest flex items-center gap-2">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+                        Dashboard
+                    </Link>
                     <h1 className="text-3xl font-bold italic tracking-tighter uppercase">Order History</h1>
-                    <p className="text-gray-400 mt-1 uppercase tracking-widest text-xs font-medium">View all historical orders</p>
+                    <p className="text-gray-400 mt-1 uppercase tracking-widest text-xs font-medium">Historical records showing page {page} of {totalPages}</p>
                 </div>
+                {totalCount > 0 && (
+                    <div className="text-right hidden sm:block">
+                        <div className="text-3xl font-black text-white italic tracking-tighter">{totalCount.toLocaleString()}</div>
+                        <div className="text-[10px] uppercase tracking-widest font-black text-gray-500 whitespace-nowrap">Total Life-Time Orders</div>
+                    </div>
+                )}
             </div>
 
             <div className="space-y-4">
                 {orders.length === 0 ? (
                     <div className="p-12 text-center border border-white/10 rounded-3xl bg-white/5">
-                        <p className="text-gray-400 text-lg">No orders found yet.</p>
+                        <p className="text-gray-400 text-lg font-bold uppercase tracking-widest mt-4">No orders found on this page.</p>
                     </div>
                 ) : (
                     <div className="grid gap-4">
@@ -46,10 +72,11 @@ export default async function AdminOrdersPage() {
                                         href={`/invoice/${order.id}`} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
+                                        title={`Print Invoice for Order #${order.id.slice(-6).toUpperCase()}`}
                                         className="text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5"
                                     >
                                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                         </svg>
                                         Print Invoice
                                     </a>
@@ -102,6 +129,14 @@ export default async function AdminOrdersPage() {
                     </div>
                 )}
             </div>
+
+            <Pagination 
+                currentPage={page}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                baseUrl="/admin/orders"
+            />
         </main>
     );
 }

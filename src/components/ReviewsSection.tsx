@@ -137,10 +137,12 @@ export default function ReviewsSection() {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [visibleCount, setVisibleCount] = useState(6);
 
     const fetchReviews = async () => {
         try {
-            const res = await fetch("/api/reviews");
+            // Only fetch 'general' reviews for the homepage section
+            const res = await fetch("/api/reviews?type=general");
             if (res.ok) { const d = await res.json(); setReviews(d.reviews || []); }
         } finally { setLoading(false); }
     };
@@ -150,7 +152,7 @@ export default function ReviewsSection() {
         
         // Auto-refresh reviews every 10 seconds
         const pollInterval = setInterval(() => {
-            fetch("/api/reviews", { cache: "no-store" })
+            fetch("/api/reviews?type=general", { cache: "no-store" })
                 .then(res => res.json())
                 .then(d => setReviews(d.reviews || []))
                 .catch(err => console.error("Failed to poll reviews:", err));
@@ -160,9 +162,13 @@ export default function ReviewsSection() {
     }, []);
 
     if (loading) return null;
+
+    const visibleReviews = reviews.slice(0, visibleCount);
+    const hasMore = reviews.length > visibleCount;
+
     if (reviews.length === 0 && !showForm) {
         return (
-            <section className="container-shell py-16 border-t border-white/5">
+            <section id="reviews" className="container-shell py-16 border-t border-white/5">
                 <div className="text-center">
                     <p className="text-orange-500 font-black text-[11px] uppercase tracking-[0.3em] mb-3">Reviews</p>
                     <h2 className="text-3xl font-black italic tracking-tighter mb-6">Be the first to review</h2>
@@ -181,17 +187,19 @@ export default function ReviewsSection() {
     const avg = reviews.length ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1) : "0";
 
     return (
-        <section className="container-shell py-16 border-t border-white/5">
+        <section id="reviews" className="container-shell py-16 border-t border-white/5">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
                     <p className="text-orange-500 font-black text-[11px] uppercase tracking-[0.3em] mb-3">What people say</p>
-                    <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter">
-                        Customer Reviews
-                    </h2>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase">
+                            Customer Reviews
+                        </h2>
+                    </div>
                     <div className="flex items-center gap-2 mt-3">
                         <span className="text-3xl font-black italic text-orange-500">{avg}</span>
                         <StarRating rating={Math.round(Number(avg))} />
-                        <span className="text-xs text-gray-500">({reviews.length} review{reviews.length !== 1 ? "s" : ""})</span>
+                        <span className="text-xs text-gray-500">({reviews.length} general review{reviews.length !== 1 ? "s" : ""})</span>
                     </div>
                 </div>
                 <button
@@ -209,10 +217,10 @@ export default function ReviewsSection() {
             )}
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {reviews.map((review) => (
+                {visibleReviews.map((review) => (
                     <div key={review.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col gap-3">
                         <StarRating rating={review.rating} />
-                        <p className="text-gray-300 text-sm leading-relaxed flex-1">&ldquo;{review.text}&rdquo;</p>
+                        <p className="text-gray-300 text-sm leading-relaxed flex-1 italic">&ldquo;{review.text}&rdquo;</p>
                         <div className="flex items-center justify-between pt-3 border-t border-white/5">
                             <span className="font-black text-[11px] uppercase tracking-widest text-white">{review.name}</span>
                             <span className="text-[10px] text-gray-600">
@@ -222,6 +230,18 @@ export default function ReviewsSection() {
                     </div>
                 ))}
             </div>
+
+            {hasMore && (
+                <div className="mt-12 text-center">
+                    <button
+                        onClick={() => setVisibleCount(prev => prev + 6)}
+                        className="group flex flex-col items-center gap-2 mx-auto"
+                    >
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 group-hover:text-orange-500 transition-colors">Load More Experience</span>
+                        <div className="h-10 w-[1px] bg-gradient-to-b from-orange-500 to-transparent" />
+                    </button>
+                </div>
+            )}
         </section>
     );
 }

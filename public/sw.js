@@ -7,7 +7,7 @@
  *  - API routes & admin pages: Network-only (always fresh, never cached)
  */
 
-const CACHE_VERSION = "v1.0.1";
+const CACHE_VERSION = "v1.0.2";
 const STATIC_CACHE = `ift-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `ift-pages-${CACHE_VERSION}`;
 /** Pages to pre-cache at install time (the "app shell") */

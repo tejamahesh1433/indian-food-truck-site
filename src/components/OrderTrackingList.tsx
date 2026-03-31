@@ -6,6 +6,7 @@ import { OrderStatus } from "@prisma/client";
 import OrderChat from "./OrderChat";
 import { useCart } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";
+import ReviewModal from "./ReviewModal";
 
 interface OrderItem {
     id: string;
@@ -21,16 +22,15 @@ interface Order {
     totalAmount: number;
     createdAt: string;
     items: OrderItem[];
+    customerName: string;
+    reviews?: { 
+        id: string;
+        rating: number;
+        text: string;
+        menuItemId: string;
+        createdAt: string;
+    }[];
 }
-
-const statusColors: Record<OrderStatus, string> = {
-    PENDING: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-    PAID: "bg-green-500/10 text-green-400 border-green-500/20",
-    PREPARING: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    READY: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-    COMPLETED: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-    CANCELLED: "bg-red-500/10 text-red-400 border-red-500/20",
-};
 
 const statusSteps = ["PAID", "PREPARING", "READY"];
 
@@ -39,21 +39,23 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
     const [orders, setOrders] = useState<Order[]>(initialOrders as Order[]);
     const { addToCart } = useCart();
     const { toast } = useToast();
+    const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
+
+    const refreshOrders = async () => {
+        try {
+            const res = await fetch("/api/user/orders", { cache: 'no-store' });
+            if (res.ok) {
+                const data = await res.json();
+                setOrders(data);
+            }
+        } catch (err) {
+            console.error("Polling error:", err);
+        }
+    };
 
     useEffect(() => {
         // Poll for updates every 15 seconds for near real-time order tracking
-        const pollInterval = setInterval(async () => {
-            try {
-                const res = await fetch("/api/user/orders", { cache: 'no-store' });
-                if (res.ok) {
-                    const data = await res.json();
-                    setOrders(data);
-                }
-            } catch (err) {
-                console.error("Polling error:", err);
-            }
-        }, 15000);
-
+        const pollInterval = setInterval(refreshOrders, 15000);
         return () => clearInterval(pollInterval);
     }, []);
 
@@ -91,6 +93,15 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
 
     if (orders.length === 0) return null;
 
+    const statusColors: Record<OrderStatus, string> = {
+        PENDING: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+        PAID: "bg-green-500/10 text-green-400 border-green-500/20",
+        PREPARING: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+        READY: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+        COMPLETED: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+        CANCELLED: "bg-red-500/10 text-red-400 border-red-500/20",
+    };
+
     return (
         <div className="grid gap-6">
             <AnimatePresence mode="popLayout">
@@ -120,17 +131,42 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
                                 </div>
                                 <div className="text-right flex flex-col items-end gap-2">
                                     <div className="text-2xl font-black text-orange-500 italic tracking-tighter">${(order.totalAmount / 100).toFixed(2)}</div>
-                                    <a 
-                                        href={`/invoice/${order.id}`} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        title="View Order Invoice"
-                                        className="text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5"
-                                    >
-                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </a>
+                                    <div className="flex items-center gap-2">
+                                        {order.status === "COMPLETED" && (!order.reviews || order.reviews.length === 0) && (
+                                            <button
+                                                onClick={() => setReviewingOrder(order)}
+                                                className="text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded-full bg-orange-600/10 border border-orange-500/30 text-orange-400 hover:text-white hover:bg-orange-600 transition flex items-center gap-1.5"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.921-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                                </svg>
+                                                Review
+                                            </button>
+                                        )}
+                                        {order.status === "COMPLETED" && order.reviews && order.reviews.length > 0 && (
+                                            <button
+                                                onClick={() => setReviewingOrder(order)}
+                                                className="text-[10px] uppercase font-black tracking-widest px-4 py-1.5 rounded-full bg-green-600/10 border border-green-500/30 text-green-500 hover:text-white hover:bg-green-600 transition flex items-center gap-1.5"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                View Review
+                                            </button>
+                                        )}
+                                        <a
+                                            href={`/invoice/${order.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="View Order Invoice"
+                                            className="text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5"
+                                        >
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </a>
+                                    </div>
 
                                     {/* Cancel Button - Only visible for 15 seconds after creation */}
                                     {order.status !== "CANCELLED" && (now - new Date(order.createdAt).getTime() < 15000) && (
@@ -225,6 +261,19 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
                         </motion.div>
                     );
                 })}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {reviewingOrder && (
+                    <ReviewModal
+                        orderId={reviewingOrder.id}
+                        items={reviewingOrder.items}
+                        customerName={reviewingOrder.customerName}
+                        initialReviews={reviewingOrder.reviews}
+                        onSuccess={refreshOrders}
+                        onClose={() => setReviewingOrder(null)}
+                    />
+                )}
             </AnimatePresence>
         </div>
     );

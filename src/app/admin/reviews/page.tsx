@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
 
-type Review = { id: string; name: string; rating: number; text: string; isApproved: boolean; createdAt: string };
+type Review = { 
+    id: string; 
+    name: string; 
+    rating: number; 
+    text: string; 
+    isApproved: boolean; 
+    createdAt: string;
+    menuItem?: { name: string } | null;
+};
 
 function Stars({ rating }: { rating: number }) {
     return (
@@ -98,8 +106,13 @@ export default function AdminReviewsPage() {
                     {filtered.map(review => (
                         <div key={review.id} className={`bg-white/5 border rounded-2xl p-5 flex gap-4 ${review.isApproved ? "border-green-500/20" : "border-orange-500/20"}`}>
                             <div className="flex-1 space-y-2">
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                                     <span className="font-black text-sm">{review.name}</span>
+                                    {review.menuItem && (
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-md border border-orange-500/20">
+                                            {review.menuItem.name}
+                                        </span>
+                                    )}
                                     <Stars rating={review.rating} />
                                     <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
                                         review.isApproved ? "bg-green-500/20 text-green-400" : "bg-orange-500/20 text-orange-400"

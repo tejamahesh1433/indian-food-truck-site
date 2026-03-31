@@ -392,7 +392,7 @@ export async function sendPasswordResetEmail({
                         </a>
                         
                         <p style="font-size: 13px; color: #94a3b8; margin-top: 20px;">
-                            This link is securely tied to your email and will expire in 1 hour.
+                            This link is securely tied to your email and will expire in 15 minutes.
                         </p>
                     </div>
 

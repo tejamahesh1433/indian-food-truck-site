@@ -25,8 +25,8 @@ export async function POST(req: Request) {
         // Generate a secure random token
         const token = crypto.randomBytes(32).toString("hex");
 
-        // Set expiration for 1 hour from now
-        const expiresAt = new Date(Date.now() + 1000 * 60 * 60);
+        // Set expiration for 15 minutes from now
+        const expiresAt = new Date(Date.now() + 1000 * 60 * 15);
 
         // Delete any existing tokens for this email to prevent spam/confusion
         await prisma.passwordResetToken.deleteMany({
@@ -52,7 +52,10 @@ export async function POST(req: Request) {
             resetLink,
         });
 
-        return NextResponse.json({ success: true, message: "If an account exists, a reset link has been sent." });
+        return NextResponse.json({ 
+            success: true, 
+            message: "Success! A password reset link has been successfully sent to your registered email address." 
+        });
     } catch (error) {
         console.error("FORGOT_PASSWORD_ERROR:", error);
         return NextResponse.json({ error: "An unexpected error occurred." }, { status: 500 });

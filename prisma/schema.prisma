@@ -55,6 +55,7 @@ model MenuItem {
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  reviews     Review[]
 
   @@index([category, isAvailable, sortOrder])
 }
@@ -144,6 +145,7 @@ model User {
   accounts      Account[]
   orders        Order[]
   sessions      Session[]
+  reviews       Review[]
 }
 
 model Account {
@@ -208,6 +210,7 @@ model Order {
   user             User?          @relation(fields: [userId], references: [id])
   items            OrderItem[]
   messages         OrderMessage[]
+  reviews          Review[]
 }
 
 model OrderMessage {
@@ -240,11 +243,23 @@ model NewsletterSubscriber {
 
 model Review {
   id         String   @id @default(cuid())
+  orderId    String?
+  menuItemId String?
+  userId     String?
   name       String
   rating     Int
   text       String
   isApproved Boolean  @default(false)
   createdAt  DateTime @default(now())
+
+  // Relations
+  order    Order?    @relation(fields: [orderId], references: [id])
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id])
+  user     User?     @relation(fields: [userId], references: [id])
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@index([userId])
 }
 
 model AdminLoginAttempt {

@@ -2,13 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 
+import { z } from "zod";
+
+const ResetPasswordSchema = z.object({
+    token: z.string().min(1, "Token is required"),
+    newPassword: z.string()
+        .min(8, "Password must be at least 8 characters")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[0-9]/, "Password must contain at least one number")
+        .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+});
+
 export async function POST(req: Request) {
     try {
-        const { token, newPassword } = await req.json();
-
-        if (!token || !newPassword || newPassword.length < 6) {
-            return NextResponse.json({ error: "Invalid request. Password must be at least 6 characters." }, { status: 400 });
-        }
+        const body = await req.json();
+        const { token, newPassword } = ResetPasswordSchema.parse(body);
 
         // Find the token
         const resetTokenRecord = await prisma.passwordResetToken.findUnique({
@@ -51,6 +60,9 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ success: true, message: "Password updated successfully." });
     } catch (error) {
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         console.error("RESET_PASSWORD_ERROR:", error);
         return NextResponse.json({ error: "An unexpected error occurred." }, { status: 500 });
     }

@@ -3,7 +3,10 @@ import { prisma } from "@/lib/prisma";
 
 // GET all reviews (admin)
 export async function GET() {
-    const reviews = await prisma.review.findMany({ orderBy: { createdAt: "desc" } });
+    const reviews = await prisma.review.findMany({ 
+        include: { menuItem: { select: { name: true } } },
+        orderBy: { createdAt: "desc" } 
+    });
     return NextResponse.json({ reviews });
 }
 

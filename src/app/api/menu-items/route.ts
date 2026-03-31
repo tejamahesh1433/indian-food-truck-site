@@ -5,13 +5,54 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const category = url.searchParams.get("category"); // optional
 
-    const items = await prisma.menuItem.findMany({
-        where: {
-            isAvailable: true,
-            ...(category ? { category } : {}),
-        },
-        orderBy: [{ isPopular: "desc" }, { name: "asc" }],
-    });
+    try {
+        // Fetch all items
+        const items = await prisma.menuItem.findMany({
+            where: {
+                isAvailable: true,
+                ...(category ? { category } : {}),
+            },
+            orderBy: [{ isPopular: "desc" }, { name: "asc" }],
+        });
 
-    return NextResponse.json({ items });
+        // Fetch aggregate ratings separately to avoid brittle relation naming issues
+        const aggregations = await prisma.review.groupBy({
+            by: ['menuItemId'],
+            where: { 
+                isApproved: true,
+                menuItemId: { not: null }
+            },
+            _avg: { rating: true },
+            _count: { rating: true }
+        });
+
+        // Create a lookup map for the ratings
+        const statsMap = new Map(aggregations.map(a => [a.menuItemId, {
+            avg: a._avg.rating || 0,
+            count: a._count.rating || 0
+        }]));
+
+        const itemsWithRatings = items.map(item => {
+            const stats = statsMap.get(item.id) || { avg: 0, count: 0 };
+            return {
+                ...item,
+                avgRating: Number(stats.avg.toFixed(1)),
+                reviewCount: stats.count
+            };
+        });
+
+        console.log(`[MENU_API] Found ${items.length} items, ${aggregations.length} items have ratings.`);
+        return NextResponse.json({ items: itemsWithRatings });
+    } catch (error: any) {
+        console.error("[MENU_API_ERROR]", error);
+        // Fallback to basic list if aggregation fails
+        const items = await prisma.menuItem.findMany({
+            where: {
+                isAvailable: true,
+                ...(category ? { category } : {}),
+            },
+            orderBy: [{ isPopular: "desc" }, { name: "asc" }],
+        });
+        return NextResponse.json({ items });
+    }
 }

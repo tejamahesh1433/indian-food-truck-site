@@ -6,11 +6,11 @@ import { stripe } from "@/lib/stripe";
 
 export async function POST(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id: orderId } = await params;
         const session = await getServerSession(authOptions);
-        const orderId = params.id;
 
         if (!session?.user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

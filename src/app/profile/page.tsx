@@ -20,7 +20,18 @@ export default async function ProfilePage() {
         include: {
             orders: {
                 orderBy: { createdAt: "desc" },
-                include: { items: true }
+                include: { 
+                    items: true,
+                    reviews: {
+                        select: {
+                            id: true,
+                            rating: true,
+                            text: true,
+                            menuItemId: true,
+                            createdAt: true
+                        }
+                    }
+                }
             }
         }
     });
