@@ -95,20 +95,51 @@ export default async function AnalyticsPage() {
 
 
     // ─── Fetch ───────────────────────────────────────────────────────────────
-    const [allPaid, allLite] = await Promise.all([
+    const [allPaid, allLite, allCatering] = await Promise.all([
         prisma.order.findMany({ where: { status: { in: PAID } }, include: { items: { select: { quantity: true, priceCents: true, name: true } } }, orderBy: { createdAt: "asc" } }) as Promise<OrderFull[]>,
         prisma.order.findMany({ select: { status: true, createdAt: true }, orderBy: { createdAt: "asc" } }) as Promise<OrderLite[]>,
+        prisma.cateringRequest.findMany({ include: { messages: { where: { sender: "ADMIN" }, orderBy: { createdAt: "asc" }, take: 1 } }, orderBy: { createdAt: "asc" } }),
     ]);
+
+    // ─── Catering Logic ──────────────────────────────────────────────────────
+    function computeCateringMetrics(requests: typeof allCatering) {
+        const total = requests.length;
+        const engaged = requests.filter(r => r.status !== "NEW").length;
+        const engagementRate = total > 0 ? Math.round((engaged / total) * 100) : 0;
+        
+        // Calculate Avg Response Time in Hours
+        const responseTimes = requests
+            .filter(r => r.messages.length > 0)
+            .map(r => {
+                const firstAdminMsg = r.messages[0];
+                return (new Date(firstAdminMsg.createdAt).getTime() - new Date(r.createdAt).getTime()) / (1000 * 60 * 60);
+            });
+        
+        const avgResponseTime = responseTimes.length > 0 
+            ? Math.round((responseTimes.reduce((s, t) => s + t, 0) / responseTimes.length) * 10) / 10 
+            : 0;
+
+        // Top Types
+        const typeMap: Record<string, number> = {};
+        for (const r of requests as any[]) {
+            const t = r.type || "Other";
+            typeMap[t] = (typeMap[t] || 0) + 1;
+        }
+        const topTypes = Object.entries(typeMap)
+            .map(([label, value]) => ({ label, value }))
+            .sort((a, b) => b.value - a.value);
+
+        return { total, engaged, engagementRate, avgResponseTime, topTypes };
+    }
 
     // ─── Cached slices ───────────────────────────────────────────────────────
     const slices = {
-        today:      { paid: between(allPaid, todayStart),                     all: between(allLite, todayStart) },
-        yesterday:  { paid: between(allPaid, yesterdayStart, todayStart),     all: between(allLite, yesterdayStart, todayStart) },
-        thisWeek:   { paid: between(allPaid, weekStart),                      all: between(allLite, weekStart) },
-        lastWeek:   { paid: between(allPaid, lastWeekStart, weekStart),       all: between(allLite, lastWeekStart, weekStart) },
-        thisMonth:  { paid: between(allPaid, monthStart),                     all: between(allLite, monthStart) },
-        lastMonth:  { paid: between(allPaid, lastMonthStart, lastMonthEnd),   all: between(allLite, lastMonthStart, lastMonthEnd) },
-
+        today:      { paid: between(allPaid, todayStart),                     all: between(allLite, todayStart),                   catering: between(allCatering, todayStart) },
+        yesterday:  { paid: between(allPaid, yesterdayStart, todayStart),     all: between(allLite, yesterdayStart, todayStart),   catering: between(allCatering, yesterdayStart, todayStart) },
+        thisWeek:   { paid: between(allPaid, weekStart),                      all: between(allLite, weekStart),                    catering: between(allCatering, weekStart) },
+        lastWeek:   { paid: between(allPaid, lastWeekStart, weekStart),       all: between(allLite, lastWeekStart, weekStart),     catering: between(allCatering, lastWeekStart, weekStart) },
+        thisMonth:  { paid: between(allPaid, monthStart),                     all: between(allLite, monthStart),                   catering: between(allCatering, monthStart) },
+        lastMonth:  { paid: between(allPaid, lastMonthStart, lastMonthEnd),   all: between(allLite, lastMonthStart, lastMonthEnd), catering: between(allCatering, lastMonthStart, lastMonthEnd) },
     };
 
     // ─── Date labels ─────────────────────────────────────────────────────────
@@ -118,31 +149,48 @@ export default async function AnalyticsPage() {
 
     // ─── Period data ─────────────────────────────────────────────────────────
     const periodData = {
-        today:   mkPeriod(slices.today.paid,     slices.today.all,     fmtDate(now, WKDAY_YEAR),                                                               `vs ${fmtDate(yesterdayStart, SHORT)}`,                                                   slices.yesterday.paid, slices.yesterday.all),
-        week:    mkPeriod(slices.thisWeek.paid,  slices.thisWeek.all,  `${fmtDate(weekStart, SHORT)} – ${fmtDate(now, SHORT_YEAR)}`,                           `vs ${fmtDate(lastWeekStart, SHORT)} – ${fmtDate(lastWeekEndDate, SHORT)}`,               slices.lastWeek.paid, slices.lastWeek.all),
-        month:   mkPeriod(slices.thisMonth.paid, slices.thisMonth.all, `${fmtDate(monthStart, SHORT)} – ${fmtDate(now, SHORT_YEAR)}`,                          `vs ${fmtDate(lastMonthStart, SHORT)} – ${fmtDate(lastMonthEndDate, SHORT)}`,             slices.lastMonth.paid, slices.lastMonth.all),
+        today:   { 
+            ...mkPeriod(slices.today.paid,     slices.today.all,     fmtDate(now, WKDAY_YEAR),                                                               `vs ${fmtDate(yesterdayStart, SHORT)}`,                                                   slices.yesterday.paid, slices.yesterday.all),
+            catering: computeCateringMetrics(slices.today.catering as typeof allCatering)
+        },
+        week:    { 
+            ...mkPeriod(slices.thisWeek.paid,  slices.thisWeek.all,  `${fmtDate(weekStart, SHORT)} – ${fmtDate(now, SHORT_YEAR)}`,                           `vs ${fmtDate(lastWeekStart, SHORT)} – ${fmtDate(lastWeekEndDate, SHORT)}`,               slices.lastWeek.paid, slices.lastWeek.all),
+            catering: computeCateringMetrics(slices.thisWeek.catering as typeof allCatering)
+        },
+        month:   { 
+            ...mkPeriod(slices.thisMonth.paid, slices.thisMonth.all, `${fmtDate(monthStart, SHORT)} – ${fmtDate(now, SHORT_YEAR)}`,                          `vs ${fmtDate(lastMonthStart, SHORT)} – ${fmtDate(lastMonthEndDate, SHORT)}`,             slices.lastMonth.paid, slices.lastMonth.all),
+            catering: computeCateringMetrics(slices.thisMonth.catering as typeof allCatering)
+        },
 
-        allTime: mkPeriod(allPaid,               allLite,              "All Time",                                                                              null),
+        allTime: {
+            ...mkPeriod(allPaid,               allLite,              "All Time",                                                                              null),
+            catering: computeCateringMetrics(allCatering)
+        },
     };
 
-    // ─── Daily revenue (last 30 days) ────────────────────────────────────────
+    // ─── Daily revenue + catering volume (last 30 days) ──────────────────────
     const thirtyAgo = new Date(todayStart); thirtyAgo.setDate(thirtyAgo.getDate() - 29);
-    const dailyMap: Record<string, { cents: number; orders: number }> = {};
+    const dailyMap: Record<string, { cents: number; orders: number; catering: number }> = {};
     for (let i = 0; i < 30; i++) {
         const d = new Date(thirtyAgo); d.setDate(d.getDate() + i);
-        dailyMap[d.toISOString().slice(0, 10)] = { cents: 0, orders: 0 };
+        dailyMap[d.toISOString().slice(0, 10)] = { cents: 0, orders: 0, catering: 0 };
     }
     for (const o of between(allPaid, thirtyAgo)) {
         const k = new Date(o.createdAt).toISOString().slice(0, 10);
         if (k in dailyMap) { dailyMap[k].cents += o.totalAmount; dailyMap[k].orders++; }
+    }
+    for (const r of between(allCatering, thirtyAgo)) {
+        const k = new Date(r.createdAt).toISOString().slice(0, 10);
+        if (k in dailyMap) { dailyMap[k].catering++; }
     }
     const dailyRevenue = Object.entries(dailyMap).map(([date, d]) => ({
         date,
         label: new Date(date + "T12:00:00").toLocaleDateString("en-US", SHORT),
         cents: d.cents,
         orders: d.orders,
+        catering: d.catering,
     }));
-    const activeDays30 = dailyRevenue.filter(d => d.orders > 0).length;
+    const activeDays30 = dailyRevenue.filter((d: { orders: number }) => d.orders > 0).length;
     const bestDay30 = [...dailyRevenue].sort((a, b) => b.cents - a.cents)[0];
     const bestDay = bestDay30?.cents > 0 ? { date: bestDay30.date, label: bestDay30.label, cents: bestDay30.cents } : null;
 

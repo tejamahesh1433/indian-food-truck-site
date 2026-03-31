@@ -41,7 +41,7 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
     const { toast } = useToast();
 
     useEffect(() => {
-        // Poll for updates every 8 seconds for near real-time order tracking
+        // Poll for updates every 15 seconds for near real-time order tracking
         const pollInterval = setInterval(async () => {
             try {
                 const res = await fetch("/api/user/orders", { cache: 'no-store' });
@@ -52,10 +52,42 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
             } catch (err) {
                 console.error("Polling error:", err);
             }
-        }, 8000);
+        }, 15000);
 
         return () => clearInterval(pollInterval);
     }, []);
+
+    // Refresh component every second to ensure the 15s cancel window is accurate in the UI
+    const [now, setNow] = useState(() => Date.now());
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const handleCancelOrder = async (orderId: string) => {
+        if (!window.confirm("Are you sure you want to cancel this order? If you have already paid, a full refund will be automatically initiated to your original payment method.")) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/orders/${orderId}/cancel`, {
+                method: "POST",
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success("Order cancelled successfully. Refund initiated if applicable.");
+                // Immediately update local state
+                setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: "CANCELLED" as OrderStatus } : o));
+            } else {
+                toast.error(data.error || "Failed to cancel order.");
+            }
+        } catch (err) {
+            console.error("Cancel error:", err);
+            toast.error("An unexpected error occurred while trying to cancel the order.");
+        }
+    };
 
     if (orders.length === 0) return null;
 
@@ -92,13 +124,26 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
                                         href={`/invoice/${order.id}`} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
+                                        title="View Order Invoice"
                                         className="text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5"
                                     >
                                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
-                                        View Invoice
                                     </a>
+
+                                    {/* Cancel Button - Only visible for 15 seconds after creation */}
+                                    {order.status !== "CANCELLED" && (now - new Date(order.createdAt).getTime() < 15000) && (
+                                        <button
+                                            onClick={() => handleCancelOrder(order.id)}
+                                            className="text-[10px] uppercase font-black tracking-widest px-3 py-1.5 rounded-full border border-red-500/10 text-red-500/50 hover:text-red-500 hover:bg-red-500/5 transition flex items-center gap-1.5"
+                                        >
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Cancel Order
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
