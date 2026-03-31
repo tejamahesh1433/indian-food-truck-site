@@ -2,7 +2,7 @@
 
 This document outlines how data is fetched, managed, and synchronized across the system.
 
-## Data Flow Diagram (Level 1)
+## Data Flow Diagram (Level 1 - Order & Operations)
 
 ```mermaid
 graph LR
@@ -15,10 +15,12 @@ graph LR
     subgraph "System Processes"
         P1[Order Processing]
         P2[Catering Inquiry]
-        P3[Inventory Sync]
+        P3[Menu/Item Sync]
         P4[Schedule Management]
         P5[Email / Chat Service]
         P6[Webhook Handler]
+        P7[Review Moderation]
+        P8[Analytics Engine]
     end
 
     subgraph "Data Storage"
@@ -38,6 +40,16 @@ graph LR
     P2 -->|Trigger| P5
     P5 -->|Chat link email| U
 
+    U -->|Submit review| P7
+    P7 -->|Save review (pending approval)| D1
+    A -->|Approve/Reject| P7
+    P7 -->|Update review status| D1
+
+    A -->|View analytics| P8
+    P8 -->|Query orders, items, revenue| D1
+    D1 -->|Analytics data| P8
+    P8 -->|Dashboard display| A
+
     A -->|Update item| P3
     P3 -->|Update records| D1
 
@@ -46,6 +58,44 @@ graph LR
 
     D1 -->|Read settings + menu| P1
     D1 -->|Read settings| P2
+```
+
+---
+
+## Data Flow Diagram (Level 2 - Admin Kitchen Operations)
+
+```mermaid
+graph LR
+    subgraph "Admin Dashboard"
+        KDS["Kitchen Display System<br/>(AdminOrdersClient)"]
+        OHist["Order History<br/>(with pagination)"]
+    end
+
+    subgraph "Polling & APIs"
+        Poll["GET /api/admin/orders/live<br/>(8-second interval)"]
+        Status["POST /api/admin/orders/[id]/status"]
+    end
+
+    subgraph "Data Storage"
+        DB["PostgreSQL DB"]
+    end
+
+    A["Admin User"]
+
+    A -->|View live orders| KDS
+    KDS -->|Polls every 8s| Poll
+    Poll -->|Returns PAID, PREPARING,<br/>READY orders| KDS
+    KDS -->|Displays with notes| A
+
+    A -->|Update status| KDS
+    KDS -->|POST status change| Status
+    Status -->|Update order in DB| DB
+    DB -->|Next poll includes<br/>new status| Poll
+
+    A -->|Browse history| OHist
+    OHist -->|Paginated query| DB
+    DB -->|Return 15 items/page| OHist
+    OHist -->|Display with notes<br/>and pagination| A
 ```
 
 ---
@@ -76,11 +126,12 @@ sequenceDiagram
     participant ST as Stripe
     participant E as Resend Email
     participant A as Admin
+    participant KDS as Kitchen Display System
 
-    C->>Cart: Add items to cart
+    C->>Cart: Add items + special instructions to cart
     Cart-->>C: Cart state updated (localStorage)
 
-    C->>S: POST /api/orders (items, contact info)
+    C->>S: POST /api/orders (items, notes, contact info)
 
     critical Server-Side Validation
         S->>S: Zod schema validation
@@ -90,13 +141,16 @@ sequenceDiagram
         DB-->>S: No duplicate found
     end
 
-    S->>DB: Create Order (status: PENDING, chatToken: UUID)
+    S->>DB: Create Order (status: PENDING, chatToken: UUID, with notes)
     DB-->>S: Order created
 
     S->>ST: Create PaymentIntent (server-calculated total)
     ST-->>S: clientSecret
 
     S-->>C: { clientSecret, orderId, totalAmount }
+
+    Note over C: 15-second cancellation window starts!
+    C->>C: Customer can call cancel API to undo
 
     C->>ST: Confirm payment (Stripe Elements)
     ST-->>C: Payment processing...
@@ -118,10 +172,12 @@ sequenceDiagram
     end
 
     S-->>ST: 200 OK { received: true }
+    S->>KDS: Trigger live order update (polling)
 
     C->>C: Redirect to /order-success
     C->>S: GET /track/[chatToken]
-    S-->>C: Order status page
+    S-->>C: Order status page (with review option)
+    A->>KDS: Admin sees order in Kitchen Display
 ```
 
 When a customer places an order:
@@ -214,14 +270,72 @@ stateDiagram-v2
     end note
 ```
 
-## 6. Order Chat & Catering Chat Synchronization
+## 7. Order Chat & Catering Chat Synchronization
 
 Both chat systems follow the same pattern:
 
 - **Retrieval**: `GET /api/[type]/[id]/messages` returns full message history.
 - **Role Detection**: Sender identified as `ADMIN` (via JWT cookie) or `CUSTOMER` (via chat token in request).
 - **Update**: New messages appended to `OrderMessage` or `CateringMessage` tables.
-- **Polling**: Client components poll the messages endpoint periodically to show new messages without requiring WebSockets.
+- **Polling**: Client components poll the messages endpoint periodically (custom intervals) to show new messages without requiring WebSockets.
+
+---
+
+## 8. Live Kitchen Display System (Admin Orders Polling)
+
+When an admin views the kitchen dashboard:
+
+1. **AdminOrdersClient Component** mounts and initiates polling.
+2. **8-Second Polling**: Client calls `GET /api/admin/orders/live` every 8 seconds.
+3. **API Response**: Returns orders in statuses NEW, PREPARING, READY with:
+   - Order details (ID, customer name, phone, total)
+   - OrderItems with menu item names and quantities
+   - **Special Instructions**: Order-level notes and per-item notes
+4. **Kanban Display**: Orders are organized into 3 columns: NEW → PREPARING → READY.
+5. **Real-Time Updates**: As customers place orders or status changes, the next poll reflects the new state.
+6. **Manual Updates**: Admin can update status via `POST /api/admin/orders/[id]/status` which triggers the next poll refresh.
+7. **Note Visibility**: Kitchen staff see all special instructions in the order card for food preparation accuracy.
+
+---
+
+## 9. Password Reset Flow
+
+When a customer forgets their password:
+
+1. **Request Reset**: Customer submits email to `/auth/forgot-password`.
+2. **Token Generation**: System generates a unique, time-limited reset token.
+3. **Email Sent**: Resend sends email with reset link (e.g., `/auth/reset-password?token=xxx`).
+4. **Token Validation**: When customer clicks link, system validates token expiration.
+5. **Password Update**: Customer submits new password to `/api/auth/reset-password`.
+6. **Confirmation**: Token is invalidated, password is bcrypt-hashed and saved.
+7. **Session**: Customer can now log in with new password.
+
+---
+
+## 10. Customer Review Submission Flow
+
+After order completion:
+
+1. **Review Trigger**: Customer sees "Rate Your Order" button on tracking page or in profile order history.
+2. **Review Form**: Customer submits 1-5 star rating + optional comment.
+3. **Save to DB**: Review record created with `isApproved: false`.
+4. **Admin Moderation**: Admin reviews submission in `/admin/reviews` dashboard.
+5. **Approval**: Admin can approve, reject, or delete review.
+6. **Display**: Only approved reviews appear on homepage in the "Customer Reviews" section.
+7. **Visibility**: Review shows customer name, rating, and comment (if approved).
+
+---
+
+## 11. Order Cancellation (15-Second Window)
+
+When customer places an order:
+
+1. **Immediate**: Order is created with `status: PENDING`.
+2. **Cancellation Window**: Customer has 15 seconds to cancel.
+3. **Action**: Customer can call `POST /api/orders/[id]/cancel`.
+4. **Effect**: Order status changes to `CANCELLED` before webhook processes.
+5. **Outcome**: Stripe payment is never initiated; customer sees cancellation confirmation.
+6. **After 15 Seconds**: Window closes; order proceeds to payment processing via Stripe.
 
 ---
 
