@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
+import "./analytics.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -110,15 +112,9 @@ function BarChart({ data, view, bestDate }: { data: DayData[]; view: "revenue" |
                     {data.map(d => {
                         const val = view === "revenue" ? d.cents : d.orders;
                         const isBest = d.date === bestDate && d.cents > 0;
-                        const barStyle = {
-                            height: `${Math.max((val / max) * 100, val > 0 ? 1.5 : 0)}%`,
-                            background: isBest
-                                ? "linear-gradient(to top, #d97706, #fbbf24)"
-                                : val > 0
-                                    ? "linear-gradient(to top, #ea580c, #f97316)"
-                                    : "rgba(255,255,255,0.04)",
-                            minHeight: val > 0 ? "3px" : "2px",
-                        };
+                        const hStr = `${Math.max((val / max) * 100, val > 0 ? 1.5 : 0)}%`;
+                        const minH = val > 0 ? "3px" : "2px";
+                        
                         return (
                             <div key={d.date} className="flex-1 flex flex-col items-center justify-end group relative">
                                 <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
@@ -131,7 +127,13 @@ function BarChart({ data, view, bestDate }: { data: DayData[]; view: "revenue" |
                                     <div className="w-2 h-2 bg-zinc-900 border-r border-b border-white/10 rotate-45 -mt-1" />
                                 </div>
                                 {isBest && <span className="absolute -top-5 text-[10px]">⭐</span>}
-                                <div className="w-full rounded-t-sm transition-all duration-300" style={barStyle} />
+                                <motion.div 
+                                    initial={{ height: 0 }}
+                                    animate={{ height: hStr }}
+                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                    className={`chart-bar ${isBest ? "bg-best-gradient" : val > 0 ? "bg-orange-gradient" : "bg-bar-empty"}`} 
+                                    style={{ "--bar-min-height": minH } as React.CSSProperties}
+                                />
                             </div>
                         );
                     })}
@@ -157,16 +159,17 @@ function HBar({ items, view }: { items: PeakItem[]; view: "orders" | "revenue" }
         <div className="space-y-2">
             {items.map(item => {
                 const val = view === "revenue" ? item.cents : item.orders;
-                const barStyle = { 
-                    width: `${(val / max) * 100}%`, 
-                    background: val > 0 ? "linear-gradient(to right,#ea580c,#f97316)" : "transparent", 
-                    minWidth: val > 0 ? "4px" : "0" 
-                };
                 return (
                     <div key={item.label} className="flex items-center gap-3">
                         <span className="text-[10px] font-bold text-gray-400 w-9 text-right flex-shrink-0">{item.label}</span>
                         <div className="flex-1 h-4 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full rounded-full transition-all duration-500" style={barStyle} />
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${(val / max) * 100}%` }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                className={`h-full rounded-full ${val > 0 ? "bg-orange-h-gradient" : "bg-transparent"}`} 
+                                style={{ "--bar-min-width": val > 0 ? "4px" : "0" } as React.CSSProperties} 
+                            />
                         </div>
                         <div className="text-[10px] font-bold w-20 text-right flex-shrink-0">
                             {view === "revenue"
@@ -257,7 +260,7 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
                         </div>
                         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2 ml-0.5">{dateLabel}</p>
                     </div>
-                    <button onClick={() => exportCSV(dailyRevenue as any)}
+                    <button onClick={() => exportCSV(dailyRevenue as DayData[])}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition text-xs font-bold text-gray-400 hover:text-white flex-shrink-0">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -352,7 +355,12 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
                                                     <td className="py-2.5">
                                                         <div className="font-bold text-white text-sm">{item.name}</div>
                                                         <div className="mt-1 h-1 w-24 bg-white/5 rounded-full overflow-hidden">
-                                                            <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: i === 0 ? "linear-gradient(to right,#ea580c,#f97316)" : "rgba(249,115,22,0.3)" }} />
+                                                            <motion.div 
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${item.pct}%` }}
+                                                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                                                className={`h-full rounded-full ${i === 0 ? "bg-orange-h-gradient" : "bg-orange-500/30"}`} 
+                                                            />
                                                         </div>
                                                     </td>
                                                     <td className="py-2.5 px-3 text-right font-black text-white">{item.qty}</td>
@@ -375,20 +383,23 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
                                 <p className="text-sm text-gray-600">No orders in this period.</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {statusCounts.map(({ status, count, pct }) => {
-                                        const barStyle = { width: `${pct}%`, background: STATUS_COLORS[status] ?? "#6b7280", opacity: 0.7 };
-                                        return (
-                                            <div key={status} className="flex items-center gap-3">
-                                                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: STATUS_COLORS[status] ?? "#6b7280" }} />
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 w-24 flex-shrink-0">{status}</span>
-                                                <div className="flex-1 h-2.5 bg-white/5 rounded-full overflow-hidden">
-                                                    <div className="h-full rounded-full transition-all duration-500" style={barStyle} />
-                                                </div>
-                                                <span className="text-[10px] font-black text-white w-6 text-right flex-shrink-0">{count}</span>
-                                                <span className="text-[9px] text-gray-600 font-bold w-8 text-right flex-shrink-0">{pct}%</span>
+                                    {statusCounts.map(({ status, count, pct }) => (
+                                        <div key={status} className="flex items-center gap-3">
+                                            <motion.div className="w-2.5 h-2.5 rounded-full flex-shrink-0 status-dot" style={{ "--status-color": STATUS_COLORS[status] ?? "#6b7280" } as React.CSSProperties} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 w-24 flex-shrink-0">{status}</span>
+                                            <div className="flex-1 h-2.5 bg-white/5 rounded-full overflow-hidden">
+                                                <motion.div 
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${pct}%` }}
+                                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                                    className="h-full rounded-full bg-status-bar" 
+                                                    style={{ "--status-color": STATUS_COLORS[status] ?? "#6b7280" } as React.CSSProperties} 
+                                                />
                                             </div>
-                                        );
-                                    })}
+                                            <span className="text-[10px] font-black text-white w-6 text-right flex-shrink-0">{count}</span>
+                                            <span className="text-[9px] text-gray-600 font-bold w-8 text-right flex-shrink-0">{pct}%</span>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -457,7 +468,12 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
                                 </div>
                                 <div className="text-6xl font-black text-blue-400 tracking-tighter">{catering.engagementRate}%</div>
                                 <div className="mt-4 h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all duration-1000" style={{ width: `${catering.engagementRate}%` }} />
+                                    <motion.div 
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${catering.engagementRate}%` }}
+                                        transition={{ duration: 1, ease: "circOut" }}
+                                        className="h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]" 
+                                    />
                                 </div>
                             </div>
 
@@ -488,9 +504,12 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
                                             <div className="absolute bottom-full mb-2 hidden group-hover:block bg-zinc-900 border border-white/10 px-2 py-1 rounded text-[10px] whitespace-nowrap z-20">
                                                 {d.label}: {d.catering} requests
                                             </div>
-                                            <div 
+                                            <motion.div 
+                                                initial={{ height: 0 }}
+                                                animate={{ height: `${h}%` }}
+                                                transition={{ duration: 1, ease: "circOut" }}
                                                 className="w-full bg-blue-500/20 hover:bg-blue-500 transition-all rounded-t-sm" 
-                                                style={{ height: `${h}%`, minHeight: d.catering ? "4px" : "0" }}
+                                                style={{ "--bar-min-height": d.catering ? "4px" : "0" } as React.CSSProperties} 
                                             />
                                         </div>
                                     );
@@ -510,9 +529,11 @@ export default function AnalyticsClient({ periodData, dailyRevenue, peakHours, p
                                         <div key={type.label} className="flex items-center gap-6">
                                             <div className="w-32 text-xs font-black uppercase tracking-widest text-gray-400 truncate">{type.label}</div>
                                             <div className="flex-1 h-4 bg-white/5 rounded-full overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000 shadow-[0_0_10px_rgba(59,130,246,0.3)]" 
-                                                    style={{ width: `${pct}%` }}
+                                                <motion.div 
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${pct}%` }}
+                                                    transition={{ duration: 1, ease: "circOut" }}
+                                                    className="h-full bg-blue-h-gradient shadow-[0_0_10px_rgba(59,130,246,0.3)]" 
                                                 />
                                             </div>
                                             <div className="w-16 text-right text-sm font-black text-white">{type.value}</div>

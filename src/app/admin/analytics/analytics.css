@@ -1,0 +1,57 @@
+/* Analytics Charts & Gauges */
+
+.chart-bar-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 10rem; /* 40 units */
+}
+
+.chart-bar {
+    width: 100%;
+    border-top-left-radius: 0.125rem;
+    border-top-right-radius: 0.125rem;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+.bar-height {
+    height: var(--bar-height, 0);
+    min-height: var(--bar-min-height, 0);
+}
+
+.bar-width {
+    width: var(--bar-width, 0);
+    min-width: var(--bar-min-width, 0);
+}
+
+/* Gradients */
+.bg-orange-gradient {
+    background: linear-gradient(to top, #ea580c, #f97316) !important;
+}
+
+.bg-best-gradient {
+    background: linear-gradient(to top, #d97706, #fbbf24) !important;
+}
+
+.bg-orange-h-gradient {
+    background: linear-gradient(to right, #ea580c, #f97316) !important;
+}
+
+.bg-blue-h-gradient {
+    background: linear-gradient(to right, #2563eb, #60a5fa) !important;
+}
+
+.bg-bar-empty {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.bg-status-bar {
+    background-color: var(--status-color, #6b7280) !important;
+    opacity: 0.7;
+}
+
+.status-dot {
+    background-color: var(--status-color, #6b7280) !important;
+}

@@ -10,11 +10,13 @@ const OrderSchema = z.object({
     customerName: z.string().min(2),
     customerEmail: z.string().email(),
     customerPhone: z.string().min(10),
+    notes: z.string().optional(),
     items: z.array(z.object({
         id: z.string(),
         name: z.string(),
         priceCents: z.number().int().positive(),
         quantity: z.number().int().positive(),
+        notes: z.string().optional(),
     })).min(1),
 });
 
@@ -74,8 +76,6 @@ export async function POST(req: Request) {
 
         if (existingOrder) {
             console.log("♻️ Duplicate order detected within 10s, returning existing URL");
-            // If we have a session ID, return the URL if possible, or just the existing order info
-            // For now, let's just error to the frontend as "Already processing" to be safe
             return NextResponse.json({
                 error: "Duplicate order attempt. Please wait a moment.",
                 orderId: existingOrder.id
@@ -88,6 +88,7 @@ export async function POST(req: Request) {
                 customerName: validatedData.customerName,
                 customerEmail: validatedData.customerEmail,
                 customerPhone: validatedData.customerPhone,
+                notes: validatedData.notes,
                 subtotalAmount,
                 taxAmount,
                 serviceFeeAmount,
@@ -100,9 +101,10 @@ export async function POST(req: Request) {
                         const dbItem = dbItemMap.get(item.id)!;
                         return {
                             menuItemId: item.id,
-                            name: dbItem.name, // Use DB name too for consistency
+                            name: dbItem.name, 
                             quantity: item.quantity,
                             priceCents: dbItem.priceCents,
+                            notes: item.notes,
                         };
                     })
                 }

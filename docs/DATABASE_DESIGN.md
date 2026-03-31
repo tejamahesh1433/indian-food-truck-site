@@ -7,8 +7,11 @@ erDiagram
     User ||--o{ Order : "places"
     User ||--o{ Account : "has"
     User ||--o{ Session : "has"
+    User ||--o{ Review : "writes"
     Order ||--o{ OrderItem : "contains"
     Order ||--o{ OrderMessage : "has"
+    Order ||--o{ Review : "has"
+    MenuItem ||--o{ Review : "has"
     CateringRequest ||--o{ CateringMessage : "has"
     MenuItem }|--|| MenuCategory : "categorised_by"
     CateringItem }|--|| CateringCategory : "categorised_by"
@@ -34,7 +37,9 @@ erDiagram
         enum status "PENDING|PAID|PREPARING|READY|COMPLETED|CANCELLED"
         string stripeSessionId "Stripe PaymentIntent ID"
         string chatToken "Unique - for order tracking"
+        string notes "Optional special instructions for entire order"
         datetime createdAt
+        datetime updatedAt
     }
 
     OrderItem {
@@ -44,6 +49,7 @@ erDiagram
         string name "Snapshot at time of order"
         int quantity
         int priceCents "Snapshot at time of order"
+        string notes "Optional per-item special instructions (e.g., 'no onions')"
     }
 
     OrderMessage {
@@ -131,6 +137,26 @@ erDiagram
         int count
         datetime expiresAt
     }
+
+    Review {
+        string id PK
+        string orderId FK "Optional - if review tied to order"
+        string menuItemId FK "Optional - if review for menu item"
+        string userId FK "Optional - if logged-in user submitting"
+        string name "Reviewer name (always shown)"
+        int rating "1-5 star rating"
+        string text "Review comment"
+        boolean isApproved "Admin must approve before display"
+        datetime createdAt
+    }
+
+    PasswordResetToken {
+        string id PK
+        string email
+        string token "Unique reset token"
+        datetime expiresAt
+        datetime createdAt
+    }
 ```
 
 ---
@@ -180,3 +206,15 @@ These models are managed by **NextAuth.js** via the Prisma adapter. They handle 
 - Uses a `pin_` prefix on the `ip` field to separate PIN attempts from password attempts.
 - Expired records are cleaned up asynchronously on each login request.
 - Indexed on `[ip, expiresAt]` for fast lookups.
+
+### 9. `Review`
+- **Flexible ownership**: Can be submitted by logged-in users (`userId`), linked to orders (`orderId`), or tied to menu items (`menuItemId`).
+- **Approval workflow**: All reviews start with `isApproved: false`. Admin must approve before they appear on the homepage.
+- **Display logic**: The `name` field is always shown (can be "Anonymous" if user prefers), while `text` and `rating` are only visible if `isApproved: true`.
+- **Indexed** on `[orderId, menuItemId, userId]` for fast queries.
+
+### 10. `PasswordResetToken`
+- Enables the "forgot password" flow via email links.
+- **Token security**: Each token is unique and has a short expiration (typically 1 hour).
+- **Cleanup**: Expired tokens should be cleaned up periodically via admin scripts or during login attempts.
+- **Dual index**: `[email, token]` ensures fast lookup when user clicks reset link and prevents duplicate active tokens per email.

@@ -14,7 +14,7 @@
 
 ---
 
-# 🟡 Medium Priority — Noticeable missing pieces
+## 🟡 Medium Priority — Noticeable missing pieces
 
 **7. Invoice not linked from profile** — The `/invoice/[id]` page exists and the admin has a "Print Invoice" button — but customers have zero way to access it from their order history. No download receipt button on the profile page.
 
@@ -30,7 +30,7 @@
 
 ---
 
-# 🟢 Lower Priority — Polish and nice-to-haves
+## 🟢 Lower Priority — Polish and nice-to-haves
 
 **13. No promo/discount codes** — Listed in the roadmap. No coupon system, no ability to offer a "TRUCK10" code at events.
 

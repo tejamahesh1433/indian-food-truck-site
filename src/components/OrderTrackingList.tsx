@@ -14,6 +14,7 @@ interface OrderItem {
     name: string;
     quantity: number;
     priceCents: number;
+    notes?: string;
 }
 
 interface Order {
@@ -23,6 +24,7 @@ interface Order {
     createdAt: string;
     items: OrderItem[];
     customerName: string;
+    notes?: string;
     reviews?: { 
         id: string;
         rating: number;
@@ -183,6 +185,16 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
                                 </div>
                             </div>
 
+                            {order.notes && (
+                                <div className="mb-6 p-4 rounded-2xl bg-orange-500/5 border border-orange-500/10 flex items-start gap-3">
+                                    <span className="text-lg">📝</span>
+                                    <div className="flex-1">
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500/70 block mb-1">Your Special Instructions</span>
+                                        <p className="text-xs font-bold text-gray-300 leading-relaxed italic">&ldquo;{order.notes}&rdquo;</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Status Tracker */}
                             {["PAID", "PREPARING", "READY"].includes(order.status) && (
                                 <div className="mb-8 px-2">
@@ -211,12 +223,19 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
 
                             <div className="space-y-3">
                                 {order.items.map((item) => (
-                                    <div key={item.id} className="flex justify-between items-center text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-black text-orange-500 italic text-[10px]">{item.quantity}x</span>
-                                            <span className="font-bold text-gray-300">{item.name}</span>
+                                    <div key={item.id} className="space-y-1">
+                                        <div className="flex justify-between items-center text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-orange-500 italic text-[10px]">{item.quantity}x</span>
+                                                <span className="font-bold text-gray-300">{item.name}</span>
+                                            </div>
+                                            <span className="text-gray-500 text-xs font-mono font-bold">${(item.priceCents * item.quantity / 100).toFixed(2)}</span>
                                         </div>
-                                        <span className="text-gray-500 text-xs font-mono font-bold">${(item.priceCents * item.quantity / 100).toFixed(2)}</span>
+                                        {item.notes && (
+                                            <p className="pl-6 text-[11px] font-medium text-gray-500 italic">
+                                                &ldquo;{item.notes}&rdquo;
+                                            </p>
+                                        )}
                                     </div>
                                 ))}
                             </div>

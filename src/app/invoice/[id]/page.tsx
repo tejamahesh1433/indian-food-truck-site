@@ -68,6 +68,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                         <p className="text-lg font-bold text-neutral-900">{order.customerName}</p>
                         <p className="text-neutral-600 mt-1">{order.customerEmail}</p>
                         <p className="text-neutral-600">{order.customerPhone}</p>
+                        {order.notes && (
+                            <div className="mt-4 p-4 rounded-xl bg-orange-50 border border-orange-100">
+                                <p className="text-orange-800 font-bold uppercase tracking-widest text-[9px] mb-1">Special Instructions</p>
+                                <p className="text-sm font-medium text-orange-900 leading-relaxed italic">&ldquo;{order.notes}&rdquo;</p>
+                            </div>
+                        )}
                     </div>
                     <div className="sm:text-right">
                         <p className="text-neutral-400 font-bold uppercase tracking-widest text-[10px] mb-3">Payment Status</p>
@@ -94,6 +100,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                                 <tr key={item.id} className="group hover:bg-neutral-50 transition-colors">
                                     <td className="py-6 pr-4">
                                         <p className="font-bold text-neutral-900">{item.name}</p>
+                                        {item.notes && (
+                                            <p className="text-xs font-semibold text-orange-600 mt-1 italic">
+                                                Note: {item.notes}
+                                            </p>
+                                        )}
                                     </td>
                                     <td className="py-6 text-center text-neutral-600 font-medium">
                                         {item.quantity}

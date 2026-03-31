@@ -14,21 +14,41 @@ To further enhance the **Indian Food Truck Management System**, the following ro
 ### Phase 5: Customer Retention — DONE
 * ~~**Customer Accounts**~~: Full sign-up/login flow with order history in profile page.
 
+### Phase 6A: Kitchen Operations & Analytics — DONE
+* ~~**Live Kitchen Display System**~~: Real-time auto-refreshing (8-sec polling) Kanban-style order board with NEW → PREPARING → READY columns.
+* ~~**Order Pagination**~~: Historical orders pagination with 15 items per page and page numbers (supports up to 1000s of orders).
+* ~~**Sales Analytics Dashboard**~~: Revenue tracking, top items, order trends, 7 date range options (Today/Week/Month/7d/30d/90d/AllTime) with comparison metrics and best-day highlights.
+* ~~**Order Notes**~~: Special instructions per item and per order (e.g., "no onions", allergen warnings).
+* ~~**Display Order Notes in Kitchen**~~: Notes shown in admin orders view for chef reference.
+
+### Phase 5B: Security & Authentication — DONE
+* ~~**Forgot Password**~~: Email-based password reset flow with token expiration.
+* ~~**Password Reset**~~: Secure token validation and password update.
+* ~~**Order Cancellation Window**~~: Customers can cancel orders within 15 seconds of placement.
+
+### Phase 5C: Customer Reviews — DONE (Backend + Partial UI)
+* ~~**Reviews System**~~: Backend database schema for menu-item and order-based reviews with approval workflow.
+* ~~**Admin Review Moderation**~~: Admin dashboard to approve/reject/delete customer reviews before they appear on site.
+* ~~**Approved Reviews Display**~~: Reviews section on homepage showing approved customer feedback.
+* **Customer Review Submission UI** [Pending]: Form component + links from order tracking/profile (infrastructure ready, UI implementation pending).
+
 ---
 
-## 🚧 Phase 6: Business Intelligence
+## 🚧 Phase 6B: Advanced Order Management
 
-* **Analytics Dashboard**: Visual charts in the admin panel showing most popular dishes, revenue by day/week, and peak ordering times.
-* **Inventory Tracking**: Basic stock management so the admin can flag when ingredients are running low.
-* **Revenue Reports**: Downloadable order exports (CSV) for accounting.
+* **Order Search & Filter**: Filter orders by status (PAID, PREPARING, READY, COMPLETED), date range (Today/Week/Month), customer name, phone, or email.
+* **Quick Item Availability Toggle**: One-click "86 this item" button from kitchen display to mark menu items unavailable without navigating to menu management.
+* **Menu Item Reservation System** [Optional]: Allow menu items to be reserved per order to prevent overselling.
 
 ---
 
 ## 📱 Phase 7: Notifications & Engagement
 
-* **SMS Notifications**: Automated Twilio alerts to customers when their order status changes (e.g., "Your order is Ready for pickup!").
-* **Email Marketing**: Newsletter integration for weekly schedule announcements and promotions.
-* **Push Notifications**: Browser push notifications (via web push API) for order updates.
+* **Email Marketing**: Newsletter send functionality (admin can compose and send to all subscribers). Currently blocked by free email service limitations.
+* **Push Notifications**: Browser push notifications (via web push API) for order updates — includes comprehensive plan in `/docs/PUSH_NOTIFICATIONS_PLAN.md`.
+* **Admin Alerts**: Real-time browser/email notifications when new orders arrive or require attention.
+* **SMS Notifications** [Future]: Automated Twilio alerts for order status changes (requires Twilio integration).
+* **Email Status Notifications** [Future]: Transactional emails on order status changes (PREPARING, READY, COMPLETED) — requires upgrading email service from free tier.
 
 ---
 

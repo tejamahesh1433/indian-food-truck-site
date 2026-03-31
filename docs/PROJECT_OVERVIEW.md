@@ -69,9 +69,15 @@ Responsible for:
 ### Admin Interface
 
 * Secure login with database-backed rate limiting and JWT auth
-* Orders dashboard — view all paid orders, update statuses, chat with customers
+* **Live Kitchen Display System** — Real-time auto-refreshing Kanban board (NEW | PREPARING | READY) with order cards, status updates, and invoice printing
+* **Order History & Pagination** — Browse historical orders with 15 items per page, view order notes (special instructions), customer contact info, and item-level notes
+* **Order Management** — Update order statuses, chat with customers, view order totals and item breakdowns
 * Menu management — full CRUD, availability toggles, drag-to-reorder
 * Catering inbox — status tracking (NEW → CONTACTED → DONE), messaging
-* Schedule manager — today/next stop, hours, notes, saved locations
-* Site settings — branding, banner, PIN gate, catering toggle, public email
+* Schedule manager — today/next stop, hours, notes, saved locations, weekly schedule per day
+* Site settings — branding, banner, PIN gate, catering toggle, public email, logo, footer message
 * Catering menu management — items and categories with pricing tiers
+* **Sales Analytics** — Revenue tracking, top items, order trends, comparison metrics, 7 date ranges (Today/Week/Month/7d/30d/90d/AllTime), best-day highlights, peak hours/days
+* **Review Moderation** — Approve/reject/delete customer reviews before publishing
+* **Newsletter Management** — View subscriber list and export (send functionality pending email service upgrade)
+* **Support Chat** — Respond to customer support inquiries via support widget

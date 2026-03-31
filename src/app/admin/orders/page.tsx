@@ -101,17 +101,35 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                                             </span>
                                             <span className="text-gray-500 font-medium ml-2">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
                                         </div>
+
+                                        {order.notes && (
+                                            <div className="mt-4 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-start gap-3">
+                                                <span className="text-xl">📝</span>
+                                                <div className="flex-1">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-orange-500 block mb-1">Order Special Instructions</span>
+                                                    <p className="text-sm font-bold text-white leading-relaxed">{order.notes}</p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="py-6 border-y border-white/5">
                                         <div className="space-y-3">
                                             {order.items.map((item) => (
-                                                <div key={item.id} className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="h-8 w-8 rounded-lg bg-orange-500 text-white flex items-center justify-center font-black text-sm italic">{item.quantity}</span>
-                                                        <span className="font-bold text-base">{item.name}</span>
+                                                <div key={item.id} className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="h-8 w-8 rounded-lg bg-orange-500 text-white flex items-center justify-center font-black text-sm italic">{item.quantity}</span>
+                                                            <span className="font-bold text-base">{item.name}</span>
+                                                        </div>
+                                                        <span className="text-gray-400 font-mono text-sm">${(item.priceCents * item.quantity / 100).toFixed(2)}</span>
                                                     </div>
-                                                    <span className="text-gray-400 font-mono text-sm">${(item.priceCents * item.quantity / 100).toFixed(2)}</span>
+                                                    {item.notes && (
+                                                        <div className="ml-11 mt-2 text-xs font-bold text-gray-400 bg-black/20 px-3 py-2 rounded-xl flex items-center gap-2 border border-white/5 italic">
+                                                            <span className="h-1.5 w-1.5 rounded-full bg-orange-500 shrink-0" />
+                                                            Note: {item.notes}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>

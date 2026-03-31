@@ -16,25 +16,47 @@ The dashboard provides a centralized interface for managing all system modules.
 
 Modules:
 
-* **Orders**: View and manage all incoming paid orders, update statuses, and chat with customers.
+* **Live Kitchen Display**: Real-time auto-refreshing Kanban board for active orders (NEW | PREPARING | READY).
+* **Orders History**: Browse, paginate, and view historical orders with full details and special instructions.
 * **Menu Management**: Full CRUD for daily food truck menu items.
 * **Catering Requests**: Live inbox for managing catering quotes and customer communication.
 * **Catering Menu**: Manage the professional bulk-order catering menu (items and categories).
-* **Truck Schedule**: Real-time updates for "Today's Stop" and "Next Stop".
+* **Sales Analytics**: Revenue, top items, order trends, and operational insights (7 date ranges).
+* **Truck Schedule**: Real-time updates for "Today's Stop" and "Next Stop", with weekly recurring schedule.
 * **Saved Locations**: Maintain a library of frequently used truck locations.
 * **Site Settings**: Global branding, contact information, and feature toggles.
+* **Customer Reviews**: Moderation dashboard to approve/reject reviews before they appear on site.
+* **Newsletter Subscribers**: View and export email subscriber list (send functionality pending).
+* **Support Chat**: Respond to customer inquiries via the help widget.
 
 ---
 
-## Module 1: Orders
+## Module 1: Live Kitchen Display System
 
-The orders dashboard shows all paid orders from customers.
+The live kitchen display provides a real-time auto-refreshing Kanban board for managing active orders.
 
 Functions:
-* View incoming orders with customer name, items, total, and timestamp.
-* Update order status through the lifecycle: `PAID` → `PREPARING` → `READY` → `COMPLETED` (or `CANCELLED`).
-* Open the order chat to communicate directly with the customer in real time.
-* Admin receives an email notification for every new paid order (sent to the `publicEmail` or `ADMIN_EMAIL` env var).
+* **Three columns**: NEW (PAID/PENDING) | PREPARING | READY — drag-like visual grouping.
+* **Auto-refresh**: Orders update every 8 seconds without manual refresh.
+* **Live indicator**: Green pulsing dot confirms active sync.
+* **Order cards**: Show order number, customer name, total, item count, items list, and timestamp.
+* **Quick actions**: Update status, open chat, view invoice.
+* **Visual status**: Color-coded badges (red = NEW, blue = PREPARING, orange = READY).
+
+---
+
+## Module 1B: Order History & Pagination
+
+The historical orders view lets admins browse past orders with pagination and full details.
+
+Functions:
+* **Pagination**: 15 items per page with numbered page navigation.
+* **Special instructions display**: Order-level notes (e.g., "allergic to X") shown in orange banner.
+* **Per-item notes**: Individual item instructions (e.g., "no onions") shown below each line item.
+* **Lifetime order count**: Total cumulative orders displayed in page header.
+* **Customer contact**: Phone number and email for each order visible.
+* **Invoice link**: Print button opens invoice in new tab.
+* **Status color coding**: Visual badges for PAID, PREPARING, READY, COMPLETED, CANCELLED.
 
 ---
 
@@ -102,3 +124,72 @@ Functions:
 * **Catering Toggle**: Disable catering submissions entirely when fully booked. Customers will see a "Currently Unavailable" message.
 * **Access PIN**: Set a 6-digit PIN to gate the entire public-facing site (useful for soft launches or private demos).
 * **Weekly Schedule**: Configure recurring weekly schedule displayed to customers.
+
+---
+
+## Module 8: Sales Analytics
+
+The analytics dashboard provides revenue, order, and operational insights with multiple date range views.
+
+Functions:
+* **7 Date Ranges**: Today | This Week | This Month | Last 7 Days | Last 30 Days | Last 90 Days | All Time
+* **KPI Cards**: Revenue, total orders, average order value, items sold, completed revenue, cancellation rate with comparison % and "was $X" previous period
+* **Quick Insights Banner**: Best day, cancellation rate, peak hour, peak day for selected period
+* **Daily Trend Chart**: Revenue by day with best-day star highlight, active days count, hover tooltips
+* **Top Items Table**: Top 10 menu items per period with quantity, revenue, % of sales
+* **Order Breakdown**: Status distribution (PENDING, PAID, PREPARING, READY, COMPLETED, CANCELLED) with horizontal % bars
+* **Peak Hours & Days**: Side-by-side views with order/revenue toggle and "busiest: X" callouts
+* **Export to CSV**: Download daily revenue data for accounting/analysis
+
+---
+
+## Module 9: Customer Reviews
+
+The review moderation dashboard allows admins to control which reviews appear on the site.
+
+Functions:
+* **Approval workflow**: All new reviews start as "Pending" and must be approved before display.
+* **Review list**: See reviewer name, rating (⭐), comment, approval status, and submission date.
+* **Bulk actions**: Approve, reject, or delete multiple reviews at once.
+* **Filter by status**: Show pending, approved, or rejected reviews.
+* **Live preview**: Approved reviews appear on the homepage in the "Reviews" section.
+* **Search**: Filter by reviewer name, menu item, or order ID (if tied to an order).
+
+---
+
+## Module 10: Newsletter Subscribers
+
+The newsletter module lets admins manage the email subscriber list.
+
+Functions:
+* **Subscriber list**: See email, name, and signup date for each subscriber.
+* **Export to CSV**: Download all subscribers for use in external email services (Mailchimp, etc.).
+* **Remove subscriber**: Delete individual subscribers or manage bounced addresses.
+* **Subscriber count**: Dashboard widget shows total active subscribers.
+* **Send functionality** [Pending]: Requires email service upgrade from free tier to support transactional email blasts.
+
+---
+
+## Module 11: Support Chat
+
+The support chat module lets admins respond to customer inquiries from the help widget.
+
+Functions:
+* **Chat list**: See all active and archived support conversations.
+* **Customer inquiries**: Customers contact via the support widget on the site.
+* **Real-time messaging**: Reply directly to customer questions.
+* **Conversation history**: All past messages visible in thread view.
+* **Archive**: Mark conversations as resolved to keep inbox clean.
+* **Notification indicator**: Dashboard badge shows count of active chats.
+
+---
+
+## Module 12: Today's Special
+
+Quick-update module for featuring a daily special dish on the homepage.
+
+Functions:
+* **Daily feature**: Set one special dish to highlight each day.
+* **Edit details**: Update name, description, price, image, and dietary tags (Veg, Spicy, Popular).
+* **Toggle active**: Quickly enable/disable the special (e.g., when sold out).
+* **Homepage integration**: Featured prominently on the home page below the hero section.

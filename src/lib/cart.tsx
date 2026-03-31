@@ -8,14 +8,16 @@ export type CartItem = {
     name: string;
     priceCents: number;
     quantity: number;
+    notes?: string;
     imageUrl?: string;
 };
 
 interface CartContextType {
     items: CartItem[];
-    addToCart: (item: Omit<CartItem, "quantity">) => void;
+    addToCart: (item: Omit<CartItem, "quantity" | "notes">) => void;
     removeFromCart: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
+    updateNotes: (id: string, notes: string) => void;
     clearCart: () => void;
     totalCents: number;
 }
@@ -85,6 +87,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
     }, [removeFromCart]);
 
+    const updateNotes = useCallback((id: string, notes: string) => {
+        setItems((prev) =>
+            prev.map((i) => (i.id === id ? { ...i, notes } : i))
+        );
+    }, []);
+
     const clearCart = useCallback(() => {
         setItems([]);
     }, []);
@@ -98,9 +106,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addToCart,
         removeFromCart,
         updateQuantity,
+        updateNotes,
         clearCart,
         totalCents,
-    }), [items, addToCart, removeFromCart, updateQuantity, clearCart, totalCents]);
+    }), [items, addToCart, removeFromCart, updateQuantity, updateNotes, clearCart, totalCents]);
 
     return (
         <CartContext.Provider value={contextValue}>

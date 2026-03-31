@@ -14,6 +14,14 @@ This manual covers how to use the site as a customer and how to manage the food 
 
 Having an account lets you view your full order history in your profile.
 
+#### Forgot Your Password?
+
+1. Click **"Sign In"** then **"Forgot Password"**.
+2. Enter your email address.
+3. Check your email for a **password reset link** (valid for 1 hour).
+4. Click the link and enter your new password.
+5. You can now log in with your new password.
+
 ---
 
 ### Exploring the Menu
@@ -30,12 +38,20 @@ Having an account lets you view your full order history in your profile.
 1. Add items to your cart — the cart icon in the navbar shows your current total.
 2. Click the cart icon to open the **Cart Drawer**.
 3. Review your items, subtotal, and tax (6.35% CT Sales Tax applied automatically).
-4. Click **"Checkout"**.
-5. Fill in your name, email, and phone number.
-6. Enter your card details in the secure Stripe payment form.
-7. Click **"Pay"** to complete the order.
-8. You will be redirected to the **Order Success** page.
-9. A confirmation email is sent to you with your order details and a tracking link.
+4. **[Optional] Add special instructions**:
+   - Click the **note icon** next to any item to add per-item instructions (e.g., "no onions", "extra spicy").
+   - Or add order-level notes during checkout (e.g., allergy warnings, timing requests).
+5. Click **"Checkout"**.
+6. Fill in your name, email, and phone number.
+7. Add any **special requests** for your entire order (optional).
+8. Enter your card details in the secure Stripe payment form.
+9. Click **"Pay"** to complete the order.
+10. You will be redirected to the **Order Success** page.
+11. A confirmation email is sent to you with your order details and a tracking link.
+
+#### Cancelling Your Order
+
+If you change your mind, you can **cancel your order within 15 seconds** of placing it. After 15 seconds, you cannot cancel online — contact the truck owner via chat or phone.
 
 ---
 
@@ -65,7 +81,16 @@ Having an account lets you view your full order history in your profile.
 
 1. Click your name / profile icon in the navigation bar.
 2. Your profile page shows all past orders with items, totals, and statuses.
-3. Click **"Track Order"** on any order to re-open the tracking page.
+3. Click **"Track Order"** on any completed order to re-open the tracking page.
+
+### Leaving a Review
+
+1. After your order is marked **COMPLETED**, you can leave a review.
+2. Click the **"Rate Your Order"** button (on the order card or tracking page).
+3. **Rate** the order 1–5 stars and **comment** on your experience.
+4. Your review will be **pending admin approval** before appearing on the site.
+5. Approved reviews will show on the **homepage** in the "Reviews" section to help other customers.
+6. You can also rate **specific menu items** individually if available.
 
 ---
 

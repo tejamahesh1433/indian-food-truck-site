@@ -204,6 +204,7 @@ model Order {
   updatedAt        DateTime       @updatedAt
   userId           String?
   chatToken        String?
+  notes            String?
   serviceFeeAmount Int            @default(0)
   subtotalAmount   Int            @default(0)
   taxAmount        Int            @default(0)
@@ -231,6 +232,7 @@ model OrderItem {
   name       String
   quantity   Int
   priceCents Int
+  notes      String?
   order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 

@@ -11,7 +11,7 @@ import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
 export default function CartDrawer() {
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { items, updateQuantity, removeFromCart, clearCart, totalCents } = useCart();
+    const { items, updateQuantity, updateNotes, removeFromCart, clearCart, totalCents } = useCart();
     const { data: session } = useSession();
     const site = useSite();
 
@@ -22,12 +22,15 @@ export default function CartDrawer() {
         name: "",
         email: "",
         phone: "",
+        notes: "", // Order-level notes
     });
+
+    const [editingNotes, setEditingNotes] = useState<string | null>(null);
 
     const [fieldErrors, setFieldErrors] = useState({ name: "", email: "", phone: "" });
     const [checkoutError, setCheckoutError] = useState("");
 
-    // Pre-fill from session
+    // ... (useEffect for session stays same) ...
     useEffect(() => {
         if (session?.user) {
             setCustomerInfo(prev => ({
@@ -48,7 +51,7 @@ export default function CartDrawer() {
 
     const handleChange = (field: keyof typeof customerInfo, value: string) => {
         setCustomerInfo(prev => ({ ...prev, [field]: value }));
-        if (fieldErrors[field]) setFieldErrors(prev => ({ ...prev, [field]: "" }));
+        if (fieldErrors[field as keyof typeof fieldErrors]) setFieldErrors(prev => ({ ...prev, [field as keyof typeof fieldErrors]: "" }));
         if (checkoutError) setCheckoutError("");
     };
 
@@ -113,7 +116,7 @@ export default function CartDrawer() {
                                     </button>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto p-6">
+                                <div className="flex-1 overflow-y-auto p-6 scrollbars-none">
                                     {items.length === 0 ? (
                                         <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
                                             <div className="text-6xl">🛒</div>
@@ -126,44 +129,68 @@ export default function CartDrawer() {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="space-y-6">
+                                        <div className="space-y-4">
                                             {items.map((item) => (
-                                                <div key={item.id} className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
-                                                    <div className="flex-1">
-                                                        <h3 className="font-bold text-sm tracking-tight">{item.name}</h3>
-                                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                                            ${(item.priceCents / 100).toFixed(2)} each
-                                                        </p>
+                                                <div key={item.id} className="flex flex-col gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex-1">
+                                                            <h3 className="font-bold text-sm tracking-tight">{item.name}</h3>
+                                                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                                ${(item.priceCents / 100).toFixed(2)} each
+                                                            </p>
+                                                            <button 
+                                                                onClick={() => setEditingNotes(editingNotes === item.id ? null : item.id)}
+                                                                className={`text-[9px] font-black uppercase tracking-widest mt-2 transition-colors ${item.notes ? 'text-orange-500' : 'text-gray-600 hover:text-gray-400'}`}
+                                                            >
+                                                                {item.notes ? '✓ Instruction Added' : '+ Add Instruction'}
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex items-center border border-white/10 rounded-xl overflow-hidden bg-black/40">
+                                                            <button
+                                                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                                className="px-3 py-1 hover:bg-white/5 transition text-gray-400 font-bold"
+                                                            >
+                                                                -
+                                                            </button>
+                                                            <span className="px-3 py-1 bg-white/5 font-black text-xs min-w-[2rem] text-center">{item.quantity}</span>
+                                                            <button
+                                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                className="px-3 py-1 hover:bg-white/5 transition text-gray-400 font-bold"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-1 w-20">
+                                                            <p className="font-black italic tracking-tighter text-orange-500">
+                                                                ${((item.priceCents * item.quantity) / 100).toFixed(2)}
+                                                            </p>
+                                                            <button
+                                                                onClick={() => removeFromCart(item.id)}
+                                                                className="text-gray-600 hover:text-red-500 transition-colors p-1"
+                                                                title="Remove item"
+                                                            >
+                                                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center border border-white/10 rounded-xl overflow-hidden bg-black/40">
-                                                        <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                            className="px-3 py-1 hover:bg-white/5 transition text-gray-400 font-bold"
+                                                    
+                                                    {editingNotes === item.id && (
+                                                        <motion.div 
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            className="overflow-hidden"
                                                         >
-                                                            -
-                                                        </button>
-                                                        <span className="px-3 py-1 bg-white/5 font-black text-xs min-w-[2rem] text-center">{item.quantity}</span>
-                                                        <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                            className="px-3 py-1 hover:bg-white/5 transition text-gray-400 font-bold"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
-                                                    <div className="flex flex-col items-end gap-1 w-20">
-                                                        <p className="font-black italic tracking-tighter text-orange-500">
-                                                            ${((item.priceCents * item.quantity) / 100).toFixed(2)}
-                                                        </p>
-                                                        <button
-                                                            onClick={() => removeFromCart(item.id)}
-                                                            className="text-gray-600 hover:text-red-500 transition-colors p-1"
-                                                            title="Remove item"
-                                                        >
-                                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
+                                                            <textarea
+                                                                autoFocus
+                                                                placeholder="Extra spicy, no onions, etc."
+                                                                value={item.notes || ""}
+                                                                onChange={(e) => updateNotes(item.id, e.target.value)}
+                                                                className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-orange-500/30 transition placeholder:text-gray-800 resize-none h-20"
+                                                            />
+                                                        </motion.div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -205,50 +232,56 @@ export default function CartDrawer() {
                                                     )}
                                                 </div>
 
-                                                {/* Email */}
-                                                <div>
-                                                    <input
-                                                        type="email"
-                                                        placeholder="Email Address"
-                                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-sm outline-none transition placeholder:text-gray-700 ${
-                                                            fieldErrors.email
-                                                                ? "border-red-500/70 focus:border-red-500"
-                                                                : "border-white/10 focus:border-orange-500/50"
-                                                        }`}
-                                                        value={customerInfo.email}
-                                                        onChange={(e) => handleChange("email", e.target.value)}
-                                                    />
-                                                    {fieldErrors.email && (
-                                                        <p className="mt-1 text-[11px] text-red-400 font-medium flex items-center gap-1">
-                                                            <svg className="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                            </svg>
-                                                            {fieldErrors.email}
-                                                        </p>
-                                                    )}
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {/* Email */}
+                                                    <div>
+                                                        <input
+                                                            type="email"
+                                                            placeholder="Email Address"
+                                                            className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-sm outline-none transition placeholder:text-gray-700 ${
+                                                                fieldErrors.email
+                                                                    ? "border-red-500/70 focus:border-red-500"
+                                                                    : "border-white/10 focus:border-orange-500/50"
+                                                            }`}
+                                                            value={customerInfo.email}
+                                                            onChange={(e) => handleChange("email", e.target.value)}
+                                                        />
+                                                        {fieldErrors.email && (
+                                                            <p className="mt-1 text-[11px] text-red-400 font-medium flex items-center gap-1 leading-tight">
+                                                                {fieldErrors.email}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Phone */}
+                                                    <div>
+                                                        <input
+                                                            type="tel"
+                                                            placeholder="Phone Number"
+                                                            className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-sm outline-none transition placeholder:text-gray-700 ${
+                                                                fieldErrors.phone
+                                                                    ? "border-red-500/70 focus:border-red-500"
+                                                                    : "border-white/10 focus:border-orange-500/50"
+                                                            }`}
+                                                            value={customerInfo.phone}
+                                                            onChange={(e) => handleChange("phone", e.target.value)}
+                                                        />
+                                                        {fieldErrors.phone && (
+                                                            <p className="mt-1 text-[11px] text-red-400 font-medium flex items-center gap-1 leading-tight">
+                                                                {fieldErrors.phone}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
 
-                                                {/* Phone */}
+                                                {/* Order Notes (Allergies/Special Requests) */}
                                                 <div>
-                                                    <input
-                                                        type="tel"
-                                                        placeholder="Phone Number"
-                                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 text-sm outline-none transition placeholder:text-gray-700 ${
-                                                            fieldErrors.phone
-                                                                ? "border-red-500/70 focus:border-red-500"
-                                                                : "border-white/10 focus:border-orange-500/50"
-                                                        }`}
-                                                        value={customerInfo.phone}
-                                                        onChange={(e) => handleChange("phone", e.target.value)}
+                                                    <textarea
+                                                        placeholder="Special Instructions / Allergies (Optional)"
+                                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-orange-500/50 transition placeholder:text-gray-700 resize-none h-20"
+                                                        value={customerInfo.notes}
+                                                        onChange={(e) => handleChange("notes", e.target.value)}
                                                     />
-                                                    {fieldErrors.phone && (
-                                                        <p className="mt-1 text-[11px] text-red-400 font-medium flex items-center gap-1">
-                                                            <svg className="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                            </svg>
-                                                            {fieldErrors.phone}
-                                                        </p>
-                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -304,6 +337,7 @@ export default function CartDrawer() {
                                                             customerName: customerInfo.name,
                                                             customerEmail: customerInfo.email,
                                                             customerPhone: customerInfo.phone,
+                                                            notes: customerInfo.notes,
                                                             items,
                                                         }),
                                                     });
