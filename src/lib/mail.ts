@@ -351,3 +351,67 @@ export async function sendOrderNotificationToAdmin({
         console.error("FAILED_TO_SEND_ADMIN_NOTIFICATION:", error);
     }
 }
+
+export async function sendPasswordResetEmail({
+    email,
+    resetLink,
+}: {
+    email: string;
+    resetLink: string;
+}) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+        console.warn("RESEND_API_KEY is not set. Skipping email send.");
+        return;
+    }
+
+    const resend = new Resend(apiKey);
+
+    try {
+        console.log(`Attempting to send password reset email to: ${email}`);
+        
+        const { data, error } = await resend.emails.send({
+            from: "Indian Food Truck <contact@tejainfo.xyz>",
+            to: email,
+            subject: "Reset Your Password - Indian Food Truck",
+            html: `
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #333;">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">IFT</div>
+                        <h1 style="font-size: 28px; font-weight: 800; font-style: italic; letter-spacing: -0.05em; margin: 20px 0 10px 0; color: #111; text-transform: uppercase;">Password Reset</h1>
+                    </div>
+
+                    <div style="background-color: #f8fafc; border-radius: 24px; padding: 30px; margin-bottom: 30px; border: 1px solid #f1f5f9; text-align: center;">
+                        <p style="font-size: 16px; line-height: 1.6; color: #444; margin-bottom: 25px;">
+                            We received a request to reset the password for your Indian Food Truck account. 
+                            If you didn't make this request, you can safely ignore this email.
+                        </p>
+                        
+                        <a href="${resetLink}" style="background-color: #f97316; color: white; padding: 18px 36px; text-decoration: none; border-radius: 18px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; transition: background-color 0.2s;">
+                            Reset Password
+                        </a>
+                        
+                        <p style="font-size: 13px; color: #94a3b8; margin-top: 20px;">
+                            This link is securely tied to your email and will expire in 1 hour.
+                        </p>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <p style="font-size: 12px; color: #cbd5e1; margin-top: 30px;">
+                            © ${new Date().getFullYear()} Indian Food Truck. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            `,
+        });
+
+        if (error) {
+            console.error("PASSWORD_RESET_EMAIL_ERROR:", error);
+        } else {
+            console.log("PASSWORD_RESET_EMAIL_SUCCESS:", data);
+        }
+    } catch (error) {
+        console.error("FAILED_TO_SEND_PASSWORD_RESET_EMAIL_EXCEPTION:", error);
+    }
+}
+

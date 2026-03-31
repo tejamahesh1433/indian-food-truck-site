@@ -180,6 +180,17 @@ export default function LoginPage() {
                                             )}
                                         </button>
                                     </div>
+
+                                    {mode === "login" && (
+                                        <div className="flex justify-center mt-4">
+                                            <Link
+                                                href="/forgot-password"
+                                                className="text-xs font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 transition underline decoration-orange-500/30 underline-offset-4"
+                                            >
+                                                Forgot Password?
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         </AnimatePresence>
