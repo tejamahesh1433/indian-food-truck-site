@@ -3,14 +3,8 @@
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { normalizePhone } from "@/lib/utils/phone";
 
-// Helper to normalize phone for tel: links
-const normalizePhone = (p: string) => {
-    const digits = p.replace(/\D/g, "");
-    if (digits.length === 10) return `+1${digits}`;
-    if (digits.startsWith("1") && digits.length === 11) return `+${digits}`;
-    return digits ? `+${digits}` : "";
-};
 
 function PinManager() {
     const [pin, setPin] = useState("");

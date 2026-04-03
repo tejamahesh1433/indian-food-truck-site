@@ -3,6 +3,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { site as defaultSite } from "@/config/site";
 
+import { normalizePhone } from "@/lib/utils/phone";
+
 export type DbSettings = {
     phone: string;
     instagramUrl: string;
@@ -210,7 +212,7 @@ export function useSite() {
         },
         contact: {
             ...defaultSite.contact,
-            phoneE164: dbSettings.phone || defaultSite.contact.phoneE164,
+            phoneE164: normalizePhone(dbSettings.phone || defaultSite.contact.phoneE164),
             phoneDisplay: dbSettings.phone || defaultSite.contact.phoneDisplay,
             instagramUrl: dbSettings.instagramUrl || defaultSite.contact.instagramUrl,
             email: dbSettings.publicEmail || defaultSite.contact.email,
