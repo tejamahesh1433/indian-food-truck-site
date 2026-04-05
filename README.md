@@ -45,7 +45,8 @@ The **Indian Food Truck Management System** is a premium, full-stack platform de
 
 Detailed documentation is available in the `docs/` folder:
 
-1. [**Project Overview**](./docs/PROJECT_OVERVIEW.md) - Problem statement and objectives.
+1. [**Project Presentation**](https://tejamahesh1433.github.io/indian-food-truck-site/indian-food-truck-presentation.html) - Slide deck overview of the project.
+2. [**Project Overview**](./docs/PROJECT_OVERVIEW.md) - Problem statement and objectives.
 2. [**System Architecture**](./docs/SYSTEM_ARCHITECTURE.md) - Tech stack and component roles.
 3. [**Database Design**](./docs/DATABASE_DESIGN.md) - Schema definitions and ER diagrams.
 4. [**Data Flow**](./docs/DATA_FLOW.md) - How data moves through the system.
