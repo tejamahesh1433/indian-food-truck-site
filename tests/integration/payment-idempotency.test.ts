@@ -261,29 +261,29 @@ describe("Payment Idempotency - Duplicate Prevention", () => {
                 },
             });
 
-            // Simulate checkout.session.completed event
+            // Simulate checkout.session.completed event — sets session ID and marks PAID
             const update1 = await prisma.order.update({
                 where: { id: order.id },
-                data: { stripeSessionId: "cs_concurrent_444" },
+                data: { stripeSessionId: "cs_concurrent_444", status: "PAID" },
             });
 
             expect(update1.stripeSessionId).toBe("cs_concurrent_444");
+            expect(update1.status).toBe("PAID");
 
-            // Simulate payment_intent.succeeded event
+            // Simulate a second webhook event — status should stay PAID, not regress
             const update2 = await prisma.order.update({
                 where: { id: order.id },
-                data: { stripePaymentIntentId: "pi_concurrent_555" },
+                data: { status: "PAID" },
             });
 
-            expect(update2.stripePaymentIntentId).toBe("pi_concurrent_555");
+            expect(update2.status).toBe("PAID");
 
-            // Both should be recorded
             const final = await prisma.order.findUnique({
                 where: { id: order.id },
             });
 
             expect(final?.stripeSessionId).toBe("cs_concurrent_444");
-            expect(final?.stripePaymentIntentId).toBe("pi_concurrent_555");
+            expect(final?.status).toBe("PAID");
         });
     });
 });

@@ -159,11 +159,11 @@ describe("Authentication - Admin PIN", () => {
                     cityState: "Test City",
                     footerMessage: "Test",
                     todayStatus: "CLOSED",
-                    adminPin: "1234", // Should be hashed in production
+                    adminAccessPin: "1234", // Should be hashed in production
                 },
             });
 
-            expect(settings.adminPin).toBe("1234");
+            expect(settings.adminAccessPin).toBe("1234");
         });
 
         it("should validate PIN matches", async () => {
@@ -176,11 +176,11 @@ describe("Authentication - Admin PIN", () => {
                     cityState: "Test",
                     footerMessage: "Test",
                     todayStatus: "CLOSED",
-                    adminPin: "9876",
+                    adminAccessPin: "9876",
                 },
             });
 
-            const retrievedPin = settings.adminPin;
+            const retrievedPin = settings.adminAccessPin;
             const inputPin = "9876";
 
             expect(retrievedPin).toBe(inputPin);
@@ -196,12 +196,12 @@ describe("Authentication - Admin PIN", () => {
                     cityState: "Test",
                     footerMessage: "Test",
                     todayStatus: "CLOSED",
-                    adminPin: "1111",
+                    adminAccessPin: "1111",
                 },
             });
 
             const inputPin = "2222";
-            const isValid = settings.adminPin === inputPin;
+            const isValid = settings.adminAccessPin === inputPin;
             expect(isValid).toBe(false);
         });
     });
@@ -227,7 +227,7 @@ describe("Authentication - JWT Tokens", () => {
         });
 
         it("should enable guest order tracking without login", async () => {
-            const order = await prisma.order.create({
+            await prisma.order.create({
                 data: {
                     customerName: "Guest",
                     customerEmail: "guest@example.com",
@@ -283,7 +283,7 @@ describe("Authentication - JWT Tokens", () => {
                 },
             });
 
-            const oldSession = await prisma.session.create({
+            await prisma.session.create({
                 data: {
                     sessionToken: "old-token",
                     userId: user.id,
