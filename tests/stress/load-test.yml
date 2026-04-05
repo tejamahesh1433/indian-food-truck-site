@@ -1,0 +1,53 @@
+config:
+  target: "http://127.0.0.1:3000"
+  phases:
+    - duration: 30 # Warm up for 30 seconds
+      arrivalRate: 2
+      name: Warm up
+    - duration: 60 # Sustain high load for 1 minute
+      arrivalRate: 5
+      rampTo: 50
+      name: Ramp up load
+    - duration: 60 # Cruise at peak load
+      arrivalRate: 50
+      name: Sustained peak load
+  environments:
+    production:
+      target: "https://indian-food-truck-site.vercel.app" # Swap if you want to test prod
+
+scenarios:
+  - name: "Menu Browsing Flow"
+    flow:
+      - get:
+          url: "/api/menu-items"
+      - get:
+          url: "/api/categories"
+      - think: 2 # wait 2 seconds imitating a user reading the menu
+      - get:
+          url: "/api/menu-items?category=Mains"
+
+  - name: "Checkout Spikes (Simulated Purchases)"
+    weight: 2
+    flow:
+      - get:
+          url: "/api/menu-items"
+          capture:
+            - json: "$.items[0].id"
+              as: "itemId"
+            - json: "$.items[0].name"
+              as: "itemName"
+            - json: "$.items[0].priceCents"
+              as: "itemPrice"
+      - think: 1
+      - post:
+          url: "/api/orders"
+          json:
+            customerName: "Stress User"
+            # Bypass idempotency by using unique emails and phones for each request
+            customerEmail: "stress{{ $randomNumber(10000, 99999) }}@gmail.com"
+            customerPhone: "203{{ $randomNumber(1000000, 9999999) }}"
+            items:
+              - id: "{{ itemId }}"
+                name: "{{ itemName }}"
+                priceCents: "{{ itemPrice }}"
+                quantity: 1

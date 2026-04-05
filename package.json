@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "test:stress": "artillery run tests/stress/load-test.yml"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -53,6 +54,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitest/coverage-v8": "^4.0.18",
+    "artillery": "^2.0.30",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jsdom": "^28.1.0",
