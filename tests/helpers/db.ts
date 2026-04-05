@@ -62,4 +62,23 @@ export async function seedBasicData() {
         ],
         skipDuplicates: true
     }).catch((e) => console.error("Seed MenuItem failed", e));
+
+    await prisma.cateringCategory.create({
+        data: {
+            name: "Main Courses",
+            sortOrder: 1
+        }
+    }).catch((e) => console.error("Seed CateringCategory failed", e));
+
+    await prisma.cateringItem.create({
+        data: {
+            name: "Catering Butter Chicken",
+            category: "Main Courses",
+            priceKind: "TRAY",
+            halfPrice: 60,
+            fullPrice: 110,
+            description: "Creamy tomato curry for events.",
+            isAvailable: true
+        }
+    }).catch((e) => console.error("Seed CateringItem failed", e));
 }

@@ -9,6 +9,7 @@
 import { chromium } from "@playwright/test";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve, dirname } from "path";
+import { resetDatabase, seedBasicData } from "./db";
 
 // ── Env loading ────────────────────────────────────────────────────────────
 // globalSetup runs in a separate Node process and does NOT inherit the
@@ -46,6 +47,14 @@ export const AUTH_STATE_PATH = resolve(process.cwd(), "tests/helpers/.auth-state
 
 // ── Setup ──────────────────────────────────────────────────────────────────
 export default async function globalSetup() {
+    console.log("[global-setup] Resetting and seeding fresh database for E2E tests...");
+    try {
+        await resetDatabase();
+        await seedBasicData();
+    } catch (dbErr) {
+        console.error("[global-setup] ✗ Database initialization failed:", dbErr);
+    }
+
     if (!ADMIN_PIN || ADMIN_PIN.length !== 6) {
         console.warn(
             "\n[global-setup] ⚠  ADMIN_ACCESS_PIN not set or not 6 digits — " +
