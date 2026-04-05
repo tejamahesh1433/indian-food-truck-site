@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useSite } from "@/components/SiteProvider";
 import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
+import { normalizePhone } from "@/lib/utils/phone";
 
 export default function CartDrawer() {
     const [isOpen, setIsOpen] = useState(false);
@@ -73,8 +74,12 @@ export default function CartDrawer() {
             errors.email = EMAIL_DOMAIN_ERROR;
             valid = false;
         }
+        const phoneDigits = customerInfo.phone.replace(/\D/g, "");
         if (!customerInfo.phone.trim()) {
             errors.phone = "Phone number is required";
+            valid = false;
+        } else if (phoneDigits.length < 10) {
+            errors.phone = "Please enter a valid 10-digit phone number";
             valid = false;
         }
 
@@ -336,7 +341,7 @@ export default function CartDrawer() {
                                                         body: JSON.stringify({
                                                             customerName: customerInfo.name,
                                                             customerEmail: customerInfo.email,
-                                                            customerPhone: customerInfo.phone,
+                                                            customerPhone: normalizePhone(customerInfo.phone),
                                                             notes: customerInfo.notes,
                                                             items,
                                                         }),

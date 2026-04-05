@@ -14,6 +14,7 @@ export async function GET(
             where: { chatToken: token },
             include: { 
                 items: true,
+                reviews: true,
                 messages: {
                     orderBy: { createdAt: "asc" }
                 }

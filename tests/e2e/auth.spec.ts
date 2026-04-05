@@ -26,12 +26,14 @@ test.describe("Customer authentication", () => {
     test("sign-in with wrong credentials shows an error", async ({ page }) => {
         await page.goto("/login");
 
-        await page.getByPlaceholder(/you@example\.com/i).fill("invalid@doesnotexist.com");
+        // Use a valid-domain email with a wrong password so we bypass the domain check
+        // and get an actual credentials error from NextAuth
+        await page.getByPlaceholder(/you@example\.com/i).fill("invalid-user@gmail.com");
         await page.getByPlaceholder(/•+/).fill("wrongpassword");
         await page.getByRole("button", { name: /sign in/i }).click();
 
-        // Should show an error message without leaving the page
-        await expect(page.getByText(/invalid|incorrect|error|wrong/i).first()).toBeVisible({ timeout: 5000 });
+        // Should show "Invalid email or password" error without leaving the page
+        await expect(page.getByText(/invalid email or password/i).first()).toBeVisible({ timeout: 5000 });
         await expect(page).toHaveURL(/\/login/);
     });
 

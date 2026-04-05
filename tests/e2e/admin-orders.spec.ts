@@ -12,8 +12,8 @@ test.describe("Admin orders dashboard", () => {
 
         await adminPage.waitForLoadState("domcontentloaded");
 
-        // Page title or heading should be visible (actual h1 = "Kitchen Display")
-        const heading = adminPage.getByRole("heading", { name: /kitchen display/i }).first();
+        // Page title — admin/orders has h1 = "Order History"
+        const heading = adminPage.getByRole("heading", { name: /order history/i }).first();
         await expect(heading).toBeVisible({ timeout: 15000 });
     });
 
@@ -23,7 +23,7 @@ test.describe("Admin orders dashboard", () => {
         await adminPage.waitForLoadState("domcontentloaded");
 
         // Either shows orders or an empty state message
-        const hasContent = await Promise.any([
+        await Promise.any([
             adminPage.getByText(/no orders|empty|no paid/i).first().isVisible(),
             adminPage.getByText(/order|status|customer/i).first().isVisible(),
         ]).catch(() => false);
@@ -33,8 +33,8 @@ test.describe("Admin orders dashboard", () => {
     });
 
     test("admin can navigate to orders from the admin dashboard", async ({ adminPage }) => {
-        // adminPage starts at /admin or /admin/dashboard after login
-        const ordersLink = adminPage.getByRole("link", { name: /orders/i }).first();
+        // adminPage starts at /admin after login — nav link is "Orders History"
+        const ordersLink = adminPage.getByRole("link", { name: /orders history/i }).first();
         await expect(ordersLink).toBeVisible({ timeout: 5000 });
 
         await ordersLink.click();
@@ -56,7 +56,7 @@ test.describe("Admin orders dashboard", () => {
         await adminPage.waitForLoadState("domcontentloaded");
 
         // Look for status filter buttons, tabs, or dropdowns
-        const hasFilter = await Promise.any([
+        await Promise.any([
             adminPage.getByRole("tab").first().isVisible(),
             adminPage.getByRole("button", { name: /paid|preparing|ready|all/i }).first().isVisible(),
             adminPage.getByText(/paid|preparing|pending|all orders/i).first().isVisible(),
