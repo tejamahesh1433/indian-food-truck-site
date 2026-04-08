@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 
@@ -43,6 +43,17 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
     const [spiceLevel, setSpiceLevel] = useState<string>("");
     const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
     const [specialInstructions, setSpecialInstructions] = useState("");
+    
+    // Lock background scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = "hidden";
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }
+    }, [isOpen]);
 
 
 
@@ -108,7 +119,7 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
                     animate={{ y: 0 }}
                     exit={{ y: "100%" }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="relative w-full max-w-lg bg-[#0A0A0A] border border-white/10 rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
+                    className="relative w-full max-w-lg bg-[#0A0A0A] border border-white/10 rounded-t-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-full sm:h-auto max-h-full sm:max-h-[92vh]"
                 >
                     {/* Header Image */}
                     <div className="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden">
