@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useCart, type CartItem } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 import ItemCustomizationModal, { type CustomizationMenuItem } from "./ItemCustomizationModal";
 import { useToast } from "@/components/ui/Toast";
 
@@ -174,9 +174,8 @@ export default function MenuTabs() {
     const { data: session } = useSession();
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
-    const { addToCart, items: cartItems, totalCents } = useCart();
+    const { addToCart } = useCart();
     const { toast } = useToast();
-    const cartCount = cartItems.reduce((acc: number, i: CartItem) => acc + i.quantity, 0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -286,20 +285,6 @@ export default function MenuTabs() {
 
     return (
         <section className="px-6 md:px-20 py-12 relative">
-            {cartCount > 0 && (
-                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60] w-full max-w-xs px-4 md:hidden">
-                    <button
-                        onClick={() => window.dispatchEvent(new CustomEvent("open-cart"))}
-                        className="w-full bg-orange-600 text-white p-4 rounded-2xl font-bold shadow-2xl flex items-center justify-between"
-                    >
-                        <span className="flex items-center gap-2">
-                            <span className="bg-white/20 px-2 py-0.5 rounded-lg">{cartCount}</span>
-                            View Cart
-                        </span>
-                        <span>${(totalCents / 100).toFixed(2)}</span>
-                    </button>
-                </div>
-            )}
             <div className="max-w-6xl mx-auto">
                 <div className="flex items-end justify-between gap-6">
                     <div>
