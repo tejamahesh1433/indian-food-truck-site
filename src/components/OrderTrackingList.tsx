@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { OrderStatus } from "@prisma/client";
 import OrderChat from "./OrderChat";
-import { useCart } from "@/lib/cart";
+import { useCart, generateCartId } from "@/lib/cart";
 import { useToast } from "@/components/ui/Toast";
 import ReviewModal from "./ReviewModal";
 
@@ -15,6 +15,7 @@ interface OrderItem {
     quantity: number;
     priceCents: number;
     notes?: string;
+    addons?: { id: string; name: string; priceCents: number }[];
 }
 
 interface Order {
@@ -39,7 +40,7 @@ const statusSteps = ["PAID", "PREPARING", "READY"];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function OrderTrackingList({ initialOrders }: { initialOrders: any[] }) {
     const [orders, setOrders] = useState<Order[]>(initialOrders as Order[]);
-    const { addToCart } = useCart();
+    const { setCartItems } = useCart();
     const { toast } = useToast();
     const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
 
@@ -254,23 +255,25 @@ export default function OrderTrackingList({ initialOrders }: { initialOrders: an
                             {["COMPLETED", "CANCELLED"].includes(order.status) && (
                                 <button
                                     onClick={() => {
-                                        for (const item of order.items) {
-                                            for (let i = 0; i < item.quantity; i++) {
-                                                addToCart({
-                                                    id: item.menuItemId,
-                                                    name: item.name,
-                                                    priceCents: item.priceCents,
-                                                });
-                                            }
-                                        }
-                                        toast.success(`${order.items.length} item${order.items.length > 1 ? "s" : ""} added to cart!`);
+                                        const reorderItems = order.items.map(item => ({
+                                            id: generateCartId(item.menuItemId, item.addons),
+                                            menuItemId: item.menuItemId,
+                                            name: item.name,
+                                            priceCents: item.priceCents,
+                                            quantity: item.quantity,
+                                            notes: item.notes || "",
+                                            addons: item.addons
+                                        }));
+                                        setCartItems(reorderItems);
+                                        toast.success("Cart replaced with your exact order!");
+                                        window.dispatchEvent(new CustomEvent("open-cart", { detail: { notes: order.notes || "" } }));
                                     }}
                                     className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 transition group"
                                 >
                                     <svg className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
-                                    Reorder
+                                    Reorder Exactly This
                                 </button>
                             )}
 

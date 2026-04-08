@@ -3,26 +3,41 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 
+export type CartAddon = {
+    id: string;
+    name: string;
+    priceCents: number;
+};
+
 export type CartItem = {
     id: string;
+    menuItemId: string;
     name: string;
     priceCents: number;
     quantity: number;
     notes?: string;
     imageUrl?: string;
+    addons?: CartAddon[];
 };
 
 interface CartContextType {
     items: CartItem[];
-    addToCart: (item: Omit<CartItem, "quantity" | "notes">) => void;
+    addToCart: (item: Omit<CartItem, "quantity" | "id">) => void;
     removeFromCart: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
     updateNotes: (id: string, notes: string) => void;
     clearCart: () => void;
+    setCartItems: (items: CartItem[]) => void;
     totalCents: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export const generateCartId = (menuItemId: string, addons?: CartAddon[]) => {
+    if (!addons || addons.length === 0) return menuItemId;
+    const sortedAddons = [...addons].sort((a, b) => a.id.localeCompare(b.id));
+    return `${menuItemId}-${sortedAddons.map(a => a.id).join('-')}`;
+};
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const { data: session, status } = useSession();
@@ -61,15 +76,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items, isLoaded, cartKey]);
 
-    const addToCart = useCallback((item: Omit<CartItem, "quantity">) => {
+    const addToCart = useCallback((item: Omit<CartItem, "quantity" | "id">) => {
+        const cartId = generateCartId(item.menuItemId, item.addons);
         setItems((prev) => {
-            const existing = prev.find((i) => i.id === item.id);
+            const existing = prev.find((i) => i.id === cartId);
             if (existing) {
                 return prev.map((i) =>
-                    i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+                    i.id === cartId ? { ...i, quantity: i.quantity + 1 } : i
                 );
             }
-            return [...prev, { ...item, quantity: 1 }];
+            return [...prev, { ...item, id: cartId, quantity: 1 }];
         });
     }, []);
 
@@ -97,8 +113,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems([]);
     }, []);
 
+    const setCartItems = useCallback((newItems: CartItem[]) => {
+        setItems(newItems);
+    }, []);
+
     const totalCents = useMemo(() =>
-        items.reduce((acc, item) => acc + item.priceCents * item.quantity, 0),
+        items.reduce((acc, item) => {
+            const addOnsCost = item.addons?.reduce((sum, a) => sum + a.priceCents, 0) || 0;
+            return acc + (item.priceCents + addOnsCost) * item.quantity;
+        }, 0),
         [items]);
 
     const contextValue = useMemo(() => ({
@@ -108,8 +131,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         updateNotes,
         clearCart,
+        setCartItems,
         totalCents,
-    }), [items, addToCart, removeFromCart, updateQuantity, updateNotes, clearCart, totalCents]);
+    }), [items, addToCart, removeFromCart, updateQuantity, updateNotes, clearCart, setCartItems, totalCents]);
 
     return (
         <CartContext.Provider value={contextValue}>

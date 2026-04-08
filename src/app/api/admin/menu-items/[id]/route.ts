@@ -15,7 +15,7 @@ export async function PATCH(
     const body = await req.json().catch(() => null);
     if (!body) return bad("Invalid JSON body");
 
-    const data: Record<string, string | number | boolean | null> = {};
+    const data: any = {};
 
     if (body.name !== undefined) data.name = String(body.name).trim();
     if (body.category !== undefined) data.category = String(body.category).trim();
@@ -35,6 +35,31 @@ export async function PATCH(
     if (body.isAvailable !== undefined) data.isAvailable = !!body.isAvailable;
     if (body.inPos !== undefined) data.inPos = !!body.inPos;
     if (body.sortOrder !== undefined) data.sortOrder = Number(body.sortOrder);
+    
+    if (body.allergens !== undefined) {
+        data.allergens = Array.isArray(body.allergens) ? body.allergens.map(String) : [];
+    }
+    if (body.isStockTracked !== undefined) data.isStockTracked = !!body.isStockTracked;
+    if (body.stockCount !== undefined) {
+        data.stockCount = body.stockCount === null ? null : typeof body.stockCount === "number" ? Math.max(0, body.stockCount) : null;
+    }
+    if (body.prepTime !== undefined) data.prepTime = body.prepTime ? String(body.prepTime).trim() : "15-20";
+    if (body.pairedItemIds !== undefined) {
+        data.pairedItemIds = Array.isArray(body.pairedItemIds) ? body.pairedItemIds.map(String) : [];
+    }
+
+    if (body.addons !== undefined) {
+        // Delete all and recreate
+        const addonsList = Array.isArray(body.addons) ? body.addons : [];
+        data.addons = {
+            deleteMany: {},
+            create: addonsList.map((a: any) => ({
+                name: String(a.name).trim(),
+                priceCents: typeof a.priceCents === "number" ? a.priceCents : Math.round(Number(a.price) * 100),
+                isAvailable: a.isAvailable !== false
+            }))
+        };
+    }
 
     try {
         const updated = await prisma.menuItem.update({

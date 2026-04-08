@@ -19,6 +19,12 @@ interface MenuItem {
     inPos: boolean;
     sortOrder: number;
     imageUrl: string | null;
+    allergens: string[];
+    isStockTracked: boolean;
+    stockCount: number | null;
+    prepTime: string | null;
+    pairedItemIds: string[];
+    addons: { id: string; name: string; priceCents: number; isAvailable: boolean }[];
 }
 
 type Category = {
@@ -45,6 +51,14 @@ export default function AdminMenuItemsPage() {
     const [isNonVeg, setIsNonVeg] = useState(false);
     const [isAvailable, setIsAvailable] = useState(true);
     const [inPos, setInPos] = useState(true);
+    const [allergens, setAllergens] = useState("");
+    const [isStockTracked, setIsStockTracked] = useState(false);
+    const [stockCount, setStockCount] = useState<string>("");
+    const [prepTime, setPrepTime] = useState<string>("15-20");
+    const [pairedItemIds, setPairedItemIds] = useState<string[]>([]);
+    const [pairingSearch, setPairingSearch] = useState("");
+    const [editPairingSearch, setEditPairingSearch] = useState("");
+    const [addons, setAddons] = useState<{name: string; price: string; isAvailable: boolean}[]>([]);
 
     const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -75,7 +89,7 @@ export default function AdminMenuItemsPage() {
 
     // editing
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editDraft, setEditDraft] = useState<Partial<MenuItem>>({});
+    const [editDraft, setEditDraft] = useState<Record<string, any>>({});
 
     // sorting
     const [sortBy, setSortBy] = useState<"updatedAt" | "priceCents" | "name" | "sortOrder">("sortOrder");
@@ -249,6 +263,12 @@ export default function AdminMenuItemsPage() {
                 isPopular,
                 isAvailable,
                 inPos,
+                allergens: allergens.split(",").map(a => a.trim()).filter(Boolean),
+                isStockTracked,
+                stockCount: stockCount ? parseInt(stockCount, 10) : null,
+                prepTime,
+                pairedItemIds,
+                addons: addons.map(a => ({ name: a.name, price: Number(a.price), isAvailable: a.isAvailable }))
             }),
         });
 
@@ -269,6 +289,13 @@ export default function AdminMenuItemsPage() {
         setIsPopular(false);
         setIsAvailable(true);
         setInPos(true);
+        setAllergens("");
+        setIsStockTracked(false);
+        setStockCount("");
+        setPrepTime("15-20");
+        setPairedItemIds([]);
+        setPairingSearch("");
+        setAddons([]);
 
         fetchItems();
     }
@@ -292,6 +319,12 @@ export default function AdminMenuItemsPage() {
             isPopular: item.isPopular,
             isAvailable: item.isAvailable,
             inPos: item.inPos,
+            allergens: item.allergens ? item.allergens.join(", ") : "",
+            isStockTracked: item.isStockTracked || false,
+            stockCount: item.stockCount,
+            prepTime: item.prepTime || "15-20",
+            pairedItemIds: item.pairedItemIds || [],
+            addons: item.addons ? item.addons.map(a => ({ ...a, price: (a.priceCents / 100).toString() })) : []
         });
     }
 
@@ -304,10 +337,14 @@ export default function AdminMenuItemsPage() {
             delete payload.priceCents;
         }
 
+        const allergensList = typeof payload.allergens === "string" 
+            ? (payload.allergens as string).split(",").map((a: string) => a.trim()).filter(Boolean) 
+            : payload.allergens;
+
         const res = await fetch(`/api/admin/menu-items/${id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({ ...payload, allergens: allergensList }),
         });
         const data = await res.json();
         if (!data.ok) return showToast(data.error || "Failed to update item", "error");
@@ -348,6 +385,11 @@ export default function AdminMenuItemsPage() {
                 isPopular: editDraft.isPopular || false,
                 isAvailable: editDraft.isAvailable ?? true,
                 inPos: editDraft.inPos ?? true,
+                allergens: typeof editDraft.allergens === 'string' ? editDraft.allergens.split(",").map((a: string) => a.trim()).filter(Boolean) : (editDraft.allergens || []),
+                isStockTracked: editDraft.isStockTracked ?? false,
+                stockCount: editDraft.stockCount ?? null,
+                pairedItemIds: editDraft.pairedItemIds ?? [],
+                addons: (editDraft.addons || []).map((a: any) => ({ name: a.name, price: Number(a.price), isAvailable: a.isAvailable }))
             }),
         });
         const data = await res.json();
@@ -596,6 +638,171 @@ export default function AdminMenuItemsPage() {
                                     rows={2}
                                     placeholder="Freshly baked in our tandoor oven, brushed with garlic..."
                                 />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-300">Allergens (comma separated)</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                    value={allergens}
+                                    onChange={(e) => setAllergens(e.target.value)}
+                                    placeholder="e.g. Dairy, Nuts, Gluten"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium text-gray-300">Prep Time <span className="text-gray-500 text-xs font-normal">(e.g. 15-20)</span></label>
+                                <input
+                                    type="text"
+                                    className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                    value={prepTime}
+                                    onChange={(e) => setPrepTime(e.target.value)}
+                                    placeholder="e.g. 15-20"
+                                />
+                            </div>
+
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <label className="flex items-center gap-2 cursor-pointer mt-8 group h-10">
+                                        <input type="checkbox" checked={isStockTracked} onChange={(e) => setIsStockTracked(e.target.checked)} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                        <span className="text-sm font-medium text-gray-300 group-hover:text-white transition">Track Stock</span>
+                                    </label>
+                                </div>
+                                <div className="flex-1">
+                                    <label className="text-sm font-medium text-gray-300">Stock Count</label>
+                                    <input
+                                        type="number"
+                                        disabled={!isStockTracked}
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 disabled:opacity-50"
+                                        value={stockCount}
+                                        onChange={(e) => setStockCount(e.target.value)}
+                                        placeholder="0"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-sm font-medium text-gray-300">Addons & Customizations</label>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setAddons([...addons, { name: "", price: "", isAvailable: true }])} 
+                                        className="text-xs bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded transition"
+                                    >
+                                        + Add
+                                    </button>
+                                </div>
+                                {addons.length === 0 ? (
+                                    <div className="text-xs text-gray-500 italic p-3 border border-white/5 rounded-xl bg-black/20 text-center">No addons configured.</div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {addons.map((addon, idx) => (
+                                            <div key={idx} className="flex gap-2 items-center">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Name (e.g. Extra Paneer)"
+                                                    className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/30 transition text-sm"
+                                                    value={addon.name}
+                                                    onChange={(e) => {
+                                                        const newAddons = [...addons];
+                                                        newAddons[idx].name = e.target.value;
+                                                        setAddons(newAddons);
+                                                    }}
+                                                />
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="Price $"
+                                                    className="w-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/30 transition text-sm"
+                                                    value={addon.price}
+                                                    onChange={(e) => {
+                                                        const newAddons = [...addons];
+                                                        newAddons[idx].price = e.target.value;
+                                                        setAddons(newAddons);
+                                                    }}
+                                                />
+                                                <label className="flex items-center" title="Available">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={addon.isAvailable} 
+                                                        onChange={(e) => {
+                                                            const newAddons = [...addons];
+                                                            newAddons[idx].isAvailable = e.target.checked;
+                                                            setAddons(newAddons);
+                                                        }} 
+                                                        className="rounded w-4 h-4 cursor-pointer" 
+                                                    />
+                                                </label>
+                                                <button type="button" onClick={() => setAddons(addons.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-300 p-1">
+                                                    &times;
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-6">
+                                <label className="text-sm font-medium text-gray-300 block mb-2">Pair it with (Upsells)</label>
+                                <div className="space-y-3">
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Search items to pair with..."
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 text-sm"
+                                            value={pairingSearch}
+                                            onChange={(e) => setPairingSearch(e.target.value)}
+                                        />
+                                        {pairingSearch && (
+                                            <div className="absolute z-10 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-neutral-900 border border-white/10 rounded-xl shadow-2xl p-1">
+                                                {items
+                                                    .filter(it => it.name.toLowerCase().includes(pairingSearch.toLowerCase()) && !pairedItemIds.includes(it.id))
+                                                    .slice(0, 10)
+                                                    .map(it => (
+                                                        <button
+                                                            key={it.id}
+                                                            type="button"
+                                                            className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg transition text-sm flex items-center justify-between group"
+                                                            onClick={() => {
+                                                                setPairedItemIds(prev => [...prev, it.id]);
+                                                                setPairingSearch("");
+                                                            }}
+                                                        >
+                                                            <span>{it.name} <span className="text-gray-500 text-xs ml-2">({it.category})</span></span>
+                                                            <span className="text-orange-500 opacity-0 group-hover:opacity-100">+ Add</span>
+                                                        </button>
+                                                    ))
+                                                }
+                                                {items.filter(it => it.name.toLowerCase().includes(pairingSearch.toLowerCase()) && !pairedItemIds.includes(it.id)).length === 0 && (
+                                                    <div className="px-3 py-2 text-gray-500 text-xs italic">No matching items</div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {pairedItemIds.map(id => {
+                                            const item = items.find(it => it.id === id);
+                                            if (!item) return null;
+                                            return (
+                                                <div key={id} className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full text-orange-400 text-xs">
+                                                    <span>{item.name}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPairedItemIds(prev => prev.filter(pid => pid !== id))}
+                                                        className="hover:text-white transition"
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                        {pairedItemIds.length === 0 && !pairingSearch && (
+                                            <span className="text-xs text-gray-500 italic">No pairings selected. These will appear as &quot;Pair it with&quot; in the modal.</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1113,6 +1320,171 @@ export default function AdminMenuItemsPage() {
                                         onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))}
                                         rows={2}
                                     />
+                                </div>
+
+                                <div className="md:col-span-4">
+                                    <label className="text-sm font-medium text-gray-300">Allergens (comma separated)</label>
+                                    <input
+                                        type="text"
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                        value={editDraft.allergens || ""}
+                                        onChange={(e) => setEditDraft((d) => ({ ...d, allergens: e.target.value }))}
+                                        placeholder="e.g. Dairy, Nuts, Gluten"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-4">
+                                    <label className="text-sm font-medium text-gray-300">Prep Time <span className="text-gray-500 text-xs font-normal">(e.g. 15-20)</span></label>
+                                    <input
+                                        type="text"
+                                        className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
+                                        value={editDraft.prepTime || ""}
+                                        onChange={(e) => setEditDraft((d) => ({ ...d, prepTime: e.target.value }))}
+                                        placeholder="e.g. 15-20"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-4 flex gap-4">
+                                    <div className="flex-1">
+                                        <label className="flex items-center gap-2 cursor-pointer mt-8 group h-10">
+                                            <input type="checkbox" checked={!!editDraft.isStockTracked} onChange={(e) => setEditDraft((d) => ({ ...d, isStockTracked: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                            <span className="text-sm font-medium text-gray-300 group-hover:text-white transition">Track Stock</span>
+                                        </label>
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="text-sm font-medium text-gray-300">Stock Count</label>
+                                        <input
+                                            type="number"
+                                            disabled={!editDraft.isStockTracked}
+                                            className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 disabled:opacity-50"
+                                            value={editDraft.stockCount ?? ""}
+                                            onChange={(e) => setEditDraft((d) => ({ ...d, stockCount: e.target.value }))}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="md:col-span-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-sm font-medium text-gray-300">Addons & Customizations</label>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setEditDraft((d) => ({ ...d, addons: [...(d.addons || []), { name: "", price: "", isAvailable: true }] }))} 
+                                            className="text-xs bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded transition"
+                                        >
+                                            + Add
+                                        </button>
+                                    </div>
+                                    {(!editDraft.addons || editDraft.addons.length === 0) ? (
+                                        <div className="text-xs text-gray-500 italic p-3 border border-white/5 rounded-xl bg-black/20 text-center">No addons configured.</div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {editDraft.addons.map((addon: any, idx: number) => (
+                                                <div key={idx} className="flex gap-2 items-center">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Name (e.g. Extra Paneer)"
+                                                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/30 transition text-sm"
+                                                        value={addon.name}
+                                                        onChange={(e) => {
+                                                            const newAddons = [...editDraft.addons];
+                                                            newAddons[idx].name = e.target.value;
+                                                            setEditDraft((d) => ({ ...d, addons: newAddons }));
+                                                        }}
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        placeholder="Price $"
+                                                        className="w-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/30 transition text-sm"
+                                                        value={addon.price}
+                                                        onChange={(e) => {
+                                                            const newAddons = [...editDraft.addons];
+                                                            newAddons[idx].price = e.target.value;
+                                                            setEditDraft((d) => ({ ...d, addons: newAddons }));
+                                                        }}
+                                                    />
+                                                    <label className="flex items-center" title="Available">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={addon.isAvailable} 
+                                                            onChange={(e) => {
+                                                                const newAddons = [...editDraft.addons];
+                                                                newAddons[idx].isAvailable = e.target.checked;
+                                                                setEditDraft((d) => ({ ...d, addons: newAddons }));
+                                                            }} 
+                                                            className="rounded w-4 h-4 cursor-pointer" 
+                                                        />
+                                                    </label>
+                                                    <button type="button" onClick={() => setEditDraft((d) => ({ ...d, addons: d.addons.filter((_: any, i: number) => i !== idx) }))} className="text-red-400 hover:text-red-300 p-1">
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="md:col-span-4 mt-2">
+                                    <label className="text-sm font-medium text-gray-300 block mb-2">Pair it with (Upsells)</label>
+                                    <div className="space-y-3">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Search items to pair with..."
+                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 text-sm"
+                                                value={editPairingSearch}
+                                                onChange={(e) => setEditPairingSearch(e.target.value)}
+                                            />
+                                            {editPairingSearch && (
+                                                <div className="absolute z-10 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-neutral-900 border border-white/10 rounded-xl shadow-2xl p-1">
+                                                    {items
+                                                        .filter(it => it.name.toLowerCase().includes(editPairingSearch.toLowerCase()) && !(editDraft.pairedItemIds || []).includes(it.id) && it.id !== editingId)
+                                                        .slice(0, 10)
+                                                        .map(it => (
+                                                            <button
+                                                                key={it.id}
+                                                                type="button"
+                                                                className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg transition text-sm flex items-center justify-between group"
+                                                                onClick={() => {
+                                                                    setEditDraft(d => ({ ...d, pairedItemIds: [...(d.pairedItemIds || []), it.id] }));
+                                                                    setEditPairingSearch("");
+                                                                }}
+                                                            >
+                                                                <span>{it.name} <span className="text-gray-500 text-xs ml-2">({it.category})</span></span>
+                                                                <span className="text-orange-500 opacity-0 group-hover:opacity-100">+ Add</span>
+                                                            </button>
+                                                        ))
+                                                    }
+                                                    {items.filter(it => it.name.toLowerCase().includes(editPairingSearch.toLowerCase()) && !(editDraft.pairedItemIds || []).includes(it.id) && it.id !== editingId).length === 0 && (
+                                                        <div className="px-3 py-2 text-gray-500 text-xs italic">No matching items</div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-2">
+                                            {(editDraft.pairedItemIds || []).map((id: string) => {
+                                                const item = items.find(it => it.id === id);
+                                                if (!item) return null;
+                                                return (
+                                                    <div key={id} className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full text-orange-400 text-xs">
+                                                        <span>{item.name}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setEditDraft(d => ({ ...d, pairedItemIds: d.pairedItemIds.filter((pid: string) => pid !== id) }))}
+                                                            className="hover:text-white transition"
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                            {(editDraft.pairedItemIds || []).length === 0 && !editPairingSearch && (
+                                                <span className="text-xs text-gray-500 italic">No pairings selected.</span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="md:col-span-4">

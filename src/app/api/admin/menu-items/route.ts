@@ -44,6 +44,7 @@ export async function GET(req: Request) {
                 ...(available === "0" ? { isAvailable: false } : {}),
             },
             orderBy,
+            include: { addons: true }
         });
 
         return NextResponse.json({ ok: true, items });
@@ -62,6 +63,12 @@ export async function POST(req: Request) {
     const price = Number(body.price ?? NaN);
     const description = String(body.description ?? "").trim();
     const imageUrl = body.imageUrl ? String(body.imageUrl).trim() : null;
+    const allergens = Array.isArray(body.allergens) ? body.allergens.map(String) : [];
+    const isStockTracked = !!body.isStockTracked;
+    const stockCount = typeof body.stockCount === "number" ? Math.max(0, body.stockCount) : null;
+    const prepTime = body.prepTime ? String(body.prepTime).trim() : "15-20";
+    const pairedItemIds = Array.isArray(body.pairedItemIds) ? body.pairedItemIds.map(String) : [];
+    const addons = Array.isArray(body.addons) ? body.addons : [];
 
     if (!name) return bad("Name is required");
     if (!category) return bad("Category is required");
@@ -89,7 +96,20 @@ export async function POST(req: Request) {
             isAvailable: body.isAvailable !== false,
             inPos: body.inPos !== false,
             sortOrder: (last?.sortOrder ?? 0) + 1,
+            allergens,
+            isStockTracked,
+            stockCount,
+            prepTime,
+            pairedItemIds,
+            addons: addons.length > 0 ? {
+                create: addons.map((a: any) => ({
+                    name: String(a.name).trim(),
+                    priceCents: typeof a.priceCents === "number" ? a.priceCents : Math.round(Number(a.price) * 100),
+                    isAvailable: a.isAvailable !== false
+                }))
+            } : undefined
         },
+        include: { addons: true }
     });
 
     return NextResponse.json({ ok: true, item: created }, { status: 201 });

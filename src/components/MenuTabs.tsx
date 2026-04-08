@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useCart, type CartItem } from "@/lib/cart";
+import ItemCustomizationModal from "./ItemCustomizationModal";
+import { useToast } from "@/components/ui/Toast";
 
 interface MenuItem {
     id: string;
@@ -17,13 +20,27 @@ interface MenuItem {
     isNonVeg: boolean;
     isSpicy: boolean;
     isPopular: boolean;
+    allergens?: string[];
+    stockCount?: number | null;
+    isStockTracked?: boolean;
+    addons?: { id: string; name: string; priceCents: number; isAvailable: boolean }[];
     avgRating?: number;
     reviewCount?: number;
+    reviews?: { text: string }[];
+    prepTime?: string | null;
+    pairedItemIds?: string[];
 }
 
-function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => void }) {
+function ItemCard({ item, onAdd, onFavorite, isFavorite }: { item: MenuItem; onAdd: (item: MenuItem) => void; onFavorite: (id: string) => void; isFavorite: boolean }) {
+    const isSoldOut = Boolean(item.isStockTracked && item.stockCount === 0);
+
     return (
-        <div className="group rounded-2xl md:rounded-3xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/10 transition flex flex-col h-full">
+        <div 
+            onClick={() => {
+                if (!isSoldOut) onAdd(item);
+            }} 
+            className={`cursor-pointer group rounded-2xl md:rounded-3xl border border-white/10 overflow-hidden hover:bg-white/10 transition flex flex-col h-full ${isSoldOut ? "opacity-60 bg-white/5 grayscale-[0.5]" : "bg-white/5"}`}
+        >
             <div className="relative h-28 sm:h-36 md:h-44">
                 {item.imageUrl ? (
                     <Image
@@ -50,6 +67,14 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                             {item.reviewCount! > 0 ? `${item.avgRating} (${item.reviewCount})` : "0.0"}
                         </span>
                 </div>
+                {isSoldOut && (
+                    <div className="absolute inset-0 bg-black/60 z-30 flex items-center justify-center backdrop-blur-[2px]">
+                        <span className="bg-red-600 text-white font-black uppercase tracking-widest px-4 py-2 rounded-xl text-xs sm:text-sm md:text-lg rotate-[-10deg] shadow-2xl">
+                            Sold Out
+                        </span>
+                    </div>
+                )}
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4 flex items-end justify-between gap-2 md:gap-3">
                     <div className="flex-1 min-w-0">
@@ -76,32 +101,55 @@ function ItemCard({ item, onAdd }: { item: MenuItem; onAdd: (item: MenuItem) => 
                             )}
                         </div>
                         <button
+                            disabled={isSoldOut}
                             onClick={(e) => {
                                 e.preventDefault();
+                                e.stopPropagation();
                                 onAdd(item);
                             }}
-                            className="bg-orange-500 text-black px-2 md:px-4 py-1 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-base font-bold hover:bg-orange-400 transition shadow-lg active:scale-95"
+                            className={`${isSoldOut ? "bg-gray-700 text-gray-400" : "bg-orange-500 text-black hover:bg-orange-400"} px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[11px] md:text-base font-black transition shadow-lg active:scale-95 flex items-center justify-center`}
                         >
-                            + Add
+                            {isSoldOut ? "Sold Out" : "+ Add"}
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="p-3 md:p-6 flex-1">
+            <div className="p-3 md:p-6 flex-1 flex flex-col">
                 <p className="text-[10px] sm:text-xs md:text-sm text-gray-300 line-clamp-2">{item.description}</p>
 
-                <div className="mt-2 md:mt-4 flex flex-wrap gap-1 md:gap-2 items-center">
-                    {item.isSpicy && (
-                        <span title="Spicy" className="text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-black/40 border border-white/10 text-orange-500">
-                            Spicy
-                        </span>
-                    )}
-                    {item.isPopular && (
-                        <span title="Popular" className="text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-black/40 border border-white/10 text-yellow-500">
-                            Popular
-                        </span>
-                    )}
+                <div className="mt-auto pt-3 flex justify-between items-end gap-2">
+                    <div className="flex flex-wrap gap-1 md:gap-2 items-center">
+                        {item.isSpicy && (
+                            <span title="Spicy" className="text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-black/40 border border-white/10 text-orange-500">
+                                Spicy
+                            </span>
+                        )}
+                        {item.isPopular && (
+                            <span title="Popular" className="text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-black/40 border border-white/10 text-yellow-500">
+                                Popular
+                            </span>
+                        )}
+                        {item.allergens && item.allergens.map(allergen => (
+                            <span key={allergen} title={allergen} className="text-[8px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400">
+                                {allergen}
+                            </span>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onFavorite(item.id);
+                        }}
+                        className="bg-black/40 backdrop-blur-sm border border-white/10 p-2 md:p-2.5 rounded-full hover:bg-black/60 transition active:scale-95 shrink-0"
+                        title={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                    >
+                        <svg className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${isFavorite ? "text-red-500 fill-red-500" : "text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -120,7 +168,14 @@ export default function MenuTabs() {
     const [categories, setCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    const { data: session } = useSession();
+    const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
     const { addToCart, items: cartItems, totalCents } = useCart();
+    const { toast } = useToast();
     const cartCount = cartItems.reduce((acc: number, i: CartItem) => acc + i.quantity, 0);
 
     useEffect(() => {
@@ -143,6 +198,63 @@ export default function MenuTabs() {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            if (session?.user) {
+                try {
+                    const res = await fetch("/api/user/favorites");
+                    if (res.ok) {
+                        const data = await res.json();
+                        setFavorites(new Set(data.favorites));
+                    }
+                } catch (e) {
+                    console.error("Failed to load favorites", e);
+                }
+            } else {
+                setFavorites(new Set());
+            }
+        };
+        fetchFavorites();
+    }, [session]);
+
+    const toggleFavorite = async (id: string) => {
+        if (!session?.user) {
+            alert("Please login to save favorites.");
+            return;
+        }
+
+        const isFav = favorites.has(id);
+        const action = isFav ? "remove" : "add";
+
+        // Optimistic UI
+        setFavorites(prev => {
+            const next = new Set(prev);
+            if (isFav) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+
+        try {
+            const res = await fetch("/api/user/favorites", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ menuItemId: id, action })
+            });
+            if (!res.ok) throw new Error("Failed to toggle favorite");
+            const data = await res.json();
+            setFavorites(new Set(data.favorites));
+        } catch (error) {
+            console.error("Favorite error", error);
+            // Revert optimistically on failure
+            setFavorites(prev => {
+                const next = new Set(prev);
+                if (isFav) next.add(id);
+                else next.delete(id);
+                return next;
+            });
+        }
+    };
+
     const filtered = items.filter((item) => {
         const matchesCat = active === "All" || item.category === active;
         const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -153,6 +265,24 @@ export default function MenuTabs() {
         const matchesPopular = !popularOnly || item.isPopular;
         return matchesCat && matchesQuery && matchesVeg && matchesNonVeg && matchesSpicy && matchesPopular;
     });
+
+    // Upsell logic: Priority 1: Manual pairings, Priority 2: Popular Fallbacks (Excluding Mains)
+    const manualPairingIds = selectedItem?.pairedItemIds || [];
+    const manualPairings = items.filter(it => manualPairingIds.includes(it.id));
+    
+    // Fallback logic: Only suggest non-mains (Sides, Drinks, Desserts)
+    const fallbackPairings = items.filter(it => 
+        (it.isPopular || ["Sides", "Drinks", "Desserts", "Accompaniments"].includes(it.category)) && 
+        it.category !== "Mains" &&
+        it.category !== "Wraps" &&
+        it.id !== selectedItem?.id &&
+        !manualPairingIds.includes(it.id)
+    );
+
+    // Enforce uniqueness and limit to 4 items for better curation
+    const allCandidates = [...manualPairings, ...fallbackPairings];
+    const uniqueCandidates = Array.from(new Map(allCandidates.map(item => [item.id, item])).values());
+    const upsellCandidates = uniqueCandidates.slice(0, 4);
 
     return (
         <section className="px-6 md:px-20 py-12 relative">
@@ -186,7 +316,7 @@ export default function MenuTabs() {
                     </Link>
                 </div>
 
-                <div className="mt-8 flex gap-3 flex-wrap">
+                <div className="mt-8 flex gap-2.5 overflow-x-auto pb-4 hide-scrollbar snap-x -mx-6 px-6">
                     {categories.map((c) => {
                         const isActive = c === active;
                         return (
@@ -194,10 +324,10 @@ export default function MenuTabs() {
                                 key={c}
                                 onClick={() => setActive(c)}
                                 className={[
-                                    "px-5 py-2 rounded-full border transition text-sm font-medium",
+                                    "px-5 py-2.5 rounded-full border transition text-sm font-semibold whitespace-nowrap snap-start",
                                     isActive
-                                        ? "bg-orange-500 text-black border-orange-500"
-                                        : "border-white/15 hover:border-white/40 text-gray-200",
+                                        ? "bg-orange-500 text-black border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                                        : "border-white/10 hover:border-white/30 text-gray-400 bg-white/5",
                                 ].join(" ")}
                             >
                                 {c}
@@ -207,10 +337,10 @@ export default function MenuTabs() {
                     <button
                         onClick={() => setPopularOnly((v) => !v)}
                         className={[
-                            "px-5 py-2 rounded-full border transition text-sm font-medium",
+                            "px-5 py-2.5 rounded-full border transition text-sm font-semibold whitespace-nowrap snap-start",
                             popularOnly
-                                ? "bg-white text-black border-white"
-                                : "border-white/15 hover:border-white/40 text-gray-200",
+                                ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                                : "border-white/10 hover:border-white/30 text-gray-400 bg-white/5",
                         ].join(" ")}
                     >
                         Popular
@@ -289,12 +419,12 @@ export default function MenuTabs() {
                             <ItemCard
                                 key={item.id}
                                 item={item}
-                                onAdd={(m) => addToCart({
-                                    id: m.id,
-                                    name: m.name,
-                                    priceCents: m.priceCents,
-                                    imageUrl: m.imageUrl
-                                })}
+                                isFavorite={favorites.has(item.id)}
+                                onFavorite={toggleFavorite}
+                                onAdd={(m) => {
+                                    setSelectedItem(m);
+                                    setIsModalOpen(true);
+                                }}
                             />
                         ))}
                     </motion.div>
@@ -305,6 +435,38 @@ export default function MenuTabs() {
                         No matches. Try a different search or clear filters.
                     </div>
                 )}
+                
+                <ItemCustomizationModal 
+                    key={selectedItem?.id || "none"}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    item={selectedItem as any}
+                    upsellItems={upsellCandidates as any}
+                    onQuickAdd={(u: any) => {
+                        addToCart({
+                            menuItemId: u.id,
+                            name: u.name,
+                            priceCents: u.priceCents,
+                            imageUrl: u.imageUrl || undefined,
+                            addons: [],
+                            notes: "Quick add"
+                        });
+                        toast.success(`Added ${u.name} to cart`);
+                    }}
+                    onAdd={(payload) => {
+                        for (let i = 0; i < payload.quantity; i++) {
+                            addToCart({
+                                menuItemId: selectedItem!.id,
+                                name: selectedItem!.name,
+                                priceCents: selectedItem!.priceCents,
+                                imageUrl: selectedItem!.imageUrl || undefined,
+                                addons: payload.addons,
+                                notes: payload.notes
+                            });
+                        }
+                        setIsModalOpen(false);
+                    }}
+                />
             </div>
         </section>
     );

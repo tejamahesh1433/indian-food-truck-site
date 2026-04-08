@@ -135,7 +135,7 @@ export default function TodaysSpecial() {
                                         
                                         <button 
                                             onClick={() => addToCart({
-                                                id: `special-${s.id}`,
+                                                menuItemId: `special-${s.id}`,
                                                 name: `Today's Special: ${s.name}`,
                                                 priceCents: s.priceCents,
                                                 imageUrl: s.imageUrl || ""

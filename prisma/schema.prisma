@@ -40,24 +40,42 @@ model CateringMessage {
 }
 
 model MenuItem {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  priceCents  Int
-  imageUrl    String?
-  category    String
-  isVeg       Boolean  @default(false)
-  isNonVeg    Boolean  @default(false)
-  isSpicy     Boolean  @default(false)
-  isPopular   Boolean  @default(false)
-  isAvailable Boolean  @default(true)
-  inPos       Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  reviews     Review[]
+  id             String         @id @default(cuid())
+  name           String
+  description    String?
+  priceCents     Int
+  imageUrl       String?
+  category       String
+  isVeg          Boolean        @default(false)
+  isNonVeg       Boolean        @default(false)
+  isSpicy        Boolean        @default(false)
+  isPopular      Boolean        @default(false)
+  isAvailable    Boolean        @default(true)
+  inPos          Boolean        @default(true)
+  sortOrder      Int            @default(0)
+  allergens      String[]       @default([])
+  stockCount     Int?
+  isStockTracked Boolean        @default(false)
+  prepTime       String?        @default("15-20")
+  pairedItemIds  String[]       @default([])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  reviews        Review[]
+  addons         MenuAddon[]
+  favoritedBy    UserFavorite[]
 
   @@index([category, isAvailable, sortOrder])
+}
+
+model MenuAddon {
+  id          String   @id @default(cuid())
+  menuItemId  String
+  name        String
+  priceCents  Int      @default(0)
+  isAvailable Boolean  @default(true)
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId])
 }
 
 model MenuCategory {
@@ -134,18 +152,33 @@ model CateringCategory {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?        @unique
   emailVerified DateTime?
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   password      String?
   accounts      Account[]
   orders        Order[]
   sessions      Session[]
   reviews       Review[]
+  favorites     UserFavorite[]
+}
+
+model UserFavorite {
+  id         String   @id @default(cuid())
+  userId     String
+  menuItemId String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuItemId])
+  @@index([userId])
+  @@index([menuItemId])
 }
 
 model Account {
@@ -226,14 +259,15 @@ model OrderMessage {
 }
 
 model OrderItem {
-  id         String @id @default(cuid())
+  id         String  @id @default(cuid())
   orderId    String
   menuItemId String
   name       String
   quantity   Int
   priceCents Int
   notes      String?
-  order      Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  addons     Json?
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model NewsletterSubscriber {

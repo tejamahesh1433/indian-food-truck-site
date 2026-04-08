@@ -43,7 +43,13 @@ export default function CartDrawer() {
     }, [session]);
 
     useEffect(() => {
-        const handleOpen = () => setIsOpen(true);
+        const handleOpen = (e: Event) => {
+            setIsOpen(true);
+            const customEvent = e as CustomEvent<{ notes?: string }>;
+            if (customEvent.detail?.notes) {
+                setCustomerInfo(prev => ({ ...prev, notes: customEvent.detail.notes! }));
+            }
+        };
         window.addEventListener("open-cart", handleOpen);
         return () => window.removeEventListener("open-cart", handleOpen);
     }, []);
@@ -143,6 +149,15 @@ export default function CartDrawer() {
                                                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                                                                 ${(item.priceCents / 100).toFixed(2)} each
                                                             </p>
+                                                            {item.addons && item.addons.length > 0 && (
+                                                                <div className="mt-1 flex flex-col gap-0.5">
+                                                                    {item.addons.map(addon => (
+                                                                        <span key={addon.id} className="text-[9px] font-black uppercase tracking-widest text-orange-400">
+                                                                            + {addon.name} (${(addon.priceCents / 100).toFixed(2)})
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                             <button 
                                                                 onClick={() => setEditingNotes(editingNotes === item.id ? null : item.id)}
                                                                 className={`text-[9px] font-black uppercase tracking-widest mt-2 transition-colors ${item.notes ? 'text-orange-500' : 'text-gray-600 hover:text-gray-400'}`}
@@ -167,7 +182,7 @@ export default function CartDrawer() {
                                                         </div>
                                                         <div className="flex flex-col items-end gap-1 w-20">
                                                             <p className="font-black italic tracking-tighter text-orange-500">
-                                                                ${((item.priceCents * item.quantity) / 100).toFixed(2)}
+                                                                ${(((item.priceCents + (item.addons?.reduce((sum, a) => sum + a.priceCents, 0) || 0)) * item.quantity) / 100).toFixed(2)}
                                                             </p>
                                                             <button
                                                                 onClick={() => removeFromCart(item.id)}

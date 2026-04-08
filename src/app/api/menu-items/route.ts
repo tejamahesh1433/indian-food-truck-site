@@ -12,6 +12,16 @@ export async function GET(req: Request) {
                 isAvailable: true,
                 ...(category ? { category } : {}),
             },
+            include: {
+                addons: {
+                    where: { isAvailable: true }
+                },
+                reviews: {
+                    where: { isApproved: true, text: { not: "" } },
+                    take: 1,
+                    select: { text: true }
+                }
+            },
             orderBy: [{ isPopular: "desc" }, { name: "asc" }],
         });
 
@@ -43,13 +53,18 @@ export async function GET(req: Request) {
 
         console.log(`[MENU_API] Found ${items.length} items, ${aggregations.length} items have ratings.`);
         return NextResponse.json({ items: itemsWithRatings });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("[MENU_API_ERROR]", error);
         // Fallback to basic list if aggregation fails
         const items = await prisma.menuItem.findMany({
             where: {
                 isAvailable: true,
                 ...(category ? { category } : {}),
+            },
+            include: {
+                addons: {
+                    where: { isAvailable: true }
+                }
             },
             orderBy: [{ isPopular: "desc" }, { name: "asc" }],
         });

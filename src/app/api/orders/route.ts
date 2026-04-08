@@ -13,10 +13,16 @@ const OrderSchema = z.object({
     notes: z.string().optional(),
     items: z.array(z.object({
         id: z.string(),
+        menuItemId: z.string(),
         name: z.string(),
         priceCents: z.number().int().positive(),
         quantity: z.number().int().positive(),
         notes: z.string().optional(),
+        addons: z.array(z.object({
+            id: z.string(),
+            name: z.string(),
+            priceCents: z.number().int().nonnegative()
+        })).optional()
     })).min(1),
 });
 
@@ -31,15 +37,15 @@ export async function POST(req: Request) {
         }
 
         // Fetch actual prices from DB to prevent client-side price tampering
-        const itemIds = validatedData.items.map(i => i.id);
+        const uniqueItemIds = Array.from(new Set(validatedData.items.map(i => i.menuItemId)));
         const dbItems = await prisma.menuItem.findMany({
             where: { 
-                id: { in: itemIds },
+                id: { in: uniqueItemIds },
                 isAvailable: true 
             }
         });
 
-        if (dbItems.length !== validatedData.items.length) {
+        if (dbItems.length !== uniqueItemIds.length) {
             return NextResponse.json({ 
                 error: "One or more items in your cart are no longer available. Please refresh and try again." 
             }, { status: 400 });
@@ -48,11 +54,45 @@ export async function POST(req: Request) {
         // Map DB items for easy lookup
         const dbItemMap = new Map(dbItems.map(item => [item.id, item]));
 
+        const addonIds = Array.from(new Set(
+            validatedData.items.flatMap(i => i.addons?.map(a => a.id) || [])
+        ));
+        
+        const dbAddons = await prisma.menuAddon.findMany({
+            where: {
+                id: { in: addonIds },
+                isAvailable: true
+            }
+        });
+        const dbAddonMap = new Map(dbAddons.map(a => [a.id, a]));
+
+        // Validate stock
+        for (const item of validatedData.items) {
+            const dbItem = dbItemMap.get(item.menuItemId);
+            if (dbItem && dbItem.isStockTracked) {
+                if ((dbItem.stockCount ?? 0) < item.quantity) {
+                    return NextResponse.json({
+                        error: `Not enough stock for ${dbItem.name}`
+                    }, { status: 400 });
+                }
+            }
+        }
+
         // Calculate total using verified DB prices
         const subtotalAmount = validatedData.items.reduce((acc, item) => {
-            const dbItem = dbItemMap.get(item.id);
-            if (!dbItem) return acc; // Should not happen due to length check
-            return acc + (dbItem.priceCents * item.quantity);
+            const dbItem = dbItemMap.get(item.menuItemId);
+            if (!dbItem) return acc;
+            
+            let itemTotal = dbItem.priceCents;
+            if (item.addons) {
+                for (const addon of item.addons) {
+                    const dbAddon = dbAddonMap.get(addon.id);
+                    if (dbAddon && dbAddon.menuItemId === item.menuItemId) {
+                        itemTotal += dbAddon.priceCents;
+                    }
+                }
+            }
+            return acc + (itemTotal * item.quantity);
         }, 0);
 
         const taxAmount = Math.round(subtotalAmount * 0.0635); // 6.35% CT Sales Tax
@@ -98,18 +138,39 @@ export async function POST(req: Request) {
                 userId: (session?.user as { id: string })?.id || null, // Link to user if logged in
                 items: {
                     create: validatedData.items.map(item => {
-                        const dbItem = dbItemMap.get(item.id)!;
+                        const dbItem = dbItemMap.get(item.menuItemId)!;
+                        let itemTotal = dbItem.priceCents;
+                        if (item.addons) {
+                            for (const addon of item.addons) {
+                                const dbAddon = dbAddonMap.get(addon.id);
+                                if (dbAddon && dbAddon.menuItemId === item.menuItemId) {
+                                    itemTotal += dbAddon.priceCents;
+                                }
+                            }
+                        }
                         return {
-                            menuItemId: item.id,
+                            menuItemId: item.menuItemId,
                             name: dbItem.name, 
                             quantity: item.quantity,
-                            priceCents: dbItem.priceCents,
+                            priceCents: itemTotal,
                             notes: item.notes,
+                            addons: item.addons ? item.addons : undefined
                         };
                     })
                 }
             }
         });
+
+        // Decrement stock
+        await Promise.all(validatedData.items.map(async (item) => {
+            const dbItem = dbItemMap.get(item.menuItemId);
+            if (dbItem && dbItem.isStockTracked) {
+                await prisma.menuItem.update({
+                    where: { id: item.menuItemId },
+                    data: { stockCount: { decrement: item.quantity } }
+                });
+            }
+        }));
 
         // Create Stripe PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({
