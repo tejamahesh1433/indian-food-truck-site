@@ -37,6 +37,28 @@ function money(cents: number) {
     return `$${(cents / 100).toFixed(2)}`;
 }
 
+interface EditDraft {
+    id: string;
+    name: string;
+    category: string;
+    priceCents: number;
+    description: string;
+    isVeg: boolean;
+    isNonVeg: boolean;
+    isSpicy: boolean;
+    isPopular: boolean;
+    isAvailable: boolean;
+    inPos: boolean;
+    imageUrl: string | null;
+    allergens: string | string[];
+    isStockTracked: boolean;
+    stockCount: string | number | null;
+    prepTime: string | null;
+    pairedItemIds: string[];
+    addons: { id?: string; name: string; price: string | number; isAvailable: boolean }[];
+    price?: string | number;
+}
+
 export default function AdminMenuItemsPage() {
     const { confirm } = useConfirm();
     // form state
@@ -89,7 +111,7 @@ export default function AdminMenuItemsPage() {
 
     // editing
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editDraft, setEditDraft] = useState<Record<string, any>>({});
+    const [editDraft, setEditDraft] = useState<Partial<EditDraft>>({});
 
     // sorting
     const [sortBy, setSortBy] = useState<"updatedAt" | "priceCents" | "name" | "sortOrder">("sortOrder");
@@ -148,7 +170,7 @@ export default function AdminMenuItemsPage() {
                 if (target === "add") {
                     setImageUrl(data.url);
                 } else {
-                    setEditDraft((d) => ({ ...d, imageUrl: data.url }));
+                    setEditDraft((d: Partial<EditDraft>) => ({ ...d, imageUrl: data.url }));
                 }
                 showToast("Image uploaded!", "success");
             } else {
@@ -329,7 +351,7 @@ export default function AdminMenuItemsPage() {
     }
 
     async function saveEdit(id: string) {
-        const payload: Partial<MenuItem & { price: number }> = { ...editDraft };
+        const payload = { ...editDraft } as unknown as Partial<MenuItem & { price: number }>;
 
         // convert cents -> dollars field if user changed price via input
         if (typeof payload.priceCents === "number") {
@@ -389,7 +411,7 @@ export default function AdminMenuItemsPage() {
                 isStockTracked: editDraft.isStockTracked ?? false,
                 stockCount: editDraft.stockCount ?? null,
                 pairedItemIds: editDraft.pairedItemIds ?? [],
-                addons: (editDraft.addons || []).map((a: any) => ({ name: a.name, price: Number(a.price), isAvailable: a.isAvailable }))
+                addons: (editDraft.addons || []).map((a: { name: string; price: string | number; isAvailable: boolean }) => ({ name: a.name, price: Number(a.price), isAvailable: a.isAvailable }))
             }),
         });
         const data = await res.json();
@@ -725,6 +747,7 @@ export default function AdminMenuItemsPage() {
                                                 <label className="flex items-center" title="Available">
                                                     <input 
                                                         type="checkbox" 
+                                                        title="Is available"
                                                         checked={addon.isAvailable} 
                                                         onChange={(e) => {
                                                             const newAddons = [...addons];
@@ -1232,7 +1255,7 @@ export default function AdminMenuItemsPage() {
                                         placeholder="Item name"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={(editDraft.name as string) ?? ""}
-                                        onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
+                                        onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, name: e.target.value }))}
                                     />
                                 </div>
 
@@ -1246,7 +1269,7 @@ export default function AdminMenuItemsPage() {
                                         aria-label="Edit category"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-white/30 transition text-white appearance-none"
                                         value={(editDraft.category as string) ?? "Starters"}
-                                        onChange={(e) => setEditDraft((d) => ({ ...d, category: e.target.value }))}
+                                        onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, category: e.target.value }))}
                                     >
                                         {categories.map((c) => (
                                             <option key={c.id} value={c.name} className="bg-neutral-900">{c.name}</option>
@@ -1266,7 +1289,7 @@ export default function AdminMenuItemsPage() {
                                         value={editDraft.priceCents ? (editDraft.priceCents / 100).toString() : ""}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
-                                            setEditDraft((d) => ({ ...d, priceCents: Number.isFinite(val) ? Math.round(val * 100) : 0 }));
+                                            setEditDraft((d: Partial<EditDraft>) => ({ ...d, priceCents: Number.isFinite(val) ? Math.round(val * 100) : 0 }));
                                         }}
                                     />
                                 </div>
@@ -1277,7 +1300,7 @@ export default function AdminMenuItemsPage() {
                                         <input
                                             className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 text-sm"
                                             value={(editDraft.imageUrl as string) ?? ""}
-                                            onChange={(e) => setEditDraft((d) => ({ ...d, imageUrl: e.target.value }))}
+                                            onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, imageUrl: e.target.value }))}
                                             placeholder="Enter URL or upload below..."
                                         />
                                         <div className="flex items-center gap-3">
@@ -1317,7 +1340,7 @@ export default function AdminMenuItemsPage() {
                                         placeholder="Item description..."
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={(editDraft.description as string) ?? ""}
-                                        onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))}
+                                        onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, description: e.target.value }))}
                                         rows={2}
                                     />
                                 </div>
@@ -1328,7 +1351,7 @@ export default function AdminMenuItemsPage() {
                                         type="text"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={editDraft.allergens || ""}
-                                        onChange={(e) => setEditDraft((d) => ({ ...d, allergens: e.target.value }))}
+                                        onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, allergens: e.target.value }))}
                                         placeholder="e.g. Dairy, Nuts, Gluten"
                                     />
                                 </div>
@@ -1339,7 +1362,7 @@ export default function AdminMenuItemsPage() {
                                         type="text"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={editDraft.prepTime || ""}
-                                        onChange={(e) => setEditDraft((d) => ({ ...d, prepTime: e.target.value }))}
+                                        onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, prepTime: e.target.value }))}
                                         placeholder="e.g. 15-20"
                                     />
                                 </div>
@@ -1347,7 +1370,7 @@ export default function AdminMenuItemsPage() {
                                 <div className="md:col-span-4 flex gap-4">
                                     <div className="flex-1">
                                         <label className="flex items-center gap-2 cursor-pointer mt-8 group h-10">
-                                            <input type="checkbox" checked={!!editDraft.isStockTracked} onChange={(e) => setEditDraft((d) => ({ ...d, isStockTracked: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
+                                            <input type="checkbox" checked={!!editDraft.isStockTracked} onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, isStockTracked: e.target.checked }))} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
                                             <span className="text-sm font-medium text-gray-300 group-hover:text-white transition">Track Stock</span>
                                         </label>
                                     </div>
@@ -1358,7 +1381,7 @@ export default function AdminMenuItemsPage() {
                                             disabled={!editDraft.isStockTracked}
                                             className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600 disabled:opacity-50"
                                             value={editDraft.stockCount ?? ""}
-                                            onChange={(e) => setEditDraft((d) => ({ ...d, stockCount: e.target.value }))}
+                                            onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, stockCount: e.target.value }))}
                                             placeholder="0"
                                         />
                                     </div>
@@ -1369,7 +1392,7 @@ export default function AdminMenuItemsPage() {
                                         <label className="text-sm font-medium text-gray-300">Addons & Customizations</label>
                                         <button 
                                             type="button" 
-                                            onClick={() => setEditDraft((d) => ({ ...d, addons: [...(d.addons || []), { name: "", price: "", isAvailable: true }] }))} 
+                                            onClick={() => setEditDraft((d: Partial<EditDraft>) => ({ ...d, addons: [...(d.addons || []), { name: "", price: "", isAvailable: true }] }))} 
                                             className="text-xs bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded transition"
                                         >
                                             + Add
@@ -1379,7 +1402,7 @@ export default function AdminMenuItemsPage() {
                                         <div className="text-xs text-gray-500 italic p-3 border border-white/5 rounded-xl bg-black/20 text-center">No addons configured.</div>
                                     ) : (
                                         <div className="space-y-2">
-                                            {editDraft.addons.map((addon: any, idx: number) => (
+                                            {(editDraft.addons || []).map((addon: { id?: string; name: string; price: string | number; isAvailable: boolean }, idx: number) => (
                                                 <div key={idx} className="flex gap-2 items-center">
                                                     <input
                                                         type="text"
@@ -1387,9 +1410,9 @@ export default function AdminMenuItemsPage() {
                                                         className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/30 transition text-sm"
                                                         value={addon.name}
                                                         onChange={(e) => {
-                                                            const newAddons = [...editDraft.addons];
+                                                            const newAddons = [...(editDraft.addons || [])];
                                                             newAddons[idx].name = e.target.value;
-                                                            setEditDraft((d) => ({ ...d, addons: newAddons }));
+                                                            setEditDraft((d: Partial<EditDraft>) => ({ ...d, addons: newAddons }));
                                                         }}
                                                     />
                                                     <input
@@ -1399,24 +1422,25 @@ export default function AdminMenuItemsPage() {
                                                         className="w-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-white/30 transition text-sm"
                                                         value={addon.price}
                                                         onChange={(e) => {
-                                                            const newAddons = [...editDraft.addons];
+                                                            const newAddons = [...(editDraft.addons || [])];
                                                             newAddons[idx].price = e.target.value;
-                                                            setEditDraft((d) => ({ ...d, addons: newAddons }));
+                                                            setEditDraft((d: Partial<EditDraft>) => ({ ...d, addons: newAddons }));
                                                         }}
                                                     />
                                                     <label className="flex items-center" title="Available">
                                                         <input 
                                                             type="checkbox" 
+                                                            title="Is available"
                                                             checked={addon.isAvailable} 
                                                             onChange={(e) => {
-                                                                const newAddons = [...editDraft.addons];
+                                                                const newAddons = [...(editDraft.addons || [])];
                                                                 newAddons[idx].isAvailable = e.target.checked;
-                                                                setEditDraft((d) => ({ ...d, addons: newAddons }));
+                                                                setEditDraft((d: Partial<EditDraft>) => ({ ...d, addons: newAddons }));
                                                             }} 
                                                             className="rounded w-4 h-4 cursor-pointer" 
                                                         />
                                                     </label>
-                                                    <button type="button" onClick={() => setEditDraft((d) => ({ ...d, addons: d.addons.filter((_: any, i: number) => i !== idx) }))} className="text-red-400 hover:text-red-300 p-1">
+                                                    <button type="button" onClick={() => setEditDraft((d: Partial<EditDraft>) => ({ ...d, addons: (d.addons || []).filter((_, i) => i !== idx) }))} className="text-red-400 hover:text-red-300 p-1">
                                                         &times;
                                                     </button>
                                                 </div>
@@ -1472,7 +1496,7 @@ export default function AdminMenuItemsPage() {
                                                         <span>{item.name}</span>
                                                         <button
                                                             type="button"
-                                                            onClick={() => setEditDraft(d => ({ ...d, pairedItemIds: d.pairedItemIds.filter((pid: string) => pid !== id) }))}
+                                                            onClick={() => setEditDraft((d: Partial<EditDraft>) => ({ ...d, pairedItemIds: (d.pairedItemIds || []).filter((pid: string) => pid !== id) }))}
                                                             className="hover:text-white transition"
                                                         >
                                                             &times;
@@ -1495,7 +1519,7 @@ export default function AdminMenuItemsPage() {
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
                                                 checked={!!editDraft.isVeg}
-                                                onChange={(e) => setEditDraft((d) => ({ ...d, isVeg: e.target.checked }))}
+                                                onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, isVeg: e.target.checked }))}
                                             />
                                             <span className="text-sm text-gray-400 group-hover:text-white transition">Vegetarian</span>
                                         </label>
@@ -1504,7 +1528,7 @@ export default function AdminMenuItemsPage() {
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
                                                 checked={!!editDraft.isNonVeg}
-                                                onChange={(e) => setEditDraft((d) => ({ ...d, isNonVeg: e.target.checked }))}
+                                                onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, isNonVeg: e.target.checked }))}
                                             />
                                             <span className="text-sm text-gray-400 group-hover:text-white transition">Non-Vegetarian</span>
                                         </label>
@@ -1513,7 +1537,7 @@ export default function AdminMenuItemsPage() {
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
                                                 checked={!!editDraft.isSpicy}
-                                                onChange={(e) => setEditDraft((d) => ({ ...d, isSpicy: e.target.checked }))}
+                                                onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, isSpicy: e.target.checked }))}
                                             />
                                             <span className="text-sm text-gray-400 group-hover:text-white transition">Spicy</span>
                                         </label>
@@ -1522,7 +1546,7 @@ export default function AdminMenuItemsPage() {
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
                                                 checked={!!editDraft.isPopular}
-                                                onChange={(e) => setEditDraft((d) => ({ ...d, isPopular: e.target.checked }))}
+                                                onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, isPopular: e.target.checked }))}
                                             />
                                             <span className="text-sm text-gray-400 group-hover:text-white transition">Popular</span>
                                         </label>
@@ -1531,7 +1555,7 @@ export default function AdminMenuItemsPage() {
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
                                                 checked={editDraft.isAvailable !== false}
-                                                onChange={(e) => setEditDraft((d) => ({ ...d, isAvailable: e.target.checked }))}
+                                                onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, isAvailable: e.target.checked }))}
                                             />
                                             <span className="text-sm text-gray-400 group-hover:text-white transition">Website Availability</span>
                                         </label>
@@ -1540,7 +1564,7 @@ export default function AdminMenuItemsPage() {
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-white/20 bg-transparent text-orange-500 focus:ring-orange-500/50"
                                                 checked={editDraft.inPos !== false}
-                                                onChange={(e) => setEditDraft((d) => ({ ...d, inPos: e.target.checked }))}
+                                                onChange={(e) => setEditDraft((d: Partial<EditDraft>) => ({ ...d, inPos: e.target.checked }))}
                                             />
                                             <span className="text-sm text-gray-400 group-hover:text-white transition">In POS</span>
                                         </label>

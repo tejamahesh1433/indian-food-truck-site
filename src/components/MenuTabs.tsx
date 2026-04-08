@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useCart, type CartItem } from "@/lib/cart";
-import ItemCustomizationModal from "./ItemCustomizationModal";
+import ItemCustomizationModal, { type CustomizationMenuItem } from "./ItemCustomizationModal";
 import { useToast } from "@/components/ui/Toast";
 
 interface MenuItem {
@@ -440,9 +440,9 @@ export default function MenuTabs() {
                     key={selectedItem?.id || "none"}
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
-                    item={selectedItem as any}
-                    upsellItems={upsellCandidates as any}
-                    onQuickAdd={(u: any) => {
+                    item={selectedItem as unknown as CustomizationMenuItem}
+                    upsellItems={upsellCandidates as unknown as CustomizationMenuItem[]}
+                    onQuickAdd={(u: CustomizationMenuItem) => {
                         addToCart({
                             menuItemId: u.id,
                             name: u.name,
