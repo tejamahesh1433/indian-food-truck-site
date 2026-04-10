@@ -192,7 +192,7 @@ export class MockPOSAdapter implements IPOSAdapter {
                 console.log('[POS] Item updated:', payload.data);
                 break;
             case 'inventory.updated':
-                const { itemId, quantity } = payload.data;
+                const { itemId, quantity } = payload.data as { itemId: string; quantity: number };
                 await this.updateInventory(itemId, quantity);
                 break;
             case 'order.created':
