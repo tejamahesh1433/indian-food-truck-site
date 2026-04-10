@@ -112,8 +112,8 @@ export default function PosSyncDashboard({
             if (data.success) {
                 setStatus(data.status);
             }
-        } catch (_err) {
-            console.error("Failed to fetch POS status", _err);
+        } catch {
+            console.error("Failed to fetch POS status");
         }
     }, []);
 

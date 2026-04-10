@@ -54,8 +54,8 @@ test.describe("Menu page", () => {
     test("cart drawer opens when clicking cart icon", async ({ page }) => {
         await page.goto("/menu");
 
-        // Wait for page to be interactive
-        await page.waitForLoadState("networkidle");
+        // Wait for page to load
+        await page.waitForLoadState("domcontentloaded");
 
         // If the truck is open, there will be "Add" buttons on menu items
         const addBtn = page.getByRole("button", { name: /add/i }).first();
@@ -63,18 +63,26 @@ test.describe("Menu page", () => {
 
         if (hasAddBtn) {
             await addBtn.click();
+            
+            // Wait for Customization Modal to appear
+            const modalAddBtn = page.locator('button:has-text("Add")').filter({ hasText: /to Cart/ }).first();
+            await expect(modalAddBtn).toBeVisible({ timeout: 5000 });
+            
+            // If the item is spicy, we must select a spice level first
+            const spiceLevel = page.getByText(/Medium/i).first();
+            if (await spiceLevel.isVisible()) {
+                await spiceLevel.click();
+            }
+
+            await modalAddBtn.click();
+
             // FloatingCart button appears once an item is in the cart
             const viewCartBtn = page.getByText(/view cart/i).first();
-            const viewCartVisible = await viewCartBtn.isVisible({ timeout: 5000 }).catch(() => false);
+            await expect(viewCartBtn).toBeVisible({ timeout: 5000 });
+            await viewCartBtn.click();
 
-            if (viewCartVisible) {
-                await viewCartBtn.click();
-                // Cart drawer h2 says "Your Order ({count})"
-                await expect(page.getByText(/your order/i).first()).toBeVisible({ timeout: 5000 });
-            } else {
-                // Cart might open as a modal — check either way
-                await expect(page).toHaveURL(/\/menu/);
-            }
+            // Cart drawer h2 says "Your Order ({count})"
+            await expect(page.getByText(/your order/i).first()).toBeVisible({ timeout: 5000 });
         } else {
             // Truck is closed — no Add buttons visible, just verify we're on the menu page
             console.warn("Truck appears closed — no Add buttons visible. Soft pass.");
