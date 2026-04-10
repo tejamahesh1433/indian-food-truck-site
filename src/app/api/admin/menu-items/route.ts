@@ -102,7 +102,7 @@ export async function POST(req: Request) {
             prepTime,
             pairedItemIds,
             addons: addons.length > 0 ? {
-                create: addons.map((a: any) => ({
+                create: addons.map((a: { name: string; priceCents?: number; price?: number | string; isAvailable?: boolean }) => ({
                     name: String(a.name).trim(),
                     priceCents: typeof a.priceCents === "number" ? a.priceCents : Math.round(Number(a.price) * 100),
                     isAvailable: a.isAvailable !== false

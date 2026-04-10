@@ -8,21 +8,46 @@ if (process.env.DATABASE_URL?.includes("supabase.com") || process.env.DATABASE_U
 export const prisma = new PrismaClient();
 
 export async function resetDatabase() {
-    // Order matters for foreign keys
-    await prisma.cateringMessage.deleteMany().catch(() => { });
-    await prisma.cateringRequest.deleteMany().catch(() => { });
-    await prisma.cateringItem.deleteMany().catch(() => { });
-    await prisma.cateringCategory.deleteMany().catch(() => { });
-    await prisma.orderItem.deleteMany().catch(() => { });
-    await prisma.order.deleteMany().catch(() => { });
-    await prisma.menuItem.deleteMany().catch(() => { });
-    await prisma.menuCategory.deleteMany().catch(() => { });
-    await prisma.siteSettings.deleteMany().catch(() => { });
-    await prisma.savedLocation.deleteMany().catch(() => { });
-    await prisma.session.deleteMany().catch(() => { });
-    await prisma.account.deleteMany().catch(() => { });
-    await prisma.verificationToken.deleteMany().catch(() => { });
-    await prisma.user.deleteMany().catch(() => { });
+    // Order matters for foreign keys - delete children first
+    try {
+        // Chat/Support
+        await prisma.supportMessage.deleteMany().catch(() => { });
+        await prisma.supportChat.deleteMany().catch(() => { });
+        
+        // Catering
+        await prisma.cateringMessage.deleteMany().catch(() => { });
+        await prisma.cateringRequest.deleteMany().catch(() => { });
+        
+        // Orders
+        await prisma.orderMessage.deleteMany().catch(() => { });
+        await prisma.orderItem.deleteMany().catch(() => { });
+        await prisma.order.deleteMany().catch(() => { });
+        
+        // Menu
+        await prisma.menuAddon.deleteMany().catch(() => { });
+        await prisma.menuItem.deleteMany().catch(() => { });
+        await prisma.menuCategory.deleteMany().catch(() => { });
+        await prisma.todaysSpecial.deleteMany().catch(() => { });
+        
+        // User/Auth
+        await prisma.userFavorite.deleteMany().catch(() => { });
+        await prisma.review.deleteMany().catch(() => { });
+        await prisma.session.deleteMany().catch(() => { });
+        await prisma.account.deleteMany().catch(() => { });
+        await prisma.verificationToken.deleteMany().catch(() => { });
+        await prisma.passwordResetToken.deleteMany().catch(() => { });
+        await prisma.user.deleteMany().catch(() => { });
+        
+        // Misc
+        await prisma.siteSettings.deleteMany().catch(() => { });
+        await prisma.savedLocation.deleteMany().catch(() => { });
+        await prisma.adminLoginAttempt.deleteMany().catch(() => { });
+        await prisma.newsletterSubscriber.deleteMany().catch(() => { });
+        await prisma.cateringItem.deleteMany().catch(() => { });
+        await prisma.cateringCategory.deleteMany().catch(() => { });
+    } catch (error) {
+        console.warn('Database reset warning:', error);
+    }
 }
 
 export async function seedBasicData() {

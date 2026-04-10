@@ -226,25 +226,28 @@ model PasswordResetToken {
 }
 
 model Order {
-  id               String         @id @default(cuid())
-  customerName     String
-  customerEmail    String
-  customerPhone    String
-  totalAmount      Int
-  stripeSessionId  String?        @unique
-  status           OrderStatus    @default(PENDING)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  userId           String?
-  chatToken        String?
-  notes            String?
-  serviceFeeAmount Int            @default(0)
-  subtotalAmount   Int            @default(0)
-  taxAmount        Int            @default(0)
-  user             User?          @relation(fields: [userId], references: [id])
-  items            OrderItem[]
-  messages         OrderMessage[]
-  reviews          Review[]
+  id                  String         @id @default(cuid())
+  customerName        String
+  customerEmail       String
+  customerPhone       String
+  totalAmount         Int
+  stripeSessionId     String?        @unique
+  stripePaymentIntentId String?
+  stripeChargeId      String?
+  posOrderId          String?        // POS system order ID (Square, Toast, etc)
+  status              OrderStatus    @default(PENDING)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  userId              String?
+  chatToken           String?
+  notes               String?
+  serviceFeeAmount    Int            @default(0)
+  subtotalAmount      Int            @default(0)
+  taxAmount           Int            @default(0)
+  user                User?          @relation(fields: [userId], references: [id])
+  items               OrderItem[]
+  messages            OrderMessage[]
+  reviews             Review[]
 }
 
 model OrderMessage {

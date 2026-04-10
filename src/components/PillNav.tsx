@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
 import { useSession } from "next-auth/react";
-import { useSite } from "@/components/SiteProvider";
 import './PillNav.css';
 
 interface NavItem {
@@ -45,7 +44,6 @@ const PillNav = ({
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navItemsRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
-  const site = useSite();
 
   useEffect(() => {
     const layout = () => {

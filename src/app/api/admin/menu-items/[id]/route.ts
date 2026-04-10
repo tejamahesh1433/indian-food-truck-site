@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -15,7 +16,7 @@ export async function PATCH(
     const body = await req.json().catch(() => null);
     if (!body) return bad("Invalid JSON body");
 
-    const data: any = {};
+    const data: Prisma.MenuItemUpdateInput = {};
 
     if (body.name !== undefined) data.name = String(body.name).trim();
     if (body.category !== undefined) data.category = String(body.category).trim();
@@ -53,7 +54,7 @@ export async function PATCH(
         const addonsList = Array.isArray(body.addons) ? body.addons : [];
         data.addons = {
             deleteMany: {},
-            create: addonsList.map((a: any) => ({
+            create: addonsList.map((a: { name: string; priceCents?: number; price?: number | string; isAvailable?: boolean }) => ({
                 name: String(a.name).trim(),
                 priceCents: typeof a.priceCents === "number" ? a.priceCents : Math.round(Number(a.price) * 100),
                 isAvailable: a.isAvailable !== false

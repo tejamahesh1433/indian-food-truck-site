@@ -15,6 +15,7 @@ const NAVIGATION = [
     { name: "Reviews", href: "/admin/reviews", icon: "⭐" },
     { name: "Truck Schedule", href: "/admin/locations", icon: "📍" },
     { name: "Newsletter", href: "/admin/newsletter", icon: "📧" },
+    { name: "POS Sync", href: "/admin/pos-sync", icon: "🔄" },
     { name: "Today's Special", href: "/admin/todays-special", icon: "🔥" },
     { name: "Settings", href: "/admin/settings", icon: "⚙️" },
 ];

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 interface SpecialDish {
@@ -232,8 +233,8 @@ export default function TodaysSpecialAdminPage() {
                                             </span>
                                         </label>
                                         {editingItem.imageUrl && (
-                                            <div className="h-11 w-11 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
-                                                <img src={editingItem.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                                            <div className="h-11 w-11 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 relative">
+                                                <Image src={editingItem.imageUrl} alt="Preview" fill unoptimized className="object-cover" />
                                             </div>
                                         )}
                                     </div>
@@ -283,8 +284,8 @@ export default function TodaysSpecialAdminPage() {
                         <div key={s.id} className="group bg-white/[0.02] border border-white/10 p-6 rounded-3xl flex items-center justify-between hover:bg-white/[0.04] transition">
                             <div className="flex items-center gap-6">
                                 {s.imageUrl ? (
-                                    <div className="h-16 w-16 rounded-2xl overflow-hidden flex-shrink-0">
-                                        <img src={s.imageUrl} alt={s.name} className="h-full w-full object-cover" />
+                                    <div className="h-16 w-16 rounded-2xl overflow-hidden flex-shrink-0 relative">
+                                        <Image src={s.imageUrl} alt={s.name} fill unoptimized className="object-cover" />
                                     </div>
                                 ) : (
                                     <div className="h-16 w-16 rounded-2xl bg-white/5 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-gray-600">No Image</div>
