@@ -14,10 +14,10 @@ export default async function AdminDashboardPage() {
     const activeOrders = await prisma.order.findMany({
         where: {
             status: {
-                in: ["PAID", "PREPARING", "READY"]
+                in: ["PENDING", "PAID", "PREPARING", "READY"]
             }
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: "asc" }, // Oldest first
         include: { items: true }
     });
 
@@ -32,7 +32,8 @@ export default async function AdminDashboardPage() {
         include: { items: true }
     });
     
-    const orders = [...activeOrders, ...recentInactiveOrders].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    // Sort all orders so oldest is first (left) and newest is last (right)
+    const orders = [...activeOrders, ...recentInactiveOrders].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     return <AdminOrdersClient initialOrders={orders} />;
 }

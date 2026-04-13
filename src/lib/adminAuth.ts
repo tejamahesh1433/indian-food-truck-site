@@ -1,6 +1,18 @@
 import { SignJWT, jwtVerify } from "jose";
+import bcrypt from "bcryptjs";
 
 const COOKIE_NAME = "admin_token";
+const PIN_COOKIE_NAME = "pin_verified_token";
+
+export async function verifyAdminPassword(password: string): Promise<boolean> {
+    const hash = process.env.NEXT_PUBLIC_ADMIN_AUTH_HASH;
+    if (!hash) return false;
+    try {
+        return await bcrypt.compare(password, hash);
+    } catch (err) {
+        return false;
+    }
+}
 
 function getSecret() {
     const secret = process.env.JWT_SECRET;
@@ -18,13 +30,58 @@ export async function signAdminToken() {
 }
 
 export async function verifyAdminToken(token: string) {
+    try {
+        const secret = getSecret();
+        const { payload } = await jwtVerify(token, secret);
+        return payload?.role === "admin";
+    } catch {
+        return false;
+    }
+}
+
+export async function signPinToken() {
     const secret = getSecret();
-    const { payload } = await jwtVerify(token, secret);
-    return payload?.role === "admin";
+    return await new SignJWT({ pin_verified: true })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("5m")
+        .sign(secret);
+}
+
+export async function verifyPinToken(token: string) {
+    try {
+        const secret = getSecret();
+        const { payload } = await jwtVerify(token, secret);
+        return payload?.pin_verified === true;
+    } catch {
+        return false;
+    }
 }
 
 export function getAdminCookieName() {
     return COOKIE_NAME;
+}
+
+export function getPinCookieName() {
+    return PIN_COOKIE_NAME;
+}
+
+export function getClientIp(req: Request): string {
+    const xForwardedFor = req.headers.get("x-forwarded-for");
+    if (xForwardedFor) return xForwardedFor.split(",")[0].trim();
+    
+    const xRealIp = req.headers.get("x-real-ip");
+    if (xRealIp) return xRealIp;
+
+    const cfIp = req.headers.get("cf-connecting-ip");
+    if (cfIp) return cfIp;
+
+    return "127.0.0.1";
+}
+
+export function normalizeIp(ip: string): string {
+    if (ip === "::1" || ip === "::ffff:127.0.0.1" || ip === "localhost") return "127.0.0.1";
+    return ip;
 }
 
 export async function isAdmin() {
@@ -38,3 +95,4 @@ export async function isAdmin() {
         return false;
     }
 }
+

@@ -1,85 +1,174 @@
 import { NextResponse } from "next/server";
-import { signAdminToken, getAdminCookieName } from "@/lib/adminAuth";
+import { 
+    signAdminToken, 
+    getAdminCookieName, 
+    verifyPinToken, 
+    getPinCookieName, 
+    getClientIp, 
+    normalizeIp
+} from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
+import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 
-async function applyPersistentRateLimit(ip: string): Promise<boolean> {
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function getRateLimitRecord(ip: string) {
     const now = new Date();
-    const windowMs = 15 * 60 * 1000; // 15 minutes
+    return prisma.adminLoginAttempt.findFirst({
+        where: { 
+            ip: `login_${ip}`,
+            expiresAt: { gt: now }
+        }
+    });
+}
+
+async function checkRateLimit(ip: string): Promise<{ allowed: boolean; count: number }> {
+    const now = new Date();
     const maxAttempts = 5;
 
-    // Clean up expired records (optional, but good for DB size)
-    // We do it asynchronously to not block the login request
+    // Clean up expired records
     prisma.adminLoginAttempt.deleteMany({
         where: { expiresAt: { lt: now } }
     }).catch(() => {});
 
-    const record = await prisma.adminLoginAttempt.findFirst({
-        where: { 
-            ip,
-            expiresAt: { gt: now }
-        }
-    });
+    const record = await getRateLimitRecord(ip);
+    if (!record) return { allowed: true, count: 0 };
+
+    if (record.count >= maxAttempts) {
+        return { allowed: false, count: record.count };
+    }
+
+    return { allowed: true, count: record.count };
+}
+
+async function incrementRateLimit(ip: string) {
+    const now = new Date();
+    const windowMs = 15 * 60 * 1000;
+    const record = await getRateLimitRecord(ip);
 
     if (!record) {
-        await prisma.adminLoginAttempt.create({
+        return prisma.adminLoginAttempt.create({
             data: {
-                ip,
+                ip: `login_${ip}`,
                 count: 1,
                 expiresAt: new Date(now.getTime() + windowMs)
             }
         });
-        return true;
     }
 
-    if (record.count >= maxAttempts) {
-        return false;
-    }
-
-    await prisma.adminLoginAttempt.update({
+    return prisma.adminLoginAttempt.update({
         where: { id: record.id },
         data: { count: record.count + 1 }
     });
-
-    return true;
 }
 
-/**
- * Timing-safe string comparison.
- * Hashing both strings first to ensure equal length for timingSafeEqual.
- */
-function isPasswordCorrect(input: string, correct: string): boolean {
-    const inputHash = crypto.createHash("sha256").update(input).digest();
-    const correctHash = crypto.createHash("sha256").update(correct).digest();
-    return crypto.timingSafeEqual(inputHash, correctHash);
+async function resetRateLimit(ip: string) {
+    return prisma.adminLoginAttempt.deleteMany({
+        where: { ip: `login_${ip}` }
+    }).catch(() => {});
 }
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const rawIp = getClientIp(req);
+    const normalizedIp = normalizeIp(rawIp);
+    const maxAttempts = 5;
+
+    // 1. PIN Check (Bypass Protection)
+    const cookieStore = await cookies();
+    const pinToken = cookieStore.get(getPinCookieName())?.value;
     
-    if (!(await applyPersistentRateLimit(ip))) {
+    if (!pinToken || !(await verifyPinToken(pinToken))) {
+        console.warn(`[Login] Forbidden: Missing/Invalid PIN token from ${normalizedIp}`);
+        return NextResponse.json(
+            { ok: false, error: "Access gate not verified. Please enter the PIN first." },
+            { status: 403 }
+        );
+    }
+
+    const rateLimit = await checkRateLimit(normalizedIp);
+    if (!rateLimit.allowed) {
+        console.warn(`[Login] Rate limited: ${normalizedIp}`);
         return NextResponse.json(
             { ok: false, error: "Too many login attempts. Please try again later." },
             { status: 429 }
         );
     }
 
-    const { password } = await req.json().catch(() => ({ password: "" }));
+    const { password: rawPassword } = await req.json().catch(() => ({ password: "" }));
+    const password = rawPassword.trim(); // Resilient to accidental spaces
 
-    if (!process.env.ADMIN_PASSWORD || !process.env.JWT_SECRET) {
+    if (!process.env.JWT_SECRET) {
         return NextResponse.json(
             { ok: false, error: "Server not configured" },
             { status: 500 }
         );
     }
 
-    if (!isPasswordCorrect(password, process.env.ADMIN_PASSWORD)) {
-        return NextResponse.json({ ok: false, error: "Wrong password" }, { status: 401 });
+    // --- BULLETPROOF PASSWORD CHECK ---
+    let hash = process.env.NEXT_PUBLIC_ADMIN_AUTH_HASH;
+    let source = "process.env";
+    
+    // Fail-safe: read from .env if process.env misses it
+    if (!hash) {
+        try {
+            const envContent = fs.readFileSync(path.join(process.cwd(), ".env"), "utf-8");
+            const match = envContent.match(/NEXT_PUBLIC_ADMIN_AUTH_HASH=['"]?([^'"\s]+)['"]?/);
+            if (match) {
+                hash = match[1];
+                source = "disk (.env)";
+            }
+        } catch (e) {}
     }
+
+    if (!hash) {
+        console.error("[Login] CRITICAL: Password hash not found anywhere.");
+        return NextResponse.json({ ok: false, error: "Server not configured" }, { status: 500 });
+    }
+
+    // --- BASE64 FAIL-SAFE ---
+    // If the hash is Base64 encoded (to protect special chars), decode it
+    if (hash.length > 60 || !hash.startsWith("$2b$")) {
+        try {
+            const decoded = Buffer.from(hash, "base64").toString("utf-8");
+            if (decoded.startsWith("$2b$")) {
+                hash = decoded;
+            }
+        } catch (e) {}
+    }
+
+    const isCorrect = await bcrypt.compare(password, hash).catch(() => false);
+    // --- END BULLETPROOF CHECK ---
+
+    if (!isCorrect) {
+        console.warn(`[Login] Failed: Wrong password from ${normalizedIp}`);
+        await sleep(1000); // Artificial delay to slow down brute-force
+        
+        // Increment failure count
+        const updatedRecord = await incrementRateLimit(normalizedIp);
+        const attemptsLeft = Math.max(0, maxAttempts - updatedRecord.count);
+
+        return NextResponse.json({ 
+            ok: false, 
+            error: "Wrong password", 
+            attemptsLeft 
+        }, { status: 401 });
+    }
+
+    console.log(`[Login] Success: Admin logged in from ${normalizedIp}`);
+    
+    // Clear failure counter for this IP on successful login
+    await resetRateLimit(normalizedIp);
 
     const token = await signAdminToken();
 
     const res = NextResponse.json({ ok: true });
+    
+    // Set admin token
     res.cookies.set(getAdminCookieName(), token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -87,5 +176,11 @@ export async function POST(req: Request) {
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
     });
+
+    // Clear PIN token as it's no longer needed
+    res.cookies.delete(getPinCookieName());
+
     return res;
 }
+
+

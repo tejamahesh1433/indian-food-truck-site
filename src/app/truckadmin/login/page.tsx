@@ -16,6 +16,10 @@ export default function AdminLoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const pinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+    const clearPin = async () => {
+        await fetch("/api/verify-pin/clear", { method: "POST" }).catch(() => {});
+    };
+
     const handlePinChange = (index: number, value: string) => {
         if (value.length > 1) value = value.slice(-1);
         if (value && !/^\d$/.test(value)) return;
@@ -50,7 +54,7 @@ export default function AdminLoginPage() {
 
     const handlePinPaste = (e: React.ClipboardEvent) => {
         e.preventDefault();
-        const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+        const pasted = e.clipboardData.getData("text").trim().replace(/\D/g, "").slice(0, 6);
         if (pasted.length === 6) {
             const newPin = pasted.split("");
             setPin(newPin);
@@ -70,19 +74,28 @@ export default function AdminLoginPage() {
                 body: JSON.stringify({ pin: code }),
             });
 
+            const data = await res.json().catch(() => ({}));
+
             if (!res.ok) {
                 setShake(true);
                 setTimeout(() => setShake(false), 500);
                 setPin(["", "", "", "", "", ""]);
                 pinRefs.current[0]?.focus();
-                setErr("Invalid access code");
+                
+                if (res.status === 429) {
+                    setErr(data.error || "Too many attempts. Locked for 15 minutes.");
+                } else if (data.attemptsLeft !== undefined) {
+                    setErr(`${data.error || "Invalid access code"} · ${data.attemptsLeft} attempts left`);
+                } else {
+                    setErr(data.error || "Invalid access code");
+                }
                 setLoading(false);
                 return;
             }
 
             setStep("login");
         } catch {
-            setErr("Connection error");
+            setErr("Connection error. Check your internet.");
         } finally {
             setLoading(false);
         }
@@ -93,21 +106,35 @@ export default function AdminLoginPage() {
         setErr(null);
         setLoading(true);
 
-        const res = await fetch("/api/admin/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ password }),
-        });
+        try {
+            const res = await fetch("/api/admin/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password }),
+            });
 
-        setLoading(false);
-
-        if (!res.ok) {
             const data = await res.json().catch(() => ({}));
-            setErr(data?.error || "Login failed");
-            return;
-        }
 
-        router.push("/admin");
+            if (!res.ok) {
+                if (data.attemptsLeft !== undefined) {
+                    setErr(`${data.error || "Login failed"} · ${data.attemptsLeft} attempts left`);
+                } else {
+                    setErr(data?.error || "Login failed");
+                }
+                if (res.status === 403) {
+                    // PIN expired or invalid
+                    setStep("pin");
+                    setPin(["", "", "", "", "", ""]);
+                }
+                return;
+            }
+
+            router.push("/admin");
+        } catch {
+            setErr("Connection error");
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
@@ -121,12 +148,31 @@ export default function AdminLoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md z-10"
             >
-                <Link href="/" className="inline-flex items-center gap-2 mb-6 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-orange-500 transition">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Back to Website
-                </Link>
+                <div className="flex items-center justify-between mb-6">
+                    <Link 
+                        href="/" 
+                        onClick={() => { clearPin(); }}
+                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-orange-500 transition"
+                    >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Website
+                    </Link>
+                    
+                    {step === "login" && (
+                        <button 
+                            onClick={() => {
+                                setStep("pin");
+                                clearPin();
+                            }}
+                            className="text-xs font-black uppercase tracking-widest text-gray-500 hover:text-white transition"
+                        >
+                            Back to PIN
+                        </button>
+                    )}
+                </div>
+
 
                 <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 backdrop-blur-2xl shadow-2xl relative overflow-hidden">
                     <AnimatePresence mode="wait">
@@ -181,13 +227,20 @@ export default function AdminLoginPage() {
                                 </motion.div>
 
                                 {err && (
-                                    <motion.p
-                                        initial={{ opacity: 0, y: -5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-center text-red-400 text-xs font-bold"
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className={`p-4 rounded-2xl border text-center text-xs font-bold ${
+                                            err.includes("Too many") 
+                                            ? "bg-red-500/10 border-red-500/20 text-red-400" 
+                                            : "bg-orange-500/10 border-orange-500/20 text-orange-400"
+                                        }`}
                                     >
-                                        {err}
-                                    </motion.p>
+                                        <p>{err}</p>
+                                        {err.includes("Too many") && (
+                                            <p className="mt-1 text-[10px] opacity-60 uppercase tracking-tighter">Security lock active</p>
+                                        )}
+                                    </motion.div>
                                 )}
 
                                 {loading && (
@@ -200,6 +253,7 @@ export default function AdminLoginPage() {
                                 )}
                             </motion.div>
                         ) : (
+
                             <motion.div
                                 key="login"
                                 initial={{ opacity: 0, x: 20 }}

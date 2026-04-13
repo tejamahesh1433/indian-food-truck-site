@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import OrderStatusActions from "./orders/OrderStatusActions";
 import AdminOrderChat from "./orders/AdminOrderChat";
 import { Order, OrderItem } from "@prisma/client";
+import { motion, AnimatePresence } from "framer-motion";
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
 function OrderCard({ order }: { order: OrderWithItems }) {
     return (
-        <div className="border border-white/10 rounded-2xl bg-zinc-900 overflow-hidden flex flex-col hover:border-white/20 transition-all shadow-xl shrink-0">
+        <div className="w-[340px] min-h-[500px] border border-white/10 rounded-2xl bg-zinc-900 overflow-hidden flex flex-col hover:border-white/20 transition-all shadow-xl shrink-0 snap-start">
             {/* Card Header */}
             <div className="bg-black/40 p-4 border-b border-white/5 flex items-start justify-between">
                 <div className="space-y-1">
@@ -77,9 +78,10 @@ function OrderCard({ order }: { order: OrderWithItems }) {
 
 export default function AdminOrdersClient({ initialOrders }: { initialOrders: OrderWithItems[] }) {
     const [orders, setOrders] = useState<OrderWithItems[]>(initialOrders);
+    const [activeTab, setActiveTab] = useState<string>("NEW");
 
     useEffect(() => {
-        // Heartbeat polling: direct client fetch to completely bypass aggressive Next.js routing cache
+        // Heartbeat polling
         const heartbeat = setInterval(async () => {
             try {
                 const res = await fetch('/api/admin/orders/live', { cache: 'no-store' });
@@ -119,11 +121,14 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Or
         },
     ];
 
+    const currentColumn = columns.find(c => c.id === activeTab) || columns[0];
+    const filteredOrders = orders.filter(o => currentColumn.statuses.includes(o.status));
+
     return (
         <div className="flex flex-col space-y-8 pb-12">
-            <div className="flex items-center justify-between shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                    <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3 italic tracking-tighter uppercase">
                         <span className="w-2 h-8 bg-orange-500 rounded-full inline-block"></span>
                         Orders Control Center
                     </h1>
@@ -135,38 +140,94 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Or
                         Live Auto-Refresh Active
                     </p>
                 </div>
+
+                {/* Centered Tab Navigation */}
+                <div className="flex-1 flex justify-center">
+                    <div className="flex items-center gap-1 bg-white/5 border border-white/10 p-1.5 rounded-2xl backdrop-blur-xl">
+                        {columns.map((col) => {
+                            const count = orders.filter(o => col.statuses.includes(o.status)).length;
+                            const isActive = activeTab === col.id;
+                            
+                            return (
+                                <button
+                                    key={col.id}
+                                    onClick={() => setActiveTab(col.id)}
+                                    className={`relative px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 overflow-hidden
+                                        ${isActive ? "text-white" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
+                                >
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeTabGlow"
+                                            className={`absolute inset-0 opacity-20 ${col.accent}`}
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                        />
+                                    )}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="activeTabContent"
+                                            className="absolute inset-0 bg-white/10 border border-white/20 rounded-xl"
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                        />
+                                    )}
+                                    
+                                    <span className={`relative z-10 w-2 h-2 rounded-full ${col.accent} shadow-[0_0_8px_rgba(0,0,0,0.5)]`} />
+                                    <span className="relative z-10">{col.label}</span>
+                                    <span className={`relative z-10 px-1.5 py-0.5 rounded-md text-[9px] font-black ${isActive ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-600'}`}>
+                                        {count}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
 
             {/* Order Feed Sections */}
-            <div className="space-y-10">
-                {columns.map((col) => {
-                    const colOrders = orders.filter((o) => col.statuses.includes(o.status));
+            <AnimatePresence mode="wait">
+                <motion.div 
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full flex flex-col min-h-[400px]"
+                >
+                    {/* Section Header (Optional now, but good for context) */}
+                    <div className="flex items-center gap-3 mb-8 pl-2">
+                        <div className={`w-3 h-3 rounded-full ${currentColumn.accent} shadow-[0_0_12px_rgba(0,0,0,0.8)]`} />
+                        <h2 className="font-black text-2xl tracking-widest uppercase text-white italic">{currentColumn.label} Feed</h2>
+                        <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-4" />
+                    </div>
                     
-                    return (
-                        <div key={col.id} className="w-full flex flex-col">
-                            {/* Section Header */}
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className={`w-3 h-3 rounded-full ${col.accent} shadow-[0_0_12px_rgba(0,0,0,0.8)]`} />
-                                <h2 className="font-black text-xl tracking-widest uppercase text-white">{col.label}</h2>
-                                <span className={`px-3 py-1 rounded-full text-xs font-black bg-white/10 ${col.text}`}>
-                                    {colOrders.length}
-                                </span>
+                    {/* Order Cards Grid */}
+                    {filteredOrders.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center p-20 text-center border-2 border-dashed border-white/5 rounded-[2.5rem] bg-white/[0.01] backdrop-blur-sm">
+                            <div className={`w-16 h-16 rounded-3xl ${currentColumn.accent} opacity-5 flex items-center justify-center mb-6`}>
+                                <svg className={`w-8 h-8 ${currentColumn.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                </svg>
                             </div>
-                            
-                            {/* Order Cards Grid */}
-                            {colOrders.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-white/10 rounded-2xl bg-white/[0.02]">
-                                    <p className="text-sm font-bold uppercase tracking-widest text-gray-500">No {col.label.toLowerCase()} orders</p>
-                                </div>
-                            ) : (
-                                <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 items-stretch">
-                                    {colOrders.map(order => <OrderCard key={order.id} order={order} />)}
-                                </div>
-                            )}
+                            <p className="text-lg font-bold uppercase tracking-[0.2em] text-gray-500 italic">No {currentColumn.label.toLowerCase()} orders at the moment</p>
+                            <p className="text-xs text-gray-600 mt-2 uppercase font-black tracking-widest">Everything is up to date</p>
                         </div>
-                    );
-                })}
-            </div>
+                    ) : (
+                        <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory items-stretch hide-scrollbars no-scrollbar">
+                            {filteredOrders.map(order => (
+                                <motion.div 
+                                    key={order.id}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.9, x: -20 }}
+                                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="shrink-0 snap-start"
+                                >
+                                    <OrderCard order={order} />
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 }
