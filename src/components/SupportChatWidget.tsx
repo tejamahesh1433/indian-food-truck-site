@@ -293,7 +293,8 @@ export default function SupportChatWidget() {
                         <Image
                             src="/icon.png"
                             alt="Support"
-                            fill
+                            width={64}
+                            height={64}
                             className="object-cover rounded-full group-hover:scale-105 transition-transform"
                         />
                         {chat && (

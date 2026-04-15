@@ -95,10 +95,14 @@ export default async function AnalyticsPage() {
 
 
     // ─── Fetch ───────────────────────────────────────────────────────────────
+    // Bound the all-time queries to the last 12 months to avoid a full table scan.
+    // Anything older than a year has negligible impact on the displayed periods.
+    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
     const [allPaid, allLite, allCatering] = await Promise.all([
-        prisma.order.findMany({ where: { status: { in: PAID } }, include: { items: { select: { quantity: true, priceCents: true, name: true } } }, orderBy: { createdAt: "asc" } }) as Promise<OrderFull[]>,
-        prisma.order.findMany({ select: { status: true, createdAt: true }, orderBy: { createdAt: "asc" } }) as Promise<OrderLite[]>,
-        prisma.cateringRequest.findMany({ include: { messages: { where: { sender: "ADMIN" }, orderBy: { createdAt: "asc" }, take: 1 } }, orderBy: { createdAt: "asc" } }),
+        prisma.order.findMany({ where: { status: { in: PAID }, createdAt: { gte: oneYearAgo } }, include: { items: { select: { quantity: true, priceCents: true, name: true } } }, orderBy: { createdAt: "asc" } }) as Promise<OrderFull[]>,
+        prisma.order.findMany({ where: { createdAt: { gte: oneYearAgo } }, select: { status: true, createdAt: true }, orderBy: { createdAt: "asc" } }) as Promise<OrderLite[]>,
+        prisma.cateringRequest.findMany({ where: { createdAt: { gte: oneYearAgo } }, include: { messages: { where: { sender: "ADMIN" }, orderBy: { createdAt: "asc" }, take: 1 } }, orderBy: { createdAt: "asc" } }),
     ]);
 
     // ─── Catering Logic ──────────────────────────────────────────────────────

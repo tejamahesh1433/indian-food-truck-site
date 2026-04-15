@@ -143,9 +143,14 @@ export default function AdminSettingsPage() {
     });
 
     useEffect(() => {
+        const controller = new AbortController();
+        const abortId = setTimeout(() => controller.abort(), 10000);
+        // Safety fallback: clear loading even if the abort race is cancelled (e.g. in StrictMode cleanup)
+        const safetyId = setTimeout(() => setLoading(false), 15000);
+
         (async () => {
             try {
-                const res = await fetch("/api/admin/settings");
+                const res = await fetch("/api/admin/settings", { signal: controller.signal });
                 if (res.ok) {
                     const data = await res.json();
                     const f: SettingsForm = {
@@ -165,10 +170,17 @@ export default function AdminSettingsPage() {
                         setLastSaved(new Date(data.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
                     }
                 }
+            } catch (err) {
+                if ((err as Error).name !== "AbortError") {
+                    console.error("Failed to fetch settings:", err);
+                }
             } finally {
+                clearTimeout(abortId);
+                clearTimeout(safetyId);
                 setLoading(false);
             }
         })();
+        return () => { clearTimeout(abortId); clearTimeout(safetyId); controller.abort(); };
     }, []);
 
     const hasChanges = useMemo(() => {

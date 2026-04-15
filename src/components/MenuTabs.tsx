@@ -47,6 +47,7 @@ function ItemCard({ item, onAdd, onFavorite, isFavorite }: { item: MenuItem; onA
                         src={item.imageUrl}
                         alt={item.name}
                         fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                         className="object-cover group-hover:scale-[1.03] transition duration-300"
                         priority={false}
                     />
@@ -178,23 +179,30 @@ export default function MenuTabs() {
     const { toast } = useToast();
 
     useEffect(() => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s max
+
         const fetchData = async () => {
             try {
                 const [itemsRes, catsRes] = await Promise.all([
-                    fetch("/api/menu-items"),
-                    fetch("/api/categories")
+                    fetch("/api/menu-items", { signal: controller.signal }),
+                    fetch("/api/categories", { signal: controller.signal })
                 ]);
                 const itemsData = await itemsRes.json();
                 const catsData = await catsRes.json();
                 setItems(itemsData.items || []);
                 setCategories(["All", ...(catsData.categories || [])]);
             } catch (err) {
-                console.error("Failed to fetch menu data", err);
+                if ((err as Error).name !== "AbortError") {
+                    console.error("Failed to fetch menu data", err);
+                }
             } finally {
+                clearTimeout(timeoutId);
                 setLoading(false);
             }
         };
         fetchData();
+        return () => { clearTimeout(timeoutId); controller.abort(); };
     }, []);
 
     useEffect(() => {

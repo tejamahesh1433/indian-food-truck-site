@@ -27,7 +27,7 @@ export const test = base.extend<AdminFixtures>({
         // Create a fresh browser context pre-loaded with the saved auth cookie.
         // This is equivalent to being logged in without any API calls.
         const context = await browser.newContext({
-            baseURL: process.env.NEXT_PUBLIC_BASE_URL || "http://127.0.0.1:3000",
+            baseURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
             storageState: AUTH_STATE_PATH,
         });
 

@@ -6,10 +6,65 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPOSManager } from '@/lib/pos/manager';
 import { POSWebhookPayload } from '@/lib/pos/types';
+import crypto from 'crypto';
+
+/**
+ * Verifies POS webhook signature using HMAC-SHA256.
+ * Signature header value may optionally be prefixed with "sha256=".
+ * Uses timing-safe comparison to prevent timing attacks.
+ */
+function verifyPOSSignature(payload: string, signature: string, secret: string): boolean {
+    const expected = crypto
+        .createHmac('sha256', secret)
+        .update(payload, 'utf8')
+        .digest('hex');
+
+    const provided = signature.startsWith('sha256=') ? signature.slice(7) : signature;
+
+    try {
+        return crypto.timingSafeEqual(
+            Buffer.from(provided, 'hex'),
+            Buffer.from(expected, 'hex'),
+        );
+    } catch {
+        return false;
+    }
+}
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json() as POSWebhookPayload;
+        // Read raw body first — required for signature verification
+        const rawBody = await req.text();
+
+        // Verify webhook signature when a secret is configured
+        const webhookSecret = process.env.POS_WEBHOOK_SECRET;
+        if (webhookSecret) {
+            const signature = req.headers.get('x-pos-signature');
+            if (!signature) {
+                console.warn('[POS] Webhook rejected: missing x-pos-signature header');
+                return NextResponse.json(
+                    { error: 'Missing webhook signature' },
+                    { status: 401 },
+                );
+            }
+            if (!verifyPOSSignature(rawBody, signature, webhookSecret)) {
+                console.warn('[POS] Webhook rejected: invalid signature');
+                return NextResponse.json(
+                    { error: 'Invalid webhook signature' },
+                    { status: 401 },
+                );
+            }
+        }
+
+        let body: POSWebhookPayload;
+        try {
+            body = JSON.parse(rawBody) as POSWebhookPayload;
+        } catch {
+            return NextResponse.json(
+                { error: 'Invalid JSON payload' },
+                { status: 400 },
+            );
+        }
 
         if (!body.event) {
             return NextResponse.json(

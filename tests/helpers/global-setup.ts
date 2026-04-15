@@ -40,9 +40,9 @@ function loadEnvTest() {
 loadEnvTest();
 
 // ── Constants ──────────────────────────────────────────────────────────────
-const ADMIN_PIN = process.env.ADMIN_ACCESS_PIN || "";
+const ADMIN_PIN = process.env.ADMIN_ACCESS_PIN || "229495";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "TejaFoodTruck@2026!";
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://127.0.0.1:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 export const AUTH_STATE_PATH = resolve(process.cwd(), "tests/helpers/.auth-state.json");
 
 // ── Setup ──────────────────────────────────────────────────────────────────
@@ -72,37 +72,68 @@ export default async function globalSetup() {
     const page = await browser.newPage();
 
     try {
+
+        // Navigate to /truckadmin/login so the browser context has the correct origin for API calls
         await page.goto(`${BASE_URL}/truckadmin/login`);
+        await page.waitForLoadState("domcontentloaded");
 
-        // ── Step 1: PIN ────────────────────────────────────────────────────
-        // Click the first input then keyboard.type so React's auto-advance
-        // moves focus correctly and state commits between each character.
-        await page.locator('input[inputmode="numeric"]').first().click();
-        await page.keyboard.type(ADMIN_PIN, { delay: 150 });
+        // ── Step 1: Verify PIN via API (runs inside browser context so cookies persist) ──────
+        console.log("[global-setup] Step 1: Verifying PIN via API...");
+        const pinResult = await page.evaluate(async (pin) => {
+            // Clear any existing rate limits first
+            await fetch("/api/verify-pin/clear", { method: "POST" }).catch(() => {});
 
-        // Wait for the verify-pin API call to resolve
-        await page.waitForTimeout(1000);
+            const res = await fetch("/api/verify-pin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pin }),
+            });
+            const data = await res.json().catch(() => ({}));
+            return { ok: res.ok, status: res.status, data };
+        }, ADMIN_PIN);
 
-        // Fallback: press Enter on the last digit input if auto-submit didn't fire
-        const passwordVisible = await page
-            .getByPlaceholder(/admin password/i)
-            .isVisible()
-            .catch(() => false);
-        if (!passwordVisible) {
-            await page.locator('input[inputmode="numeric"]').nth(5).press("Enter");
+        if (!pinResult.ok) {
+            throw new Error(
+                `PIN verification failed (HTTP ${pinResult.status}): ` +
+                JSON.stringify(pinResult.data)
+            );
         }
+        console.log("[global-setup] ✓ PIN verified");
 
-        // Wait for the password step
-        await page
-            .getByPlaceholder(/admin password/i)
-            .waitFor({ state: "visible", timeout: 20000 });
+        // ── Step 2: Admin login via API (pin cookie is now set in browser context) ────────────
+        console.log("[global-setup] Step 2: Logging in via password API...");
+        const loginResult = await page.evaluate(async (password) => {
+            const res = await fetch("/api/admin/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    // Include Origin header to satisfy CSRF guard
+                    "Origin": window.location.origin,
+                },
+                body: JSON.stringify({ password }),
+            });
+            const data = await res.json().catch(() => ({}));
+            return { ok: res.ok, status: res.status, data };
+        }, ADMIN_PASSWORD);
 
-        // ── Step 2: Password ───────────────────────────────────────────────
-        await page.getByPlaceholder(/admin password/i).fill(ADMIN_PASSWORD);
-        await page.getByRole("button", { name: /sign in/i }).click();
+        if (!loginResult.ok) {
+            throw new Error(
+                `Admin login failed (HTTP ${loginResult.status}): ` +
+                JSON.stringify(loginResult.data)
+            );
+        }
+        console.log("[global-setup] ✓ Admin password accepted");
 
-        // Wait for redirect to the admin dashboard
-        await page.waitForURL(/\/admin(?!.*login)/, { timeout: 15000 });
+        // ── Step 3: Navigate to /admin to confirm the cookie works ────────────────────────────
+        await page.goto(`${BASE_URL}/admin`);
+        await page.waitForLoadState("domcontentloaded");
+
+        // If redirected back to login, something went wrong with the cookie
+        if (/login|truckadmin/.test(page.url())) {
+            throw new Error(
+                `Admin cookie not accepted — redirected to ${page.url()} after login.`
+            );
+        }
 
         // Save the auth cookie so all adminPage fixtures can reuse it
         mkdirSync(dirname(AUTH_STATE_PATH), { recursive: true });

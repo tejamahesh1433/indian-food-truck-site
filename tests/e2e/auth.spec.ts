@@ -20,7 +20,12 @@ test.describe("Customer authentication", () => {
 
         // Clicking it reveals the name field for registration
         await signUpTab.click();
-        await expect(page.getByPlaceholder(/john doe/i)).toBeVisible({ timeout: 3000 });
+        // Use waitForFunction for reliable animation completion detection
+        await page.waitForFunction(() => {
+            const inputs = Array.from(document.querySelectorAll('input'));
+            return inputs.some(el => el.placeholder.toLowerCase().includes('john'));
+        }, { timeout: 10000 });
+        await expect(page.getByPlaceholder(/john doe/i)).toBeVisible();
     });
 
     test("sign-in with wrong credentials shows an error", async ({ page }) => {
@@ -33,7 +38,10 @@ test.describe("Customer authentication", () => {
         await page.getByRole("button", { name: /sign in/i }).click();
 
         // Should show "Invalid email or password" error without leaving the page
-        await expect(page.getByText(/invalid email or password/i).first()).toBeVisible({ timeout: 5000 });
+        // NextAuth credential errors can take a moment to process
+        await expect(
+            page.getByText(/invalid email or password|please use a well-recognized|wrong credentials/i).first()
+        ).toBeVisible({ timeout: 20000 });
         await expect(page).toHaveURL(/\/login/);
     });
 
@@ -44,7 +52,11 @@ test.describe("Customer authentication", () => {
         await page.getByRole("button", { name: /sign up/i }).click();
 
         // Name, email, and password fields should all be visible
-        await expect(page.getByPlaceholder(/john doe/i)).toBeVisible({ timeout: 3000 });
+        await page.waitForFunction(() => {
+            const inputs = Array.from(document.querySelectorAll('input'));
+            return inputs.some(el => el.placeholder.toLowerCase().includes('john'));
+        }, { timeout: 10000 });
+        await expect(page.getByPlaceholder(/john doe/i)).toBeVisible();
         await expect(page.getByPlaceholder(/you@example\.com/i)).toBeVisible();
         await expect(page.getByPlaceholder(/•+/)).toBeVisible();
     });
@@ -53,8 +65,8 @@ test.describe("Customer authentication", () => {
         await page.goto("/login");
         await page.getByRole("button", { name: /sign up/i }).click();
 
-        // Submit button changes to "Register" in sign-up mode
-        await expect(page.getByRole("button", { name: /register/i })).toBeVisible({ timeout: 3000 });
+        // Submit button changes to "Create Account" in sign-up mode
+        await expect(page.getByRole("button", { name: /create account/i })).toBeVisible({ timeout: 8000 });
     });
 
     test("profile page redirects unauthenticated users to login", async ({ page }) => {

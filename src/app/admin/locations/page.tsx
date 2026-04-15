@@ -56,9 +56,14 @@ export default function AdminLocationsPage() {
     const [initialForm, setInitialForm] = useState<StopForm | null>(null);
 
     useEffect(() => {
+        const controller = new AbortController();
+        const abortId = setTimeout(() => controller.abort(), 10000);
+        // Safety fallback: clear loading even if the abort race is cancelled (e.g. in StrictMode cleanup)
+        const safetyId = setTimeout(() => setLoading(false), 15000);
+
         (async () => {
             try {
-                const settingsRes = await fetch("/api/admin/settings").catch(() => null);
+                const settingsRes = await fetch("/api/admin/settings", { signal: controller.signal }).catch(() => null);
 
                 if (settingsRes?.ok) {
                     const data = await settingsRes.json();
@@ -81,11 +86,16 @@ export default function AdminLocationsPage() {
                     if (data.updatedAt) setLastPublished(new Date(data.updatedAt));
                 }
             } catch (err) {
-                console.error("Initialization error:", err);
+                if ((err as Error).name !== "AbortError") {
+                    console.error("Initialization error:", err);
+                }
             } finally {
+                clearTimeout(abortId);
+                clearTimeout(safetyId);
                 setLoading(false);
             }
         })();
+        return () => { clearTimeout(abortId); clearTimeout(safetyId); controller.abort(); };
     }, []);
 
     const hasChanges = initialForm && JSON.stringify(form) !== JSON.stringify(initialForm);

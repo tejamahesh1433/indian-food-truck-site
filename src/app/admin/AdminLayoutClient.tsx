@@ -45,10 +45,9 @@ export default function AdminLayoutClient({ children, businessName }: { children
             )}
 
             {/* Sidebar */}
-            <aside 
-                className={`fixed lg:relative top-0 left-0 z-50 h-full bg-zinc-900 flex flex-col transition-all duration-300 overflow-hidden shrink-0 ${
-                    sidebarOpen ? "w-64 border-r border-white/10" : "w-0 border-r-0"
-                }`}
+            <aside
+                suppressHydrationWarning
+                className={"fixed lg:relative top-0 left-0 z-50 h-full bg-zinc-900 flex flex-col transition-[width] duration-300 overflow-hidden shrink-0 " + (sidebarOpen ? "w-64 border-r border-white/10" : "w-0 border-r-0")}
             >
                 <div className="w-64 h-full flex flex-col">
                 {/* Sidebar Header */}
@@ -72,9 +71,7 @@ export default function AdminLayoutClient({ children, businessName }: { children
                                         setSidebarOpen(false);
                                     }
                                 }}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition font-medium text-sm ${
-                                    isActive ? "bg-orange-500/10 text-orange-400" : "text-gray-400 hover:bg-white/5 hover:text-white"
-                                }`}
+                                className={"flex items-center gap-3 px-3 py-2.5 rounded-lg transition font-medium text-sm " + (isActive ? "bg-orange-500/10 text-orange-400" : "text-gray-400 hover:bg-white/5 hover:text-white")}
                             >
                                 <span className="text-lg">{item.icon}</span>
                                 {item.name}

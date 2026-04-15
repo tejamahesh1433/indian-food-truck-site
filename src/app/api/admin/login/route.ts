@@ -78,6 +78,23 @@ export async function POST(req: Request) {
     const normalizedIp = normalizeIp(rawIp);
     const maxAttempts = 5;
 
+    // 0. CSRF: reject requests that originate from a different host
+    const origin = req.headers.get('origin');
+    const host = req.headers.get('host');
+    if (origin && host) {
+        let originHost: string;
+        try {
+            originHost = new URL(origin).host;
+        } catch {
+            console.warn(`[Login] CSRF guard: unparseable origin "${origin}" from ${normalizedIp}`);
+            return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+        }
+        if (originHost !== host) {
+            console.warn(`[Login] CSRF guard: origin "${origin}" does not match host "${host}" from ${normalizedIp}`);
+            return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+        }
+    }
+
     // 1. PIN Check (Bypass Protection)
     const cookieStore = await cookies();
     const pinToken = cookieStore.get(getPinCookieName())?.value;
