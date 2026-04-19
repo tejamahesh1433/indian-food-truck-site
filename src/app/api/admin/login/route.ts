@@ -5,7 +5,8 @@ import {
     verifyPinToken, 
     getPinCookieName, 
     getClientIp, 
-    normalizeIp
+    normalizeIp,
+    verifyAdminPassword
 } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
@@ -43,6 +44,7 @@ async function checkRateLimit(ip: string): Promise<{ allowed: boolean; count: nu
 
     return { allowed: true, count: record.count };
 }
+
 
 async function incrementRateLimit(ip: string) {
     const now = new Date();
@@ -116,8 +118,7 @@ export async function POST(req: Request) {
         );
     }
 
-    const { password: rawPassword } = await req.json().catch(() => ({ password: "" }));
-    const password = rawPassword.trim(); // Resilient to accidental spaces
+    const { password } = await req.json().catch(() => ({ password: "" }));
 
     if (!process.env.JWT_SECRET) {
         return NextResponse.json(
@@ -126,39 +127,7 @@ export async function POST(req: Request) {
         );
     }
 
-    // --- BULLETPROOF PASSWORD CHECK ---
-    let hash = process.env.ADMIN_AUTH_HASH;
-    let source = "process.env";
-    
-    // Fail-safe: read from .env if process.env misses it
-    if (!hash) {
-        try {
-            const envContent = fs.readFileSync(path.join(process.cwd(), ".env"), "utf-8");
-            const match = envContent.match(/ADMIN_AUTH_HASH=['"]?([^'"\s]+)['"]?/);
-            if (match) {
-                hash = match[1];
-                source = "disk (.env)";
-            }
-        } catch (e) {}
-    }
-
-    if (!hash) {
-        console.error("[Login] CRITICAL: Password hash not found anywhere.");
-        return NextResponse.json({ ok: false, error: "Server not configured" }, { status: 500 });
-    }
-
-    // --- BASE64 FAIL-SAFE ---
-    // If the hash is Base64 encoded (to protect special chars), decode it
-    if (hash.length > 60 || !hash.startsWith("$2b$")) {
-        try {
-            const decoded = Buffer.from(hash, "base64").toString("utf-8");
-            if (decoded.startsWith("$2b$")) {
-                hash = decoded;
-            }
-        } catch (e) {}
-    }
-
-    const isCorrect = await bcrypt.compare(password, hash).catch(() => false);
+    const isCorrect = await verifyAdminPassword(password);
     // --- END BULLETPROOF CHECK ---
 
     if (!isCorrect) {

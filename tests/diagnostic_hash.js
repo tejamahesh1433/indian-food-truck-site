@@ -1,0 +1,1 @@
+const bcrypt = require('bcryptjs'); const hash = Buffer.from('JDJiJDEwJHp4MHpHN2IyRUsudXNXYUFGdEJKZHVoNmQuRlhhR2ZwLzhQSjYuWDkvRHR6NFpDLy5hNFpD', 'base64').toString('utf-8'); console.log('Decoded Hash:', hash); console.log('Length:', hash.length);

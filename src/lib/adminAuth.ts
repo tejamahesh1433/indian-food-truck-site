@@ -5,11 +5,24 @@ const COOKIE_NAME = "admin_token";
 const PIN_COOKIE_NAME = "pin_verified_token";
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {
-    const hash = process.env.ADMIN_AUTH_HASH;
+    let hash = process.env.ADMIN_AUTH_HASH;
     if (!hash) return false;
+
+    // Decode Base64 if needed
+    if (hash.length > 60 || !hash.startsWith("$2b$")) {
+        try {
+            const decoded = Buffer.from(hash, "base64").toString("utf-8");
+            if (decoded.startsWith("$2b$")) {
+                hash = decoded;
+            }
+        } catch {
+            // Keep original if decode fails
+        }
+    }
+
     try {
         return await bcrypt.compare(password, hash);
-    } catch (err) {
+    } catch {
         return false;
     }
 }
