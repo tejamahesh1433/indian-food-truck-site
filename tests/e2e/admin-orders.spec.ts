@@ -12,8 +12,8 @@ test.describe("Admin orders dashboard", () => {
 
         await adminPage.waitForLoadState("domcontentloaded");
 
-        // Page title — admin/orders has h1 = "Order History"
-        const heading = adminPage.getByRole("heading", { name: /order history/i }).first();
+        // Page title — admin/orders has h1 = "Kitchen Display"
+        const heading = adminPage.getByRole("heading", { name: /kitchen display/i }).first();
         await expect(heading).toBeVisible({ timeout: 15000 });
     });
 

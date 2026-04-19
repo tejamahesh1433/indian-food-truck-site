@@ -20,8 +20,13 @@ export async function GET(
 
     if (!reqRow || !reqRow.chatEnabled) return bad("Not found", 404);
 
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
     const messages = await prisma.cateringMessage.findMany({
-        where: { requestId: reqRow.id },
+        where: { 
+            requestId: reqRow.id,
+            createdAt: { gte: fortyEightHoursAgo }
+        },
         orderBy: { createdAt: "asc" },
     });
 

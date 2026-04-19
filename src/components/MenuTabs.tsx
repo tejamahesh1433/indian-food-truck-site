@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useCart } from "@/lib/cart";
+import { useSearchParams } from "next/navigation";
 import ItemCustomizationModal, { type CustomizationMenuItem } from "./ItemCustomizationModal";
 import { useToast } from "@/components/ui/Toast";
 
@@ -177,6 +178,21 @@ export default function MenuTabs() {
 
     const { addToCart } = useCart();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
+
+    // Handle deep-linking to specific item cards
+    useEffect(() => {
+        if (!loading && items.length > 0) {
+            const itemId = searchParams.get("item");
+            if (itemId) {
+                const item = items.find(i => i.id === itemId);
+                if (item) {
+                    setSelectedItem(item);
+                    setIsModalOpen(true);
+                }
+            }
+        }
+    }, [loading, items, searchParams]);
 
     useEffect(() => {
         const controller = new AbortController();

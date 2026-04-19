@@ -89,7 +89,7 @@ export async function POST(req: Request) {
             console.warn(`[Login] CSRF guard: unparseable origin "${origin}" from ${normalizedIp}`);
             return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
         }
-        if (originHost !== host) {
+        if (originHost.toLowerCase() !== host.toLowerCase()) {
             console.warn(`[Login] CSRF guard: origin "${origin}" does not match host "${host}" from ${normalizedIp}`);
             return NextResponse.json({ ok: false, error: 'Forbidden' }, { status: 403 });
         }

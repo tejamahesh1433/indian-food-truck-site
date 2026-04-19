@@ -29,6 +29,14 @@ async function createTestOrder(overrides: Partial<{
 describe("Order lifecycle", () => {
     beforeEach(async () => {
         await resetDatabase();
+        // Create required menu items for foreign key constraints
+        await prisma.menuItem.createMany({
+            data: [
+                { id: "item-1", name: "Butter Chicken", category: "Mains", priceCents: 1299, inPos: true },
+                { id: "item-2", name: "Samosa", category: "Starters", priceCents: 599, inPos: true },
+                { id: "menu-item-xyz", name: "Chicken Tikka", category: "Mains", priceCents: 1199, inPos: true },
+            ],
+        });
         // Also clear auth-related tables for orders that reference User
         await prisma.orderMessage.deleteMany().catch(() => {});
         await prisma.orderItem.deleteMany().catch(() => {});

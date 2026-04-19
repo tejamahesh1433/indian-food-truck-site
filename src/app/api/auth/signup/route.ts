@@ -45,15 +45,24 @@ export async function POST(req: Request) {
                 name,
                 email,
                 password: hashedPassword,
+                // If verification is not required, we can mark it as verified immediately 
+                // but usually we wait for the trigger. 
+                // For now, let's keep it null and trigger the email.
             }
         });
+
+        // 5. Trigger Verification if required
+        const { sendVerificationEmail } = await import("@/lib/verification");
+        const verificationResult = await sendVerificationEmail(email);
 
         return NextResponse.json({
             user: {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-            }
+            },
+            verificationPending: verificationResult.success && verificationResult.message !== "Email verification not required",
+            message: verificationResult.error || verificationResult.message
         }, { status: 201 });
 
     } catch (error) {

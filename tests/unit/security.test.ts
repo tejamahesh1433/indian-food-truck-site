@@ -142,7 +142,7 @@ describe('CSRF Protection (Origin vs Host Validation)', () => {
       return { valid: false, reason: 'Invalid origin URL format' };
     }
 
-    if (originHost !== host) {
+    if (originHost.toLowerCase() !== host.toLowerCase()) {
       return {
         valid: false,
         reason: `Origin host "${originHost}" does not match server host "${host}"`,

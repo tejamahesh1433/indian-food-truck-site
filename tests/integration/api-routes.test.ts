@@ -156,6 +156,14 @@ describe("API Routes - Orders", () => {
     beforeEach(async () => {
         await resetDatabase();
         await seedBasicData();
+        // Create required menu items for foreign key constraints
+        await prisma.menuItem.createMany({
+            data: [
+                { id: "item-1", name: "Butter Chicken", category: "Mains", priceCents: 1299, inPos: true },
+                { id: "item-2", name: "Samosa", category: "Starters", priceCents: 599, inPos: true },
+            ],
+            skipDuplicates: true,
+        });
     });
 
     describe("POST /api/orders", () => {

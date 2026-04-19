@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     try {
         const location = await prisma.savedLocation.create({
             data: {
+                userId: body.userId || "admin", // Ensure a userId is provided
                 name: body.name,
                 address: body.address || null,
             }

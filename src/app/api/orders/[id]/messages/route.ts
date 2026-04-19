@@ -15,13 +15,25 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const adminToken = cookieStore.get(getAdminCookieName())?.value;
     const isAdmin = adminToken ? await verifyAdminToken(adminToken) : false;
 
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
     const order = await prisma.order.findUnique({
         where: { id: orderId },
-        include: { messages: { orderBy: { createdAt: "asc" } } }
+        include: { 
+            messages: { 
+                orderBy: { createdAt: "asc" } 
+            } 
+        }
     });
 
     if (!order) {
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    // Status-aware retention: If order is COMPLETED or CANCELLED, check if 48h has passed since completion/cancellation
+    const isTerminal = order.status === "COMPLETED" || order.status === "CANCELLED";
+    if (isTerminal && order.updatedAt < fortyEightHoursAgo) {
+        return NextResponse.json([]); // History expired after 48h in terminal state
     }
 
     // Permission check: Admin or the customer who placed the order

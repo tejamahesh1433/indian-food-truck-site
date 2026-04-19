@@ -468,6 +468,15 @@ describe("Error Handling - Concurrent Operations", () => {
                 },
             });
 
+            // Create required menu items for foreign key constraints
+            await prisma.menuItem.createMany({
+                data: [
+                    { id: "item-1", name: "Item 1", category: "Test", priceCents: 1000, inPos: true },
+                    { id: "item-2", name: "Item 2", category: "Test", priceCents: 500, inPos: true },
+                ],
+                skipDuplicates: true,
+            });
+
             // Add items concurrently
             const item1Promise = prisma.orderItem.create({
                 data: {

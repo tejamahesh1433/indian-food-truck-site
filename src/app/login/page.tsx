@@ -35,7 +35,7 @@ function NameField({ show, value, onChange }: {
                 marginBottom: show ? 0 : 0,
             }}
             transition={SPRING_SOFT}
-            style={{ overflow: "hidden" }}
+            className="overflow-hidden"
         >
             <motion.div
                 initial={false}
@@ -214,8 +214,7 @@ function LoginForm() {
                                     <button
                                         key={tab}
                                         onClick={() => switchMode(tab)}
-                                        className="relative flex-1 py-3 text-xs font-black uppercase tracking-widest z-10 transition-colors duration-300"
-                                        style={{ color: mode === tab ? "#fff" : "rgb(107 114 128)" }}
+                                        className={`relative flex-1 py-3 text-xs font-black uppercase tracking-widest z-10 transition-colors duration-300 ${mode === tab ? "text-white" : "text-gray-500"}`}
                                     >
                                         {mode === tab && (
                                             <motion.span
@@ -270,7 +269,7 @@ function LoginForm() {
                                         required
                                         type={showPassword ? "text" : "password"}
                                         placeholder="••••••••"
-                                        autoComplete={isSignUp ? "new-password" : "current-password"}
+                                        autoComplete="current-password"
                                         className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-4 pr-12 text-white placeholder:text-gray-600 outline-none focus:border-orange-500/60 focus:bg-white/[0.06] transition-all duration-300 group-hover:border-white/20"
                                         value={formData.password}
                                         onChange={(e) => setFormData((f) => ({ ...f, password: e.target.value }))}
@@ -305,7 +304,7 @@ function LoginForm() {
                                     opacity: isSignUp && formData.password.length > 0 ? 1 : 0,
                                 }}
                                 transition={SPRING_SOFT}
-                                style={{ overflow: "hidden" }}
+                                className="overflow-hidden"
                             >
                                 <div className="pt-3 pb-1 px-1">
                                     {/* Strength bar */}
@@ -355,7 +354,7 @@ function LoginForm() {
                                 initial={false}
                                 animate={{ height: !isSignUp ? "auto" : 0, opacity: !isSignUp ? 1 : 0 }}
                                 transition={SPRING_SOFT}
-                                style={{ overflow: "hidden" }}
+                                className="overflow-hidden"
                             >
                                 <div className="flex justify-end pt-2 pb-1">
                                     <Link

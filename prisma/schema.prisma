@@ -60,9 +60,11 @@ model MenuItem {
   pairedItemIds  String[]       @default([])
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+  sendToKds      Boolean        @default(true)
   reviews        Review[]
   addons         MenuAddon[]
   favoritedBy    UserFavorite[]
+  orderItems     OrderItem[]
 
   @@index([category, isAvailable, sortOrder])
 }
@@ -112,13 +114,25 @@ model SiteSettings {
   cateringEnabled Boolean  @default(true)
   weeklySchedule  Json?
   adminAccessPin  String?  @default("")
+
+  // Email feature toggles (for free Resend limits)
+  emailOrderStatusUpdates Boolean @default(true)
+  emailNewsletterSend     Boolean @default(true)
+  emailVerificationRequired Boolean @default(false)
+  emailAdminAlerts        Boolean @default(true)
 }
 
 model SavedLocation {
   id        String   @id @default(cuid())
-  name      String   @unique
+  userId    String
+  name      String
   address   String?
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
 }
 
 model CateringItem {
@@ -165,6 +179,9 @@ model User {
   sessions      Session[]
   reviews       Review[]
   favorites     UserFavorite[]
+  savedLocations SavedLocation[]
+  emailNotifications Boolean     @default(true)
+  marketingEmails    Boolean     @default(false)
 }
 
 model UserFavorite {
@@ -270,7 +287,8 @@ model OrderItem {
   priceCents Int
   notes      String?
   addons     Json?
-  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
 }
 
 model NewsletterSubscriber {

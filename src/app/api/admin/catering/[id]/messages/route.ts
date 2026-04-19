@@ -18,8 +18,13 @@ export async function GET(
 
     const { id } = await params;
 
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
     const messages = await prisma.cateringMessage.findMany({
-        where: { requestId: id },
+        where: { 
+            requestId: id,
+            createdAt: { gte: fortyEightHoursAgo }
+        },
         orderBy: { createdAt: "asc" },
     });
 

@@ -23,8 +23,13 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Chat not found" }, { status: 404 });
         }
 
+        const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
         const messages = await prisma.supportMessage.findMany({
-            where: { chatId },
+            where: { 
+                chatId,
+                createdAt: { gte: fortyEightHoursAgo }
+            },
             orderBy: { createdAt: "asc" },
         });
 

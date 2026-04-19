@@ -12,6 +12,14 @@ describe("Stripe Webhook - Payment Processing", () => {
     beforeEach(async () => {
         await resetDatabase();
         await seedBasicData();
+        // Create specific items used in tests below with fixed IDs
+        await prisma.menuItem.createMany({
+            data: [
+                { id: "item-1", name: "Butter Chicken", category: "Mains", priceCents: 1299, inPos: true },
+                { id: "item-2", name: "Naan", category: "Breads", priceCents: 349, inPos: true },
+            ],
+            skipDuplicates: true,
+        });
     });
 
     describe("Webhook signature verification", () => {

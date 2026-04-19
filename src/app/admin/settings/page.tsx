@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { normalizePhone } from "@/lib/utils/phone";
+import EmailSettingsClient from "./EmailSettingsClient";
 
 
 function PinManager() {
@@ -130,6 +131,12 @@ export default function AdminSettingsPage() {
     const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
     const [lastSaved, setLastSaved] = useState<string | null>(null);
     const [initialForm, setInitialForm] = useState<SettingsForm | null>(null);
+    const [emailSettings, setEmailSettings] = useState({
+        emailOrderStatusUpdates: true,
+        emailNewsletterSend: true,
+        emailVerificationRequired: false,
+        emailAdminAlerts: true,
+    });
     const [form, setForm] = useState<SettingsForm>({
         phone: "",
         instagramUrl: "",
@@ -166,6 +173,15 @@ export default function AdminSettingsPage() {
                     };
                     setForm(f);
                     setInitialForm(f);
+
+                    // Load email settings
+                    setEmailSettings({
+                        emailOrderStatusUpdates: data.emailOrderStatusUpdates ?? true,
+                        emailNewsletterSend: data.emailNewsletterSend ?? true,
+                        emailVerificationRequired: data.emailVerificationRequired ?? false,
+                        emailAdminAlerts: data.emailAdminAlerts ?? true,
+                    });
+
                     if (data.updatedAt) {
                         setLastSaved(new Date(data.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
                     }
@@ -408,6 +424,20 @@ export default function AdminSettingsPage() {
                                 />
                             </div>
                         </section>
+                        
+                        {/* ── Email Features Toggle (Redesigned & Prominent) ── */}
+                        <section className="bg-gradient-to-br from-orange-900/10 to-orange-800/10 border border-orange-500/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_20px_50px_rgba(249,115,22,0.1)]">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-sm font-bold uppercase tracking-widest text-orange-400 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-orange-500 rounded-full" />
+                                    📧 Automation & Email Engine
+                                </h2>
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500/50 bg-orange-500/5 px-3 py-1 rounded-full border border-orange-500/10">
+                                    System Core
+                                </span>
+                            </div>
+                            <EmailSettingsClient initialSettings={emailSettings} publicEmail={form.publicEmail} />
+                        </section>
 
                         <div className="pt-4 flex items-center gap-4">
                             <button
@@ -514,6 +544,7 @@ export default function AdminSettingsPage() {
 
                         {/* ── Security: Admin Access PIN ── */}
                         <PinManager />
+
                     </div>
                 </div>
             </div>

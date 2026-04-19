@@ -85,6 +85,42 @@ export async function PUT(req: Request) {
     });
 
     revalidatePath("/", "layout");
-    
+
+    return NextResponse.json({ ok: true, settings });
+}
+
+export async function PATCH(req: Request) {
+    const body = await req.json().catch(() => ({}));
+
+    // Handle email settings updates
+    const emailSettingsKeys = [
+        'emailOrderStatusUpdates',
+        'emailNewsletterSend',
+        'emailVerificationRequired',
+        'emailAdminAlerts'
+    ];
+
+    const updateData: any = {};
+    emailSettingsKeys.forEach(key => {
+        if (body[key] !== undefined) {
+            updateData[key] = body[key];
+        }
+    });
+
+    if (Object.keys(updateData).length === 0) {
+        return NextResponse.json({ ok: false, error: "No settings to update" }, { status: 400 });
+    }
+
+    const settings = await prisma.siteSettings.upsert({
+        where: { id: "global" },
+        update: updateData,
+        create: {
+            id: "global",
+            ...updateData
+        }
+    });
+
+    revalidatePath("/admin/settings", "page");
+
     return NextResponse.json({ ok: true, settings });
 }
