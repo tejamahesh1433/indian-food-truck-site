@@ -127,14 +127,14 @@ export async function POST(req: Request) {
     }
 
     // --- BULLETPROOF PASSWORD CHECK ---
-    let hash = process.env.NEXT_PUBLIC_ADMIN_AUTH_HASH;
+    let hash = process.env.ADMIN_AUTH_HASH;
     let source = "process.env";
     
     // Fail-safe: read from .env if process.env misses it
     if (!hash) {
         try {
             const envContent = fs.readFileSync(path.join(process.cwd(), ".env"), "utf-8");
-            const match = envContent.match(/NEXT_PUBLIC_ADMIN_AUTH_HASH=['"]?([^'"\s]+)['"]?/);
+            const match = envContent.match(/ADMIN_AUTH_HASH=['"]?([^'"\s]+)['"]?/);
             if (match) {
                 hash = match[1];
                 source = "disk (.env)";

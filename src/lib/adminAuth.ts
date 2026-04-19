@@ -5,7 +5,7 @@ const COOKIE_NAME = "admin_token";
 const PIN_COOKIE_NAME = "pin_verified_token";
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {
-    const hash = process.env.NEXT_PUBLIC_ADMIN_AUTH_HASH;
+    const hash = process.env.ADMIN_AUTH_HASH;
     if (!hash) return false;
     try {
         return await bcrypt.compare(password, hash);
