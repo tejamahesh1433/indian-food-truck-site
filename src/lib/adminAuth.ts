@@ -5,7 +5,8 @@ const COOKIE_NAME = "admin_token";
 const PIN_COOKIE_NAME = "pin_verified_token";
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {
-    let hash = process.env.ADMIN_AUTH_HASH;
+    const hashFromEnv = process.env.ADMIN_AUTH_HASH || process.env.NEXT_PUBLIC_ADMIN_AUTH_HASH;
+    let hash = hashFromEnv?.trim();
     if (!hash) return false;
 
     // Decode Base64 if needed
