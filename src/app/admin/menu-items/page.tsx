@@ -1281,15 +1281,21 @@ export default function AdminMenuItemsPage() {
                                     <label className="text-sm font-medium text-gray-300">Price ($) <span className="text-red-400">*</span></label>
                                     <input
                                         required
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
+                                        type="text"
+                                        inputMode="decimal"
                                         placeholder="e.g. 5.99"
                                         className="mt-1 w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-white/30 transition placeholder-gray-600"
                                         value={editDraft.priceCents ? (editDraft.priceCents / 100).toString() : ""}
                                         onChange={(e) => {
-                                            const val = Number(e.target.value);
-                                            setEditDraft((d: Partial<EditDraft>) => ({ ...d, priceCents: Number.isFinite(val) ? Math.round(val * 100) : 0 }));
+                                            const val = e.target.value;
+                                            // Allow empty or partial decimal typing
+                                            if (val === "" || val === "." || /^\d*\.?\d*$/.test(val)) {
+                                                const numericVal = parseFloat(val);
+                                                setEditDraft((d: Partial<EditDraft>) => ({ 
+                                                    ...d, 
+                                                    priceCents: isNaN(numericVal) ? 0 : Math.round(numericVal * 100) 
+                                                }));
+                                            }
                                         }}
                                     />
                                 </div>

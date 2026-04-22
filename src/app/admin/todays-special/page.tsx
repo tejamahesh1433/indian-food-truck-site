@@ -170,12 +170,19 @@ export default function TodaysSpecialAdminPage() {
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
                                     <input
-                                        type="number"
-                                        step="0.01"
-                                        value={editingItem.priceCents ? (editingItem.priceCents / 100).toFixed(2) : ""}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={editingItem.priceCents === 0 ? "" : (editingItem.priceCents / 100).toString()}
                                         onChange={(e) => {
-                                            const val = parseFloat(e.target.value);
-                                            setEditingItem({ ...editingItem, priceCents: isNaN(val) ? 0 : Math.round(val * 100) });
+                                            const val = e.target.value;
+                                            // Allow empty or partial decimal typing
+                                            if (val === "" || val === "." || /^\d*\.?\d*$/.test(val)) {
+                                                const numericVal = parseFloat(val);
+                                                setEditingItem({ 
+                                                    ...editingItem, 
+                                                    priceCents: isNaN(numericVal) ? 0 : Math.round(numericVal * 100) 
+                                                });
+                                            }
                                         }}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition"
                                         placeholder="15.00"
