@@ -31,7 +31,6 @@ const Magnet = ({
 
   useEffect(() => {
     if (disabled) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosition({ x: 0, y: 0 });
       return;
     }

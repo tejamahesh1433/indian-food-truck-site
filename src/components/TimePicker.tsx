@@ -41,7 +41,6 @@ export default function TimePicker({ value, onChange, label, showNow }: TimePick
         let h12 = h % 12;
         if (h12 === 0) h12 = 12;
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setHour(h12.toString());
         setMinute(m);
         setAmpm(period);

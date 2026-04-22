@@ -150,7 +150,7 @@ export default async function ExportPage() {
                                             <span key={i} className={i < review.rating ? "text-orange-500" : "text-neutral-200"}>★</span>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-neutral-600 italic leading-relaxed">"{review.text}"</p>
+                                    <p className="text-xs text-neutral-600 italic leading-relaxed">&quot;{review.text}&quot;</p>
                                 </div>
                             ))}
                             {user.reviews.length === 0 && <p className="text-xs text-neutral-400 italic">No reviews recorded.</p>}
