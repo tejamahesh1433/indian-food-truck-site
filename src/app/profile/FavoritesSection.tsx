@@ -3,8 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 
+interface FavoriteItem {
+    id: string;
+    menuItem: {
+        id: string;
+        name: string;
+        priceCents: number;
+        imageUrl: string | null;
+    } | null;
+}
+
 interface FavoritesSectionProps {
-    favorites: any[];
+    favorites: FavoriteItem[];
 }
 
 export default function FavoritesSection({ favorites }: FavoritesSectionProps) {
@@ -33,10 +43,10 @@ export default function FavoritesSection({ favorites }: FavoritesSectionProps) {
                             href={`/menu?item=${fav.menuItem?.id}`}
                             className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg hover:border-orange-500/30 transition group"
                         >
-                            {fav.menuItem?.image && (
+                            {fav.menuItem?.imageUrl && (
                                 <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10 shrink-0">
                                     <Image
-                                        src={fav.menuItem.image}
+                                        src={fav.menuItem.imageUrl}
                                         alt={fav.menuItem.name}
                                         width={48}
                                         height={48}
@@ -49,7 +59,7 @@ export default function FavoritesSection({ favorites }: FavoritesSectionProps) {
                                     {fav.menuItem?.name}
                                 </p>
                                 <p className="text-xs text-gray-400">
-                                    ${(fav.menuItem?.priceCents / 100).toFixed(2)}
+                                    ${((fav.menuItem?.priceCents ?? 0) / 100).toFixed(2)}
                                 </p>
                             </div>
                         </Link>

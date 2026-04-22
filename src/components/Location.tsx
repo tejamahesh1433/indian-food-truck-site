@@ -126,15 +126,30 @@ export default function Location() {
                             </div>
                         </GlassSurface>
 
-                        <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.12)]">
-                            <iframe
-                                title="Truck location map"
-                                className="w-full h-[450px]"
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                src={`https://www.google.com/maps?q=${encodeURIComponent(today.mapsQuery)}&output=embed`}
-                            />
-                        </div>
+                        {today.mapsQuery ? (
+                            <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.12)]">
+                                <iframe
+                                    title="Truck location map"
+                                    className="w-full h-[450px]"
+                                    loading="lazy"
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(today.mapsQuery)}&output=embed`}
+                                />
+                            </div>
+                        ) : (
+                            <div className="rounded-3xl border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.04)] flex flex-col items-center justify-center h-[450px] gap-4">
+                                <span className="text-5xl opacity-30">📍</span>
+                                <p className="text-sm text-gray-500 font-medium">No active location today</p>
+                                <a
+                                    href={`https://maps.google.com/?q=${encodeURIComponent(site.contact.phoneDisplay)}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-xs text-orange-500/70 hover:text-orange-400 transition font-semibold"
+                                >
+                                    Follow us on Instagram for updates →
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Reveal>

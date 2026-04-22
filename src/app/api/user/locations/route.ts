@@ -33,9 +33,9 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json(newLocation);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("ADD_LOCATION_ERROR:", error);
-        if (error.code === 'P2002') {
+        if (error instanceof Error && (error as NodeJS.ErrnoException & { code?: string }).code === 'P2002') {
             return NextResponse.json({ error: "You already have a location with this name" }, { status: 400 });
         }
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

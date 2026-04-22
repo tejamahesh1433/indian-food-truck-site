@@ -4,8 +4,14 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 
+interface SavedLocation {
+    id: string;
+    name: string;
+    address: string | null;
+}
+
 interface SavedLocationsSectionProps {
-    locations: any[];
+    locations: SavedLocation[];
 }
 
 export default function SavedLocationsSection({
@@ -41,7 +47,7 @@ export default function SavedLocationsSection({
             } else {
                 toast.error(data.error || "Failed to add location");
             }
-        } catch (err) {
+        } catch {
             toast.error("An unexpected error occurred");
         } finally {
             setIsSubmitting(false);

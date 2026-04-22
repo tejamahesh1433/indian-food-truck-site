@@ -27,7 +27,7 @@ export async function PATCH(req: Request) {
             emailNotifications: updatedUser.emailNotifications,
             marketingEmails: updatedUser.marketingEmails
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("UPDATE_PROFILE_ERROR:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }

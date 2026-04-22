@@ -68,7 +68,7 @@ export default function SupportChatWidget() {
         } finally {
             setIsEnding(false);
         }
-    }, [chat]);
+    }, [chat, confirm]);
 
     // Scroll to bottom
     useEffect(() => {

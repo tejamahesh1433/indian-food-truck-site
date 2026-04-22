@@ -2,8 +2,15 @@
 
 import Link from "next/link";
 
+interface OrderSummary {
+    id: string;
+    status: string;
+    createdAt: string | Date;
+    totalAmount: number;
+}
+
 interface InvoicesSectionProps {
-    orders: any[];
+    orders: OrderSummary[];
 }
 
 export default function InvoicesSection({ orders }: InvoicesSectionProps) {

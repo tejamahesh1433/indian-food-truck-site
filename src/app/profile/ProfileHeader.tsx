@@ -2,8 +2,13 @@
 
 import LogoutButton from "@/components/LogoutButton";
 
+interface ProfileUser {
+    name: string | null;
+    email: string | null;
+}
+
 interface ProfileHeaderProps {
-    user: any;
+    user: ProfileUser;
     memberSince: string;
 }
 

@@ -100,7 +100,7 @@ export async function PATCH(req: Request) {
         'emailAdminAlerts'
     ];
 
-    const updateData: any = {};
+    const updateData: Partial<Record<string, boolean>> = {};
     emailSettingsKeys.forEach(key => {
         if (body[key] !== undefined) {
             updateData[key] = body[key];

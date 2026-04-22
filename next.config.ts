@@ -5,7 +5,7 @@ const isDev = process.env.NODE_ENV !== "production";
 const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""} https://js.stripe.com https://m.stripe.network https://q.stripe.com;
-    frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
+    frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://maps.google.com https://www.google.com;
     connect-src 'self' https://api.stripe.com https://m.stripe.network https://q.stripe.com;
     img-src 'self' data: blob: https:;
     style-src 'self' 'unsafe-inline';

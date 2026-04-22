@@ -1,0 +1,380 @@
+/* ─── Shared styles for verify-email pages ─────────────────────────────────── */
+
+@keyframes spin-cw  { to { transform: rotate(360deg);  } }
+@keyframes spin-ccw { to { transform: rotate(-360deg); } }
+@keyframes pulse-dot { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
+@keyframes resend-spin { to { transform: rotate(360deg); } }
+
+/* Page wrapper */
+.ve-page {
+    min-height: 100vh;
+    background: #050505;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+}
+
+/* Ambient glows */
+.ve-glow1 {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(249,115,22,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.ve-glow2 {
+    position: absolute;
+    bottom: -100px;
+    right: -50px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(249,115,22,0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Content wrapper */
+.ve-wrap {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 460px;
+}
+
+/* Brand row */
+.ve-logo-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 48px;
+    gap: 12px;
+}
+.ve-logo-badge {
+    width: 52px;
+    height: 52px;
+    background: #fff;
+    color: #000;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    transform: rotate(3deg);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.ve-logo-brand {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+}
+
+/* Card */
+.ve-card {
+    background: #0A0A0B;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 32px;
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+}
+.ve-card-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(249,115,22,0.6), transparent);
+}
+
+/* Icons */
+.ve-icon-success {
+    width: 88px;
+    height: 88px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin-bottom: 32px;
+    box-shadow: 0 20px 60px rgba(34,197,94,0.35);
+    border: 1px solid rgba(74,222,128,0.3);
+    color: white;
+}
+.ve-icon-error {
+    width: 88px;
+    height: 88px;
+    border-radius: 28px;
+    background: rgba(239,68,68,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #f87171;
+}
+.ve-icon-email {
+    width: 80px;
+    height: 80px;
+    border-radius: 26px;
+    background: rgba(249,115,22,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin-bottom: 32px;
+    border: 1px solid rgba(249,115,22,0.2);
+    box-shadow: 0 12px 40px rgba(249,115,22,0.1);
+}
+
+/* Typography */
+.ve-h1 {
+    font-size: 32px;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    margin: 0 0 16px 0;
+}
+.ve-h1-sm {
+    font-size: 30px;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    margin: 0 0 16px 0;
+}
+.ve-h1-error {
+    color: #fca5a5;
+}
+.ve-p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.45);
+    margin: 0 0 40px 0;
+    max-width: 300px;
+}
+.ve-p-md {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.45);
+    margin: 0 0 40px 0;
+    max-width: 320px;
+}
+.ve-p-email-highlight {
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Buttons */
+.ve-btn-primary {
+    display: block;
+    width: 100%;
+    padding: 18px 32px;
+    background: #f97316;
+    color: #fff;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-radius: 14px;
+    text-decoration: none;
+    box-shadow: 0 12px 40px rgba(249,115,22,0.35);
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    text-align: center;
+}
+.ve-btn-ghost {
+    display: block;
+    width: 100%;
+    padding: 16px 32px;
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.6);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-radius: 14px;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-top: 12px;
+    cursor: pointer;
+    box-sizing: border-box;
+    text-align: center;
+}
+.ve-btn-ghost-link {
+    display: block;
+    width: 100%;
+    padding: 16px 32px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 800;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    margin-top: 12px;
+    transition: color 0.2s;
+    text-align: center;
+}
+.ve-resend-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Footer */
+.ve-footer-line {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    width: 100%;
+}
+.ve-footer-text {
+    margin-top: 40px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.12);
+    text-align: center;
+}
+
+/* Loading spinner */
+.ve-spinner-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 36px;
+}
+.ve-spinner-outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid rgba(249,115,22,0.08);
+    border-top-color: #f97316;
+    animation: spin-cw 0.9s linear infinite;
+}
+.ve-spinner-inner {
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-bottom-color: rgba(249,115,22,0.35);
+    animation: spin-ccw 1.4s linear infinite;
+}
+.ve-spinner-dot-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ve-spinner-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f97316;
+    animation: pulse-dot 1.2s ease-in-out infinite;
+}
+.ve-loading-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin: 0 0 10px 0;
+}
+.ve-loading-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+    font-weight: 600;
+    margin: 0;
+}
+
+/* ResendVerificationButton */
+.ve-resend-btn {
+    width: 100%;
+    padding: 18px 32px;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-sizing: border-box;
+}
+.ve-resend-btn-idle {
+    background: #f97316;
+    color: #fff;
+    border: none;
+    box-shadow: 0 12px 40px rgba(249,115,22,0.35);
+}
+.ve-resend-btn-success {
+    background: rgba(34,197,94,0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.2);
+    cursor: default;
+}
+.ve-resend-btn-error {
+    background: rgba(239,68,68,0.1);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.2);
+    cursor: default;
+}
+.ve-resend-btn-loading {
+    opacity: 0.7;
+    cursor: default;
+}
+.ve-resend-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: resend-spin 0.6s linear infinite;
+}
+.ve-resend-msg-success {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #4ade80;
+    text-align: center;
+    margin: 4px 0 0 0;
+}
+.ve-resend-msg-error {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #f87171;
+    text-align: center;
+    margin: 4px 0 0 0;
+}

@@ -3,7 +3,6 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import LogoutButton from "../../components/LogoutButton";
 import OrderTrackingList from "../../components/OrderTrackingList";
 import ProfileHeader from "./ProfileHeader";
 import StatsCards from "./StatsCards";
@@ -132,7 +131,7 @@ export default async function ProfilePage() {
     );
 }
 
-function OrderHistorySection({ orders }: { orders: any[] }) {
+function OrderHistorySection({ orders }: { orders: Record<string, unknown>[] }) {
     return (
         <section id="order-history-section" className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
             <div className="flex items-center justify-between mb-6">
@@ -144,7 +143,7 @@ function OrderHistorySection({ orders }: { orders: any[] }) {
 
             {orders.length === 0 ? (
                 <div className="py-16 text-center rounded-2xl border border-dashed border-white/10 bg-white/5">
-                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-6">No orders yet. Let's change that!</p>
+                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mb-6">No orders yet. Let&apos;s change that!</p>
                     <Link href="/menu" className="inline-block bg-orange-600 text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-orange-500 transition">
                         View Menu
                     </Link>
