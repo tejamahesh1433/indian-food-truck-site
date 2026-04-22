@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Reveal from "@/components/Reveal";
 import { useCart } from "@/lib/cart";
+import { useCartAnimation } from "@/lib/cartAnimation";
 
 interface SpecialDish {
     id: string;
@@ -22,6 +23,7 @@ export default function TodaysSpecial() {
     const [specials, setSpecials] = useState<SpecialDish[]>([]);
     const [loading, setLoading] = useState(true);
     const { addToCart } = useCart();
+    const { flyToCart } = useCartAnimation();
 
     useEffect(() => {
         fetch("/api/todays-special")
@@ -133,13 +135,16 @@ export default function TodaysSpecial() {
                                             <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Price per dish</span>
                                         </div>
                                         
-                                        <button 
-                                            onClick={() => addToCart({
-                                                menuItemId: `special-${s.id}`,
-                                                name: `Today's Special: ${s.name}`,
-                                                priceCents: s.priceCents,
-                                                imageUrl: s.imageUrl || ""
-                                            })}
+                                        <button
+                                            onClick={(e) => {
+                                                flyToCart(s.imageUrl || "", e.currentTarget);
+                                                addToCart({
+                                                    menuItemId: `special-${s.id}`,
+                                                    name: `Today's Special: ${s.name}`,
+                                                    priceCents: s.priceCents,
+                                                    imageUrl: s.imageUrl || ""
+                                                });
+                                            }}
                                             className="bg-white text-black text-[10px] font-black uppercase tracking-widest px-8 py-4 rounded-full hover:bg-orange-500 hover:text-white transition-all transform active:scale-95 shadow-xl"
                                         >
                                             Add to Order

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import './Magnet.css';
 
 interface MagnetProps {
@@ -64,12 +65,6 @@ const Magnet = ({
      
   }, [padding, disabled, magnetStrength]);
 
-  const transitionStyle = isActive ? activeTransition : inactiveTransition;
-
-  const magnetStyle = {
-    '--magnet-transform': `translate3d(${position.x}px, ${position.y}px, 0)`,
-    '--magnet-transition': transitionStyle,
-  } as React.CSSProperties;
 
   return (
     <div
@@ -77,12 +72,16 @@ const Magnet = ({
       className={`magnet-wrapper ${wrapperClassName}`}
       {...props}
     >
-      <div
-        className={`magnet-inner ${innerClassName}`}
-        style={magnetStyle}
+      <motion.div
+        className={`magnet-inner ${isActive ? 'active' : 'inactive'} ${innerClassName}`}
+        animate={{
+          x: position.x,
+          y: position.y,
+        }}
+        transition={isActive ? { type: 'tween', duration: 0.1, ease: "linear" } : { type: 'spring', damping: 15, stiffness: 150 }}
       >
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 };

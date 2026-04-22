@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+"use client";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import CustomCheckbox from "./ui/CustomCheckbox";
+import { useCartAnimation } from "@/lib/cartAnimation";
 
 export interface CustomizationAddon {
     id: string;
@@ -36,7 +38,7 @@ interface ItemCustomizationModalProps {
     item: CustomizationMenuItem | null;
     onAdd: (payload: { quantity: number; notes: string; addons: CustomizationAddon[] }) => void;
     upsellItems?: CustomizationMenuItem[];
-    onQuickAdd?: (item: CustomizationMenuItem) => void;
+    onQuickAdd?: (item: CustomizationMenuItem, el: HTMLElement) => void;
 }
 
 export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, upsellItems = [], onQuickAdd }: ItemCustomizationModalProps) {
@@ -44,7 +46,9 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
     const [spiceLevel, setSpiceLevel] = useState<string>("");
     const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
     const [specialInstructions, setSpecialInstructions] = useState("");
-    
+    const confirmBtnRef = useRef<HTMLButtonElement>(null);
+    const { flyToCart } = useCartAnimation();
+
     // Lock background scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -81,6 +85,10 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
 
     const handleConfirm = () => {
         if (isSpiceMissing) return;
+
+        if (confirmBtnRef.current) {
+            flyToCart(item.imageUrl || "", confirmBtnRef.current);
+        }
 
         const combinedNotes = [
             item.isSpicy ? `Spice Level: ${spiceLevel}` : "",
@@ -122,10 +130,15 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="relative w-full max-w-lg bg-[#0A0A0A] border border-white/10 rounded-t-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col h-full sm:h-auto max-h-full sm:max-h-[92vh]"
                 >
-                    {/* Header Image */}
+                    {/* Header Image with Heat-Haze Filter */}
                     <div className="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden">
                         {item.imageUrl ? (
-                            <Image src={item.imageUrl} alt={item.name} fill className="object-cover scale-110 hover:scale-100 transition-transform duration-700" />
+                            <Image 
+                                src={item.imageUrl} 
+                                alt={item.name} 
+                                fill 
+                                className={`object-cover scale-110 hover:scale-100 transition-transform duration-700 ${spiceLevel === "Spicy" ? "spice-heat-haze" : ""}`} 
+                            />
                         ) : (
                             <div className="w-full h-full bg-white/5 flex items-center justify-center text-gray-500">
                                 <svg className="w-12 h-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,6 +158,22 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
                             </svg>
                         </button>
                     </div>
+
+                    {/* SVG Heat Haze Filter Definition */}
+                    <svg className="hidden-svg">
+                        <filter id="spice-heat">
+                            <feTurbulence type="fractalNoise" baseFrequency="0.01 0.05" numOctaves="2" seed="2">
+                                <animate attributeName="seed" from="0" to="100" dur="10s" repeatCount="indefinite" />
+                            </feTurbulence>
+                            <feDisplacementMap in="SourceGraphic" scale="15" />
+                        </filter>
+                    </svg>
+
+                    <style jsx global>{`
+                        .spice-heat-haze {
+                            filter: url(#spice-heat);
+                        }
+                    `}</style>
 
                     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 pt-2 hide-scrollbar">
                         <div className="mb-6">
@@ -336,7 +365,7 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    onQuickAdd?.(u);
+                                                                    onQuickAdd?.(u, e.currentTarget);
                                                                 }}
                                                                 className="mt-auto w-full py-2.5 bg-orange-600/90 hover:bg-orange-500 text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg active:scale-95 border border-white/10"
                                                             >
@@ -418,6 +447,7 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
                         )}
 
                         <button
+                            ref={confirmBtnRef}
                             onClick={handleConfirm}
                             disabled={!!isSpiceMissing}
                             className={`w-full text-white rounded-[1.5rem] py-4.5 font-black flex items-center justify-center gap-2 transition-all duration-300 shadow-xl active:scale-[0.97] ${

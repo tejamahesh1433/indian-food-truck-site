@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useCart } from "@/lib/cart";
+import { useCartAnimation } from "@/lib/cartAnimation";
 import { useSearchParams } from "next/navigation";
 import ItemCustomizationModal, { type CustomizationMenuItem } from "./ItemCustomizationModal";
 import { useToast } from "@/components/ui/Toast";
@@ -32,16 +33,30 @@ interface MenuItem {
     pairedItemIds?: string[];
 }
 
-function ItemCard({ item, onAdd, onFavorite, isFavorite }: { item: MenuItem; onAdd: (item: MenuItem) => void; onFavorite: (id: string) => void; isFavorite: boolean }) {
+
+
+function ItemCard({ item, onAdd, onDirectAdd, onFavorite, isFavorite }: { 
+    item: MenuItem; 
+    onAdd: (item: MenuItem) => void; 
+    onDirectAdd: (item: MenuItem, el: HTMLElement) => void;
+    onFavorite: (id: string) => void; 
+    isFavorite: boolean 
+}) {
     const isSoldOut = Boolean(item.isStockTracked && item.stockCount === 0);
 
     return (
         <div 
-            onClick={() => {
-                if (!isSoldOut) onAdd(item);
+            onClick={(e) => {
+                if (isSoldOut) return;
+                if (item.isSpicy) {
+                    onAdd(item);
+                } else {
+                    onDirectAdd(item, e.currentTarget);
+                }
             }} 
             className={`cursor-pointer group rounded-2xl md:rounded-3xl border border-white/10 overflow-hidden hover:bg-white/10 transition flex flex-col h-full ${isSoldOut ? "opacity-60 bg-white/5 grayscale-[0.5]" : "bg-white/5"}`}
         >
+            {/* ... rest of existing card content ... */}
             <div className="relative h-28 sm:h-36 md:h-44">
                 {item.imageUrl ? (
                     <Image
@@ -107,7 +122,11 @@ function ItemCard({ item, onAdd, onFavorite, isFavorite }: { item: MenuItem; onA
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                onAdd(item);
+                                if (item.isSpicy) {
+                                    onAdd(item);
+                                } else {
+                                    onDirectAdd(item, e.currentTarget);
+                                }
                             }}
                             className={`${isSoldOut ? "bg-gray-700 text-gray-400" : "bg-orange-500 text-black hover:bg-orange-400"} px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[11px] md:text-base font-black transition shadow-lg active:scale-95 flex items-center justify-center`}
                         >
@@ -182,6 +201,7 @@ export default function MenuTabs({ initialItems = [], initialCategories = ["All"
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
     const { addToCart } = useCart();
+    const { flyToCart } = useCartAnimation();
     const { toast } = useToast();
     const searchParams = useSearchParams();
 
@@ -439,6 +459,18 @@ export default function MenuTabs({ initialItems = [], initialCategories = ["All"
                                     setSelectedItem(m);
                                     setIsModalOpen(true);
                                 }}
+                                onDirectAdd={(m, el) => {
+                                    flyToCart(m.imageUrl || "", el);
+                                    addToCart({
+                                        menuItemId: m.id,
+                                        name: m.name,
+                                        priceCents: m.priceCents,
+                                        imageUrl: m.imageUrl || undefined,
+                                        addons: [],
+                                        notes: ""
+                                    });
+                                    toast.success(`Added ${m.name} to cart`);
+                                }}
                             />
                         ))}
                     </motion.div>
@@ -456,7 +488,8 @@ export default function MenuTabs({ initialItems = [], initialCategories = ["All"
                     onClose={() => setIsModalOpen(false)}
                     item={selectedItem as unknown as CustomizationMenuItem}
                     upsellItems={upsellCandidates as unknown as CustomizationMenuItem[]}
-                    onQuickAdd={(u: CustomizationMenuItem) => {
+                    onQuickAdd={(u, el) => {
+                        flyToCart(u.imageUrl || "", el);
                         addToCart({
                             menuItemId: u.id,
                             name: u.name,

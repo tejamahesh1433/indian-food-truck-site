@@ -69,6 +69,7 @@ export const metadata: Metadata = {
 };
 
 import { CartProvider } from "@/lib/cart";
+import { CartAnimationProvider } from "@/lib/cartAnimation";
 import { AuthProvider } from "@/components/AuthProvider";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import SupportChatWidgetWrapper from "@/components/SupportChatWidgetWrapper";
@@ -129,6 +130,7 @@ export default async function RootLayout({
       >
         <AuthProvider>
           <CartProvider>
+            <CartAnimationProvider>
             <SiteProvider settings={settings}>
               <ConfirmProvider>
                 <ToastProvider>
@@ -147,6 +149,7 @@ export default async function RootLayout({
                 </ToastProvider>
               </ConfirmProvider>
             </SiteProvider>
+            </CartAnimationProvider>
           </CartProvider>
         </AuthProvider>
       </body>

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useSite } from "@/components/SiteProvider";
 import SplitText from "@/components/SplitText";
 import DotGrid from "@/components/DotGrid";
+import SpiceParticles from "@/components/SpiceParticles";
 
 export default function Hero() {
     const site = useSite();
@@ -13,6 +14,7 @@ export default function Hero() {
     return (
         <section className="relative min-h-[92vh] flex items-center overflow-hidden">
             <div className="absolute inset-0 -z-10 bg-transparent">
+                <SpiceParticles />
                 <div className="absolute left-[-20%] top-[-10%] h-[280px] w-[280px] rounded-full bg-orange-500/20 blur-3xl pointer-events-none md:left-[-10%] md:h-[320px] md:w-[320px]" />
                 <div className="absolute right-[-15%] top-[10%] h-[240px] w-[240px] rounded-full bg-red-500/15 blur-3xl pointer-events-none md:right-[-8%] md:h-[280px] md:w-[280px]" />
                 <div className="absolute bottom-[-10%] left-[10%] h-[220px] w-[220px] rounded-full bg-amber-400/10 blur-3xl pointer-events-none md:left-[20%] md:h-[260px] md:w-[260px]" />

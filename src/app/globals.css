@@ -36,7 +36,20 @@ body {
 }
 .hide-scrollbars {
   -ms-overflow-style: none;
-  scrollbar-width: none;
+}
+
+@supports (scrollbar-width: none) {
+  .hide-scrollbars {
+    scrollbar-width: none;
+  }
+}
+
+.hidden-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 /* Smooth text rendering */
@@ -62,60 +75,76 @@ body::before {
 }
 
 /* Utility-like helpers (clean) */
-@layer components {
+.container-shell {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 72rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
   .container-shell {
-    @apply mx-auto max-w-6xl px-6;
+    padding-left: 5rem;
+    padding-right: 5rem;
   }
+}
 
-  @media (min-width: 768px) {
-    .container-shell {
-      @apply px-20;
-    }
-  }
+.section-shell {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
 
+@media (min-width: 768px) {
   .section-shell {
-    @apply py-16;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
   }
+}
 
-  @media (min-width: 768px) {
-    .section-shell {
-      @apply py-20;
-    }
-  }
+.card {
+  border-radius: 1.5rem;
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+}
 
-  .card {
-    @apply rounded-3xl border border-white/10 bg-white/5;
-  }
+.card-hover {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
 
-  .card-hover {
-    @apply transition duration-300;
-  }
+.card-hover:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
-  .card-hover:hover {
-    @apply bg-white/10;
-  }
+.pill {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}
 
-  .pill {
-    @apply text-xs px-3 py-1 rounded-full bg-black/40 border border-white/10 text-gray-200;
-  }
+.screen-only {
+  display: block;
+}
 
+@media print {
   .screen-only {
-    display: block;
-  }
-
-  @media print {
-    .screen-only {
-      display: none !important;
-    }
-  }
-
-  .print-only {
     display: none !important;
   }
+}
 
-  @media print {
-    .print-only {
-      display: block !important;
-    }
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  .print-only {
+    display: block !important;
   }
 }
