@@ -158,7 +158,12 @@ function ItemCard({ item, onAdd, onFavorite, isFavorite }: { item: MenuItem; onA
     );
 }
 
-export default function MenuTabs() {
+interface MenuTabsProps {
+    initialItems?: MenuItem[];
+    initialCategories?: string[];
+}
+
+export default function MenuTabs({ initialItems = [], initialCategories = ["All"] }: MenuTabsProps) {
     const [active, setActive] = useState<string>("All");
     const [query, setQuery] = useState("");
     const [vegOnly, setVegOnly] = useState(false);
@@ -166,9 +171,9 @@ export default function MenuTabs() {
     const [spicyOnly, setSpicyOnly] = useState(false);
     const [popularOnly, setPopularOnly] = useState(false);
 
-    const [items, setItems] = useState<MenuItem[]>([]);
-    const [categories, setCategories] = useState<string[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [items, setItems] = useState<MenuItem[]>(initialItems);
+    const [categories, setCategories] = useState<string[]>(initialCategories);
+    const [loading, setLoading] = useState(initialItems.length === 0);
 
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);

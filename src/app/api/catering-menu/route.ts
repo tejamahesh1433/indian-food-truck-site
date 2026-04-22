@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const revalidate = 60; // Cache catering menu for 60 seconds
+
 export async function GET() {
     try {
         const categories = await prisma.cateringCategory.findMany({

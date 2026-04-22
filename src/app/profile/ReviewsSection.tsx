@@ -1,18 +1,35 @@
 "use client";
 
+interface OrderItem {
+    menuItem?: { id: string; name: string };
+}
+
+interface OrderReview {
+    menuItemId: string;
+    createdAt: string | Date;
+    rating: number;
+    text: string;
+}
+
+interface Order {
+    id: string;
+    reviews?: OrderReview[];
+    items?: OrderItem[];
+}
+
 interface ReviewsSectionProps {
-    orders: any[];
+    orders: Order[];
 }
 
 export default function ReviewsSection({ orders }: ReviewsSectionProps) {
     // Collect all reviews from orders
     const allReviews = orders
         .flatMap((order) =>
-            order.reviews.map((review: any) => ({
+            (order.reviews || []).map((review: OrderReview) => ({
                 ...review,
-                orderNumber: order.orderNumber,
-                itemName: order.items.find(
-                    (item: any) => item.menuItem?.id === review.menuItemId
+                orderNumber: order.id.slice(-6).toUpperCase(),
+                itemName: (order.items || []).find(
+                    (item: OrderItem) => item.menuItem?.id === review.menuItemId
                 )?.menuItem?.name,
             }))
         )
@@ -59,7 +76,7 @@ export default function ReviewsSection({ orders }: ReviewsSectionProps) {
                             </div>
                         </div>
                         {review.text && (
-                            <p className="text-sm text-gray-300 italic">"{review.text}"</p>
+                            <p className="text-sm text-gray-300 italic">&ldquo;{review.text}&rdquo;</p>
                         )}
                         <p className="text-xs text-gray-500 mt-2">
                             {new Date(review.createdAt).toLocaleDateString()}

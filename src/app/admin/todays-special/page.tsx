@@ -166,15 +166,22 @@ export default function TodaysSpecialAdminPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Price (Cents)</label>
-                                <input
-                                    type="number"
-                                    value={editingItem.priceCents || 0}
-                                    onChange={(e) => setEditingItem({ ...editingItem, priceCents: parseInt(e.target.value) || 0 })}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition"
-                                    placeholder="1500 for $15.00"
-                                    required
-                                />
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">Price ($)</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={editingItem.priceCents ? (editingItem.priceCents / 100).toFixed(2) : ""}
+                                        onChange={(e) => {
+                                            const val = parseFloat(e.target.value);
+                                            setEditingItem({ ...editingItem, priceCents: isNaN(val) ? 0 : Math.round(val * 100) });
+                                        }}
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-orange-500/50 transition"
+                                        placeholder="15.00"
+                                        required
+                                    />
+                                </div>
                             </div>
                         </div>
 

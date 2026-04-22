@@ -13,11 +13,11 @@ export default async function VerificationPendingPage(props: { searchParams: Pro
     const session = await getServerSession(authOptions);
     const emailParam = searchParams.email;
 
-    if (!session?.user && !emailParam) {
+    const email = session?.user?.email || emailParam;
+
+    if (!email) {
         redirect("/login");
     }
-
-    const email = session?.user?.email || emailParam;
 
     const user = await prisma.user.findUnique({
         where: { email: email! },

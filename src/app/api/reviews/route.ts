@@ -4,6 +4,9 @@ import { z } from "zod";
 import { isAdmin } from "@/lib/adminAuth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { Prisma } from "@prisma/client";
+
+export const revalidate = 60; // Cache reviews for 60 seconds
 
 const ReviewSchema = z.object({
     name: z.string().min(2).max(60),
@@ -21,7 +24,7 @@ export async function GET(req: Request) {
     const type = searchParams.get("type");
 
     try {
-        const where: any = { isApproved: true };
+        const where: Prisma.ReviewWhereInput = { isApproved: true };
         
         // If type is 'general', only show reviews without a menuItemId
         if (type === "general") {
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
 
         // Process all reviews with existence check
         const createdReviews = await Promise.all(
-            reviewsData.map(async (data: any) => {
+            reviewsData.map(async (data: z.infer<typeof ReviewSchema>) => {
                 // If they provided an orderId and menuItemId, check if they already reviewed this combo
                 if (data.orderId && data.menuItemId && userId) {
                     const existing = await prisma.review.findFirst({

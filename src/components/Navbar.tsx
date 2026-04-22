@@ -92,7 +92,7 @@ export default function Navbar() {
                                 <div className="h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition">
                                     <svg className="h-4 w-4 text-gray-400 group-hover:text-white transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                 </div>
-                                <span className="font-bold text-xs uppercase tracking-widest text-gray-300 group-hover:text-white transition">My Orders</span>
+                                <span className="font-bold text-xs uppercase tracking-widest text-gray-300 group-hover:text-white transition">Profile</span>
                             </Link>
                         ) : (
                             <Link href="/login" className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition">

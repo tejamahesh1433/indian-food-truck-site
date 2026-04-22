@@ -1,10 +1,29 @@
 "use client";
 
-import Reveal from "@/components/Reveal";
+import dynamic from "next/dynamic";
 import { useSite } from "@/components/SiteProvider";
 import GlassSurface from "@/components/GlassSurface";
+import Reveal from "@/components/Reveal";
+
+const MapFrame = dynamic(() => Promise.resolve(({ query }: { query: string }) => (
+    <iframe
+        title="Truck location map"
+        className="w-full h-[450px]"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        src={`https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`}
+    />
+)), { 
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-[450px] bg-white/5 animate-pulse rounded-2xl flex items-center justify-center">
+            <p className="text-gray-500 font-medium tracking-wide">Loading location map...</p>
+        </div>
+    )
+});
 
 export default function Location() {
+
     const site = useSite();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const today = site.truck.today as any;
@@ -128,14 +147,13 @@ export default function Location() {
 
                         {today.mapsQuery ? (
                             <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.12)]">
-                                <iframe
-                                    title="Truck location map"
-                                    className="w-full h-[450px]"
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    src={`https://www.google.com/maps?q=${encodeURIComponent(today.mapsQuery)}&output=embed`}
-                                    suppressHydrationWarning
-                                />
+                                {today.mapsQuery ? (
+                                    <MapFrame query={today.mapsQuery} />
+                                ) : (
+                                    <div className="w-full h-[450px] bg-white/5 animate-pulse rounded-2xl flex items-center justify-center">
+                                        <p className="text-gray-500 font-medium tracking-wide">Loading location map...</p>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="rounded-3xl border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.04)] flex flex-col items-center justify-center h-[450px] gap-4">

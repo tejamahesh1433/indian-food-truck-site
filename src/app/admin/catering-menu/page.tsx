@@ -37,7 +37,7 @@ type Category = {
 
 function money(n: number | null) {
     if (n === null) return "-";
-    return `$${n.toFixed(0)}`;
+    return `$${n.toFixed(2)}`;
 }
 
 export default function AdminCateringMenuPage() {
@@ -126,11 +126,13 @@ export default function AdminCateringMenuPage() {
             await fetchItems();
         };
         fetchAll();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         const t = setTimeout(() => fetchItems(), 250);
         return () => clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [q, fCategory]);
 
     function resetForm() {
