@@ -5,7 +5,7 @@ interface OrderItem {
 }
 
 interface OrderReview {
-    menuItemId: string;
+    menuItemId: string | null;
     createdAt: string | Date;
     rating: number;
     text: string;
