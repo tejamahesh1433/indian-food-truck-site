@@ -20,6 +20,7 @@ export async function sendChatLinkEmail({
     location,
     notes,
     selections = [],
+    businessPhone,
 }: {
     email: string;
     name: string;
