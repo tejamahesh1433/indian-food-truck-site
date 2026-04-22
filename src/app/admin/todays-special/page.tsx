@@ -172,7 +172,7 @@ export default function TodaysSpecialAdminPage() {
                                     <input
                                         type="text"
                                         inputMode="decimal"
-                                        value={editingItem.priceCents === 0 ? "" : (editingItem.priceCents / 100).toString()}
+                                        value={editingItem.priceCents === 0 ? "" : ((editingItem.priceCents ?? 0) / 100).toString()}
                                         onChange={(e) => {
                                             const val = e.target.value;
                                             // Allow empty or partial decimal typing
