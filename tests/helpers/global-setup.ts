@@ -40,7 +40,7 @@ function loadEnvTest() {
 loadEnvTest();
 
 // ── Constants ──────────────────────────────────────────────────────────────
-const ADMIN_PIN = process.env.ADMIN_ACCESS_PIN || "229495";
+const ADMIN_PIN = process.env.ADMIN_ACCESS_PIN || "229494";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "TejaFoodTruck@2026!";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 export const AUTH_STATE_PATH = resolve(process.cwd(), "tests/helpers/.auth-state.json");

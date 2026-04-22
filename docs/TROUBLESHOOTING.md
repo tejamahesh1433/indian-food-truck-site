@@ -18,8 +18,8 @@ This document lists common issues encountered during development and deployment,
 ```
 
 ### Symptom: `⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.`
-**Issue**: If you see this warning, the middleware file is named incorrectly. Next.js requires the file to be named `middleware.ts` (not `proxy.ts`) and placed in `src/`.
-**Solution**: Ensure the file is `src/middleware.ts` and exports a function named `middleware`.
+**Issue**: In Next.js 16.2.3, the middleware convention has been replaced by the `proxy` convention.
+**Solution**: Ensure the file is named `src/proxy.ts` and exports a function named `proxy`.
 
 ### Symptom: 500 Error on Database Query
 **Issue**: `DATABASE_URL` is missing or the Prisma client is out of sync.

@@ -16,13 +16,13 @@ export default function Footer() {
             <div className="container-shell py-14">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     {/* Brand */}
-                    <div>
+                    <div suppressHydrationWarning>
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-2xl bg-orange-500/90 text-black font-bold flex items-center justify-center shadow-[0_12px_40px_rgba(255,140,0,0.22)]">
-                                {site.brand.short}
+                                {site.brand.shortCode}
                             </div>
                             <div className="leading-tight">
-                                <div className="font-semibold">{site.brand.name}</div>
+                                <div className="font-semibold">{site.brand.businessName}</div>
                                 <div className="text-xs text-gray-400">{site.brand.city}</div>
                             </div>
                         </div>
@@ -118,7 +118,9 @@ export default function Footer() {
                 <div className="mt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-sm text-gray-400">
                     <div>
                         {site.footer.message || (
-                            <>© {new Date().getFullYear()} {site.brand.name}. All rights reserved.</>
+                            <span suppressHydrationWarning>
+                                © {new Date().getFullYear()} {site.brand.businessName}. All rights reserved.
+                            </span>
                         )}
                     </div>
                     <div className="flex flex-wrap gap-4 mt-4 md:mt-0">

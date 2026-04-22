@@ -57,6 +57,16 @@ export default async function ProfilePage() {
         redirect("/login");
     }
 
+    // Check if email verification is required and if the user is verified
+    const settings = await prisma.siteSettings.findUnique({
+        where: { id: "global" },
+        select: { emailVerificationRequired: true }
+    });
+
+    if (settings?.emailVerificationRequired && !user.emailVerified) {
+        redirect("/verify-email/pending");
+    }
+
     const totalSpent = user.orders
         .filter(o => o.status === "COMPLETED")
         .reduce((sum, o) => sum + o.totalAmount, 0);

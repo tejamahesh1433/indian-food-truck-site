@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "You're Offline | Indian Food Truck",
+  title: "You're Offline | Catch the Cravings",
 };
 
 export default function OfflinePage() {

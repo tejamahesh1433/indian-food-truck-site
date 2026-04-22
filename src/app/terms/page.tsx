@@ -3,8 +3,8 @@ import Footer from "@/components/Footer";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Terms of Service | Indian Food Truck",
-    description: "Terms and conditions for ordering and using the Indian Food Truck website.",
+    title: "Terms of Service | Catch the Cravings",
+    description: "Terms and conditions for ordering and using the Catch the Cravings website.",
 };
 
 export default function TermsOfServicePage() {
@@ -75,7 +75,7 @@ export default function TermsOfServicePage() {
                     <section className="space-y-4">
                         <h2 className="text-2xl font-semibold text-orange-400">8. Our Content</h2>
                         <p className="text-gray-300 leading-relaxed">
-                            Everything on this site — photos, text, the logo, the design — belongs to Indian Food Truck. Please don&apos;t reproduce or use it without reaching out to us first.
+                            Everything on this site — photos, text, the logo, the design — belongs to Catch the Cravings. Please don&apos;t reproduce or use it without reaching out to us first.
                         </p>
                     </section>
 

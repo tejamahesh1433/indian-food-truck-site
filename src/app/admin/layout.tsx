@@ -14,7 +14,7 @@ export default async function AdminLayout({
         settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
     } catch {}
 
-    const businessName = settings?.businessName || "Indian Food Truck";
+    const businessName = settings?.businessName || "Catch the Cravings";
 
     return (
         <AdminLayoutClient businessName={businessName}>

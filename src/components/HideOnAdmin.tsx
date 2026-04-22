@@ -3,10 +3,20 @@
 import { usePathname } from "next/navigation";
 import React from "react";
 
+const HIDDEN_ROUTES = ["/admin", "/truckadmin", "/verify-email", "/reset-password"];
+
 export default function HideOnAdmin({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const isAdmin = pathname.startsWith("/admin") || pathname.startsWith("/truckadmin");
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isHidden = HIDDEN_ROUTES.some(route => pathname.startsWith(route));
     
-    if (isAdmin) return null;
+    // Always render null on server or before mounting to ensure hydration match
+    if (!mounted || isHidden) return null;
+
     return <>{children}</>;
 }

@@ -1,5 +1,5 @@
 /**
- * Indian Food Truck — Service Worker
+ * Catch the Cravings — Service Worker
  *
  * Caching strategy:
  *  - App shell (HTML pages): Network-first, fall back to cache, then /offline
@@ -7,9 +7,9 @@
  *  - API routes & admin pages: Network-only (always fresh, never cached)
  */
 
-const CACHE_VERSION = "v1.0.5";
-const STATIC_CACHE = `ift-static-${CACHE_VERSION}`;
-const PAGES_CACHE = `ift-pages-${CACHE_VERSION}`;
+const CACHE_VERSION = "v1.0.9";
+const STATIC_CACHE = `c2c-static-${CACHE_VERSION}`;
+const PAGES_CACHE = `c2c-pages-${CACHE_VERSION}`;
 /** Pages to pre-cache at install time (the "app shell") */
 const PRECACHE_PAGES = ["/", "/menu", "/catering", "/offline"];
 
@@ -53,6 +53,8 @@ self.addEventListener("fetch", (event) => {
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/admin") ||
     url.pathname.startsWith("/truckadmin") ||
+    url.pathname.startsWith("/verify-email") ||
+    url.pathname.startsWith("/reset-password") ||
     url.pathname.startsWith("/_next/webpack-hmr")
   ) {
     return; // Let the browser handle it normally

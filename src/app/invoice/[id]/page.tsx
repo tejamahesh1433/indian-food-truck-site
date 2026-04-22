@@ -20,7 +20,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         where: { id: "global" }
     });
 
-    const businessName = settings?.businessName || "Indian Food Truck";
+    const businessName = settings?.businessName || "Catch the Cravings";
     const phone = settings?.phone || "Contact us for support";
     const cityState = settings?.cityState || "Hartford, CT";
 

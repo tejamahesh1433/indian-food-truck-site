@@ -106,7 +106,7 @@ model SiteSettings {
   todayStatus     String   @default("CLOSED")
   bannerEnabled   Boolean  @default(false)
   bannerText      String?  @default("")
-  businessName    String?  @default("Indian Food Truck")
+  businessName    String?  @default("Catch the Cravings")
   cityState       String?  @default("Hartford, CT")
   footerMessage   String?  @default("")
   publicEmail     String?  @default("")

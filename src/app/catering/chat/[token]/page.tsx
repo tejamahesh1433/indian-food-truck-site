@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import CustomerChatClient from "./ui/CustomerChatClient";
 import Navbar from "@/components/Navbar";
-import { site } from "@/config/site";
+import { site } from "@/config/site-config";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +57,7 @@ export default async function CustomerChatPage({
                     <div>
                         <h1 className="text-3xl font-bold text-white">Event Chat</h1>
                         <p className="text-sm text-gray-400 mt-1">
-                            Message {site.brand.short} directly regarding your catering quote.
+                            Message {site.brand.shortCode} directly regarding your catering quote.
                         </p>
                     </div>
                     <div className="text-right flex flex-col items-end">

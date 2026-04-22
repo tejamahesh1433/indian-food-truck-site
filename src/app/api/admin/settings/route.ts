@@ -64,7 +64,7 @@ export async function PUT(req: Request) {
             phone: body.phone?.trim() || "",
             instagramUrl: body.instagramUrl?.trim() || "",
             publicEmail: body.publicEmail?.trim() || "",
-            businessName: body.businessName?.trim() || "Indian Food Truck",
+            businessName: body.businessName?.trim() || "Catch the Cravings",
             cityState: body.cityState?.trim() || "Hartford, CT",
             footerMessage: body.footerMessage?.trim() || "",
             bannerEnabled: body.bannerEnabled || false,

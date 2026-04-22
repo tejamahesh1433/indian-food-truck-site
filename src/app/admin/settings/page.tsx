@@ -164,7 +164,7 @@ export default function AdminSettingsPage() {
                         phone: data.phone || "",
                         instagramUrl: data.instagramUrl || "",
                         publicEmail: data.publicEmail || "",
-                        businessName: data.businessName || "Indian Food Truck",
+                        businessName: data.businessName || "Catch the Cravings",
                         cityState: data.cityState || "Hartford, CT",
                         footerMessage: data.footerMessage || "",
                         bannerEnabled: data.bannerEnabled ?? false,
@@ -313,7 +313,7 @@ export default function AdminSettingsPage() {
                                         value={form.businessName}
                                         onChange={e => setForm({ ...form, businessName: e.target.value })}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-purple-500/50 transition"
-                                        placeholder="e.g. Indian Food Truck"
+                                        placeholder="e.g. Catch the Cravings"
                                     />
                                 </div>
                                 <div>
@@ -478,10 +478,10 @@ export default function AdminSettingsPage() {
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="h-10 w-10 shrink-0 rounded-xl bg-orange-500 flex items-center justify-center font-bold text-black text-xs">IFT</div>
+                                            <div className="h-10 w-10 shrink-0 rounded-xl bg-orange-500 flex items-center justify-center font-bold text-black text-xs">C2C</div>
                                         )}
                                         <div className="overflow-hidden">
-                                            <div className="text-sm font-bold truncate">{form.businessName || "Indian Food Truck"}</div>
+                                            <div className="text-sm font-bold truncate">{form.businessName || "Catch the Cravings"}</div>
                                             <div className="text-[10px] text-gray-400 truncate">{form.cityState || "Hartford, CT"}</div>
                                         </div>
                                     </div>

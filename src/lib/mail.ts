@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { site } from "@/config/site-config";
 
 export type CateringSelection = {
     name: string;
@@ -105,8 +106,13 @@ export async function sendChatLinkEmail({
             </div>
         ` : "";
 
+        let fromEmail = site.brand.publicEmail || "contact@tejainfo.xyz";
+        if (fromEmail.includes("gmail.com") || fromEmail.includes("yahoo.com") || fromEmail.includes("outlook.com") || fromEmail.includes("hotmail.com")) {
+            fromEmail = "onboarding@resend.dev";
+        }
+
         const { data, error } = await resend.emails.send({
-            from: "Indian Food Truck <contact@tejainfo.xyz>",
+            from: `${site.brand.businessName} <${fromEmail}>`,
             to: email,
             subject: `Catering Request Received: #CAT-${requestIdShort}`,
             html: `
@@ -114,7 +120,7 @@ export async function sendChatLinkEmail({
                     <!-- Logo / Header -->
                     <div style="text-align: center; margin-bottom: 40px;">
                         <div style="background-color: #f97316; color: white; width: 64px; height: 64px; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; font-style: italic; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3);">
-                            <span style="margin-top: 18px; display: block;">IFT</span>
+                            <span style="margin-top: 18px; display: block;">${site.brand.shortCode}</span>
                         </div>
                         <h1 style="font-size: 24px; font-weight: 900; margin: 24px 0 8px 0; color: #111; text-transform: uppercase; letter-spacing: -0.02em;">Request Received</h1>
                         <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">
@@ -178,7 +184,7 @@ export async function sendChatLinkEmail({
 
                     <div style="border-top: 1px solid #f1f5f9; padding-top: 32px; text-align: center;">
                         <p style="font-size: 10px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.2em; margin: 0;">
-                            © ${new Date().getFullYear()} INDIAN FOOD TRUCK • HARTFORD, CT
+                            © ${new Date().getFullYear()} ${site.brand.businessName.toUpperCase()} • ${site.brand.city.toUpperCase()}
                         </p>
                     </div>
                 </div>
@@ -235,14 +241,19 @@ export async function sendOrderConfirmationEmail({
             </tr>
         `).join("");
 
+        let fromEmail = site.brand.publicEmail || "contact@tejainfo.xyz";
+        if (fromEmail.includes("gmail.com") || fromEmail.includes("yahoo.com") || fromEmail.includes("outlook.com") || fromEmail.includes("hotmail.com")) {
+            fromEmail = "onboarding@resend.dev";
+        }
+
         const { data, error } = await resend.emails.send({
-            from: "Indian Food Truck <contact@tejainfo.xyz>",
+            from: `${site.brand.businessName} <${fromEmail}>`,
             to: email,
-            subject: `Order Confirmed: #${orderIdShort} - Indian Food Truck`,
+            subject: `Order Confirmed: #${orderIdShort} - ${site.brand.businessName}`,
             html: `
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #333;">
                     <div style="text-align: center; margin-bottom: 40px;">
-                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">IFT</div>
+                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">${site.brand.shortCode}</div>
                         <h1 style="font-size: 32px; font-weight: 800; font-style: italic; letter-spacing: -0.05em; margin: 20px 0 10px 0; color: #111; text-transform: uppercase;">Order Received!</h1>
                         <p style="color: #666; margin: 0; font-weight: 500;">Order #${orderIdShort} • Ready soon for pickup</p>
                     </div>
@@ -273,7 +284,7 @@ export async function sendOrderConfirmationEmail({
                         <p style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">Pickup Location</p>
                         <p style="font-size: 14px; font-weight: 600; color: #444; margin: 0;">Check our website for current truck location</p>
                         <p style="font-size: 12px; color: #cbd5e1; margin-top: 30px;">
-                            © ${new Date().getFullYear()} Indian Food Truck. All rights reserved.
+                            © ${new Date().getFullYear()} ${site.brand.businessName}. All rights reserved.
                         </p>
                     </div>
                 </div>
@@ -317,8 +328,13 @@ export async function sendOrderNotificationToAdmin({
             `<li><strong>${item.quantity}x</strong> ${item.name} ($${(item.priceCents * item.quantity / 100).toFixed(2)})</li>`
         ).join("");
 
+        let fromEmail = site.brand.publicEmail || "contact@tejainfo.xyz";
+        if (fromEmail.includes("gmail.com") || fromEmail.includes("yahoo.com") || fromEmail.includes("outlook.com") || fromEmail.includes("hotmail.com")) {
+            fromEmail = "onboarding@resend.dev";
+        }
+
         await resend.emails.send({
-            from: "Indian Food Truck <contact@tejainfo.xyz>",
+            from: `${site.brand.businessName} <${fromEmail}>`,
             to: adminEmail,
             subject: `🚨 NEW ORDER: #${orderIdShort} - $${(order.totalAmount / 100).toFixed(2)}`,
             html: `
@@ -370,20 +386,25 @@ export async function sendPasswordResetEmail({
     try {
         console.log(`Attempting to send password reset email to: ${email}`);
         
+        let fromEmail = site.brand.publicEmail || "contact@tejainfo.xyz";
+        if (fromEmail.includes("gmail.com") || fromEmail.includes("yahoo.com") || fromEmail.includes("outlook.com") || fromEmail.includes("hotmail.com")) {
+            fromEmail = "onboarding@resend.dev";
+        }
+
         const { data, error } = await resend.emails.send({
-            from: "Indian Food Truck <contact@tejainfo.xyz>",
+            from: `${site.brand.businessName} <${fromEmail}>`,
             to: email,
-            subject: "Reset Your Password - Indian Food Truck",
+            subject: `Reset Your Password - ${site.brand.businessName}`,
             html: `
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #333;">
                     <div style="text-align: center; margin-bottom: 40px;">
-                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">IFT</div>
+                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">${site.brand.shortCode}</div>
                         <h1 style="font-size: 28px; font-weight: 800; font-style: italic; letter-spacing: -0.05em; margin: 20px 0 10px 0; color: #111; text-transform: uppercase;">Password Reset</h1>
                     </div>
 
                     <div style="background-color: #f8fafc; border-radius: 24px; padding: 30px; margin-bottom: 30px; border: 1px solid #f1f5f9; text-align: center;">
                         <p style="font-size: 16px; line-height: 1.6; color: #444; margin-bottom: 25px;">
-                            We received a request to reset the password for your Indian Food Truck account. 
+                            We received a request to reset the password for your ${site.brand.businessName} account. 
                             If you didn't make this request, you can safely ignore this email.
                         </p>
                         
@@ -398,7 +419,7 @@ export async function sendPasswordResetEmail({
 
                     <div style="text-align: center;">
                         <p style="font-size: 12px; color: #cbd5e1; margin-top: 30px;">
-                            © ${new Date().getFullYear()} Indian Food Truck. All rights reserved.
+                            © ${new Date().getFullYear()} ${site.brand.businessName}. All rights reserved.
                         </p>
                     </div>
                 </div>

@@ -277,7 +277,7 @@ export default function CateringPrintedMenu({
                             <div className="mt-20 border-t border-black/10 pt-10 text-center">
                                 <p className="text-2xl font-black text-black mb-4">Ready to Order?</p>
                                 <p className="text-sm font-bold text-gray-500">
-                                    Call or Text {site.contact.phoneDisplay} • {site.brand.name}
+                                    Call or Text {site.contact.phoneDisplay} • {site.brand.businessName}
                                 </p>
                             </div>
                         </div>
@@ -285,7 +285,7 @@ export default function CateringPrintedMenu({
 
                     {/* Footer Guard */}
                     <div className="border-t border-white/5 bg-white/[0.01] px-8 py-6 text-center text-[10px] font-black uppercase tracking-[0.3em] text-white/20 md:px-12 print:border-black/10 print:bg-white print:text-gray-400">
-                        © {new Date().getFullYear()} {site.brand.name} Catering Division
+                        © {new Date().getFullYear()} {site.brand.businessName} Catering Division
                     </div>
                 </div>
             </div>

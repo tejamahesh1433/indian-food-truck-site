@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { site as defaultSite } from "@/config/site";
+import { site as defaultSite } from "@/config/site-config";
 
 import { normalizePhone } from "@/lib/utils/phone";
 
@@ -206,7 +206,8 @@ export function useSite() {
         cateringEnabled: dbSettings.cateringEnabled ?? true,
         brand: {
             ...defaultSite.brand,
-            name: dbSettings.businessName || defaultSite.brand.name,
+            businessName: dbSettings.businessName || defaultSite.brand.businessName,
+            shortCode: defaultSite.brand.shortCode,
             city: dbSettings.cityState || defaultSite.brand.city,
             logoUrl: dbSettings.logoUrl || "",
         },

@@ -40,18 +40,36 @@ export const authOptions: NextAuthOptions = {
                     return null;
                 }
 
+                // 1. Check if email verification is required globally
+                const settings = await prisma.siteSettings.findUnique({
+                    where: { id: "global" }
+                });
+
+                if (settings?.emailVerificationRequired && !user.emailVerified) {
+                    throw new Error("EMAIL_NOT_VERIFIED");
+                }
+
                 return {
                     id: user.id,
                     email: user.email,
                     name: user.name,
+                    emailVerified: user.emailVerified,
                 };
             }
         })
     ],
     callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.emailVerified = user.emailVerified;
+            }
+            return token;
+        },
         async session({ session, token }) {
             if (token && session.user) {
-                session.user.id = token.sub as string;
+                session.user.id = token.id;
+                session.user.emailVerified = token.emailVerified;
             }
             return session;
         },

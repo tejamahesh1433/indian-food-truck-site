@@ -48,7 +48,7 @@ export default async function ExportPage() {
         where: { id: "global" }
     });
 
-    const businessName = settings?.businessName || "Indian Food Truck";
+    const businessName = settings?.businessName || "Catch the Cravings";
     const exportDate = new Date().toLocaleDateString(undefined, {
         year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit'

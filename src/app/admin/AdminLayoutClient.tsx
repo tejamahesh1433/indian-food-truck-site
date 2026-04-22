@@ -52,7 +52,7 @@ export default function AdminLayoutClient({ children, businessName }: { children
                 <div className="w-64 h-full flex flex-col">
                 {/* Sidebar Header */}
                 <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
-                    <span className="font-bold text-orange-500 tracking-wider">IFT ADMIN</span>
+                    <span className="font-bold text-orange-500 tracking-wider">C2C ADMIN</span>
                     <button className="text-gray-400 hover:text-white p-3 -mr-3 flex items-center justify-center relative z-[60] cursor-pointer" onClick={() => setSidebarOpen(false)} title="Close Sidebar" type="button">
                         <svg className="w-6 h-6 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>

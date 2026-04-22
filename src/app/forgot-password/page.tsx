@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
             >
                 <div className="text-center mb-8">
                     <div className="mt-8 bg-orange-500 text-white w-14 h-14 mx-auto rounded-xl flex items-center justify-center font-black text-2xl italic shadow-[0_10px_30px_rgba(249,115,22,0.3)] mb-6">
-                        IFT
+                        C2C
                     </div>
                     <h1 className="text-3xl font-black italic tracking-tighter uppercase mb-2">
                         Reset Password

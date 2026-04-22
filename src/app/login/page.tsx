@@ -82,6 +82,7 @@ function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") || "/";
+    const justVerified = searchParams.get("verified") === "1";
 
     const [mode, setMode] = useState<"login" | "signup">("login");
     const isSignUp = mode === "signup";
@@ -128,7 +129,13 @@ function LoginForm() {
                     password: formData.password,
                     redirect: false,
                 });
-                if (loginRes?.error) throw new Error("Auto-login failed after signup");
+                if (loginRes?.error) {
+                    if (loginRes.error === "EMAIL_NOT_VERIFIED") {
+                        router.push(`/verify-email/pending?email=${encodeURIComponent(formData.email)}`);
+                        return;
+                    }
+                    throw new Error("Auto-login failed after signup");
+                }
                 router.push(callbackUrl);
                 router.refresh();
             } else {
@@ -137,7 +144,14 @@ function LoginForm() {
                     password: formData.password,
                     redirect: false,
                 });
-                if (res?.error) throw new Error("Invalid email or password");
+                if (res?.error) {
+                    if (res.error === "EMAIL_NOT_VERIFIED") {
+                        // Redirect to pending page with email
+                        router.push(`/verify-email/pending?email=${encodeURIComponent(formData.email)}`);
+                        return;
+                    }
+                    throw new Error("Invalid email or password");
+                }
                 router.push(callbackUrl);
                 router.refresh();
             }
@@ -186,6 +200,16 @@ function LoginForm() {
                     />
 
                     <div className="p-8 sm:p-10">
+
+                        {/* ── Email Verified Banner ── */}
+                        {justVerified && (
+                            <div className="mb-6 flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-2xl px-5 py-4">
+                                <span className="text-green-400 text-xl">✓</span>
+                                <p className="text-green-400 font-bold text-sm">
+                                    Email verified! You can now log in.
+                                </p>
+                            </div>
+                        )}
 
                         {/* ── Header ── */}
                         <div className="mb-8 text-center overflow-hidden">

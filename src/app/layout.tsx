@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Indian Food Truck | Hartford, CT",
+  title: "Catch the Cravings | Hartford, CT",
   description:
     "Authentic Indian street food on wheels in Hartford, CT. View the menu, find today’s location, and book catering.",
   metadataBase: new URL("https://tejainfo.xyz"),
@@ -29,16 +29,16 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Indian Food Truck | Hartford, CT",
+    title: "Catch the Cravings | Hartford, CT",
     description: "Authentic Indian street food on wheels in Hartford, CT. View the menu, find today’s location, and book catering.",
     url: "/",
-    siteName: "Indian Food Truck",
+    siteName: "Catch the Cravings",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Indian Food Truck - Masala Street Food",
+        alt: "Catch the Cravings - Masala Street Food",
       },
     ],
     locale: "en_US",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Indian Food Truck | Hartford, CT",
+    title: "Catch the Cravings | Hartford, CT",
     description: "Authentic Indian street food on wheels in Hartford, CT. View the menu, find today’s location, and book catering.",
     images: ["/og-image.png"],
   },
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Indian Food Truck",
+    title: "Catch the Cravings",
   },
 };
 
@@ -86,7 +86,7 @@ export default async function RootLayout({
     settings = await prisma.siteSettings.findUnique({ where: { id: "global" } });
   } catch { }
 
-  const businessName = settings?.businessName || "Indian Food Truck";
+  const businessName = settings?.businessName || "Catch the Cravings";
   const cityState    = settings?.cityState    || "Hartford, CT";
   const phone        = settings?.phone        || "";
   const baseUrl      = process.env.NEXT_PUBLIC_BASE_URL || "https://tejainfo.xyz";

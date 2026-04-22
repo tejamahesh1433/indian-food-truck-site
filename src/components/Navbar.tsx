@@ -47,18 +47,18 @@ export default function Navbar() {
                             <Image 
                                 src={site.brand.logoUrl} 
                                 className="h-9 w-9 object-contain" 
-                                alt={site.brand.name} 
+                                alt={site.brand.businessName} 
                                 width={36}
                                 height={36}
                                 priority
                             />
                         ) : (
                             <div className="h-9 w-9 rounded-xl bg-orange-500 text-black font-bold flex items-center justify-center shadow-lg">
-                                {site.brand.short}
+                                {site.brand.shortCode}
                             </div>
                         )}
                         <div className="leading-tight hidden sm:block">
-                            <div className="font-bold text-sm">{site.brand.name}</div>
+                            <div className="font-bold text-sm">{site.brand.businessName}</div>
                             <div className="text-[10px] text-gray-400 uppercase tracking-wider">{site.brand.city}</div>
                         </div>
                     </Link>

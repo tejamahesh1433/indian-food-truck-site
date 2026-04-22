@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-    title: "Our Story | Indian Food Truck – Hartford, CT",
+    title: "Our Story | Catch the Cravings – Hartford, CT",
     description: "Authentic Andhra & Telangana street food on wheels in Hartford, CT. Hand-toasted spices, slow-cooked biryanis, and family recipes three generations in the making.",
 };
 

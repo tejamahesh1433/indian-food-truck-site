@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
+import { site } from "@/config/site-config";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -48,17 +49,24 @@ export async function sendVerificationEmail(email: string) {
 
         // 4. Send the email
         const verificationLink = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}&email=${email}`;
-        const businessName = settings.businessName || "Indian Food Truck";
-        const publicEmail = settings.publicEmail || "contact@tejainfo.xyz";
+        const businessName = settings.businessName || site.brand.businessName;
+        
+        // Development / Verification Fallback for Resend
+        let fromEmail = settings.publicEmail || "contact@tejainfo.xyz";
+        if (fromEmail.includes("gmail.com") || fromEmail.includes("yahoo.com") || fromEmail.includes("outlook.com") || fromEmail.includes("hotmail.com")) {
+            // Only fallback if using a generic provider that isn't verified in Resend
+            // We removed the forced "development" check so verified domains can work on localhost
+            fromEmail = "onboarding@resend.dev";
+        }
 
         await resend.emails.send({
-            from: `${businessName} <${publicEmail}>`,
+            from: `${businessName} <${fromEmail}>`,
             to: email,
             subject: `Verify Your Email - ${businessName}`,
             html: `
                 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #ffffff; color: #333;">
                     <div style="text-align: center; margin-bottom: 40px;">
-                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">${businessName.charAt(0)}</div>
+                        <div style="background-color: #f97316; color: white; width: 60px; height: 60px; line-height: 60px; border-radius: 20px; display: inline-block; font-weight: 900; font-size: 24px; font-style: italic;">${site.brand.shortCode}</div>
                         <h1 style="font-size: 28px; font-weight: 800; font-style: italic; letter-spacing: -0.05em; margin: 20px 0 10px 0; color: #111; text-transform: uppercase;">Verify Your Email</h1>
                     </div>
 

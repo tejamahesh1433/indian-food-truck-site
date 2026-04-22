@@ -1,5 +1,11 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Privacy Policy | Catch the Cravings",
+    description: "Your privacy matters to us. Learn how Catch the Cravings handles your data.",
+};
 
 export default function PrivacyPolicyPage() {
     return (

@@ -2,11 +2,12 @@ export const site = {
     cateringEnabled: true,
     brand: {
         // temporary until final truck name
-        name: "Indian Food Truck",
-        short: "IFT",
+        businessName: "Catch the Cravings",
+        shortCode: "C2C",
         city: "Hartford, CT",
         tagline: "Authentic Indian street food on wheels",
         logoUrl: "",
+        publicEmail: "contact@tejainfo.xyz",
     },
 
     contact: {
