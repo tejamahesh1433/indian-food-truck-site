@@ -11,8 +11,8 @@ export const site = {
     },
 
     contact: {
-        phoneDisplay: "(860) 555-1234",
-        phoneE164: "+18605551234",
+        phoneDisplay: "",
+        phoneE164: "",
         instagramUrl: "https://instagram.com/", // replace later
         email: "hello@example.com", // optional
     },

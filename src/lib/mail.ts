@@ -31,6 +31,7 @@ export async function sendChatLinkEmail({
     location?: string;
     notes?: string;
     selections?: CateringSelection[];
+    businessPhone?: string;
 }) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
@@ -168,7 +169,7 @@ export async function sendChatLinkEmail({
                         </a>
                         <div style="margin-top: 40px; padding-top: 32px; border-top: 1px solid #27272a;">
                             <p style="font-size: 10px; font-weight: 800; color: #71717a; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 12px;">Direct Support</p>
-                            <p style="font-size: 14px; color: #e4e4e7; margin: 8px 0; font-weight: 700;">(860) 904-8902</p>
+                            <p style="font-size: 14px; color: #e4e4e7; margin: 8px 0; font-weight: 700;">${businessPhone || ""}</p>
                             <p style="font-size: 11px; color: #52525b; word-break: break-all; margin-top: 16px;">${chatLink}</p>
                         </div>
                     </div>

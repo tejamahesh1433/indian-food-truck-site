@@ -8,7 +8,7 @@ export async function GET() {
         settings = await prisma.siteSettings.create({
             data: {
                 id: "global",
-                phone: "+1 415-555-0198",
+                phone: "",
                 instagramUrl: "https://instagram.com",
                 truckToday: "Downtown Square",
                 truckNext: "University Campus"

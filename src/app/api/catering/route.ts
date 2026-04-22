@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     // 1. Availability Check
     const settings = await prisma.siteSettings.findUnique({
         where: { id: "global" },
-        select: { cateringEnabled: true }
+        select: { cateringEnabled: true, phone: true }
     });
     if (settings && settings.cateringEnabled === false) {
         return NextResponse.json(
@@ -119,6 +119,7 @@ export async function POST(req: Request) {
             guests: created.guests || undefined,
             location: created.location || "TBD",
             notes: created.notes || undefined,
+            businessPhone: settings?.phone || "",
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selections: (created.selections as any[]) || [],
         }).then(() => {
