@@ -25,7 +25,7 @@ interface PillNavProps {
   initialLoadAnimation?: boolean;
 }
 
-const PillNav = ({
+export default function PillNav({
   items,
   className = '',
   ease = 'power3.out',
@@ -34,7 +34,7 @@ const PillNav = ({
   hoveredPillTextColor = '#000000',
   pillTextColor = '#ffffff',
   initialLoadAnimation = true
-}: PillNavProps) => {
+}: PillNavProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const circleRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -43,6 +43,7 @@ const PillNav = ({
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navItemsRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -54,7 +55,6 @@ const PillNav = ({
         const rect = pill.getBoundingClientRect();
         const { width: w, height: h } = rect;
         
-        // Geometric calculation for the filling circle radius
         const R = ((w * w) / 4 + h * h) / (2 * h);
         const D = Math.ceil(2 * R) + 2;
         const delta = Math.ceil(R - Math.sqrt(Math.max(0, R * R - (w * w) / 4))) + 1;
@@ -103,9 +103,6 @@ const PillNav = ({
     if (document.fonts?.ready) {
       document.fonts.ready.then(layout).catch(() => {});
     }
-
-    // CSS now handles the initial hidden state (visibility, opacity, scale)
-    // to prevent the 10s settings-polling jump.
 
     if (initialLoadAnimation) {
       const navItems = navItemsRef.current;
@@ -181,8 +178,6 @@ const PillNav = ({
       }
     }
   };
-
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -296,6 +291,4 @@ const PillNav = ({
       </div>
     </div>
   );
-};
-
-export default PillNav;
+}
