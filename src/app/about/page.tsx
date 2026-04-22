@@ -29,7 +29,7 @@ export default function AboutPage() {
             <Navbar />
 
             {/* ── HERO ── */}
-            <section className="relative pt-32 pb-28 overflow-hidden">
+            <section className="relative pt-20 sm:pt-28 md:pt-32 pb-16 sm:pb-24 md:pb-28 overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(249,115,22,0.18),transparent)]" />
                 {/* Spice strip */}
                 <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent" />
@@ -37,7 +37,7 @@ export default function AboutPage() {
                     <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-[0.35em] px-4 py-2 rounded-full mb-8">
                         <span>🌶️</span> Andhra &amp; Telangana • Hartford, CT
                     </div>
-                    <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter leading-[0.85]">
+                    <h1 className="text-4xl sm:text-6xl md:text-8xl font-black italic tracking-tighter leading-[0.85]">
                         Cooked with fire.<br />
                         <span className="text-orange-500">Served with soul.</span>
                     </h1>
@@ -81,7 +81,7 @@ export default function AboutPage() {
 
             {/* ── ORIGIN STORY ── */}
             <section className="container-shell py-24">
-                <div className="grid md:grid-cols-2 gap-20 items-center">
+                <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center">
                     <div className="space-y-7">
                         <div className="inline-block bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
                             The Heritage
@@ -231,7 +231,7 @@ export default function AboutPage() {
 
             {/* ── HARTFORD LOVE ── */}
             <section className="container-shell py-24">
-                <div className="grid md:grid-cols-2 gap-16 items-center">
+                <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
                     <div className="space-y-7">
                         <div className="inline-block bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
                             Roots in Hartford
@@ -278,11 +278,11 @@ export default function AboutPage() {
 
             {/* ── CTA ── */}
             <section className="container-shell pb-24">
-                <div className="relative bg-gradient-to-br from-orange-600/20 via-orange-500/5 to-transparent border border-orange-500/25 rounded-[3rem] p-12 md:p-20 text-center overflow-hidden">
+                <div className="relative bg-gradient-to-br from-orange-600/20 via-orange-500/5 to-transparent border border-orange-500/25 rounded-3xl sm:rounded-[3rem] p-7 sm:p-12 md:p-20 text-center overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(249,115,22,0.12),transparent_65%)]" />
                     <div className="relative z-10">
                         <span className="text-5xl block mb-6">🌶️</span>
-                        <h2 className="text-4xl md:text-7xl font-black italic tracking-tighter leading-[0.9] mb-5">
+                        <h2 className="text-3xl sm:text-4xl md:text-7xl font-black italic tracking-tighter leading-[0.95] sm:leading-[0.9] mb-5">
                             Don&apos;t just read<br />
                             <span className="text-orange-500">about it. Taste it.</span>
                         </h2>

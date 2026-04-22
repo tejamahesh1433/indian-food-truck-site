@@ -79,7 +79,7 @@ export default async function ProfilePage() {
     const completedOrders = user.orders.filter(o => o.status === "COMPLETED").length;
 
     return (
-        <main className="min-h-screen pt-24 pb-20 px-6 max-w-7xl mx-auto">
+        <main className="min-h-screen pt-20 sm:pt-24 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
             {/* Back Link */}
             <Link
                 href="/menu"
@@ -103,9 +103,9 @@ export default async function ProfilePage() {
             />
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mt-8 sm:mt-12">
                 {/* Left Column - Main Content */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-6 sm:space-y-8">
                     {/* Invoices Section */}
                     <InvoicesSection orders={user.orders} />
 
@@ -116,15 +116,15 @@ export default async function ProfilePage() {
                     <ReviewsSection orders={user.orders} />
                 </div>
 
-                {/* Right Sidebar */}
-                <div className="space-y-8">
+                {/* Right Sidebar — on mobile renders AFTER main content */}
+                <div className="space-y-6 sm:space-y-8">
                     {/* Favorites */}
                     <FavoritesSection favorites={user.favorites} />
 
                     {/* Saved Locations */}
                     <SavedLocationsSection locations={user.savedLocations} />
 
-                    {/* Account Settings */}
+                    {/* Account Settings — remove sticky on mobile */}
                     <AccountSettings user={user} />
                 </div>
             </div>
@@ -134,7 +134,7 @@ export default async function ProfilePage() {
 
 function OrderHistorySection({ orders }: { orders: any[] }) {
     return (
-        <section id="order-history-section" className="bg-white/5 border border-white/10 rounded-3xl p-8">
+        <section id="order-history-section" className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-black italic tracking-tighter uppercase text-white">Order History</h2>
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white/10 px-3 py-1 rounded-full">

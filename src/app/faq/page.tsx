@@ -13,7 +13,7 @@ export default function FAQPage() {
         <main className="min-h-screen bg-black text-white selection:bg-orange-500/30">
             <Navbar />
 
-            <section className="px-6 md:px-20 py-20 relative">
+            <section className="px-6 md:px-20 py-12 sm:py-16 md:py-20 relative">
                 <div className="max-w-4xl mx-auto">
                     <header className="mb-16">
                         <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4">

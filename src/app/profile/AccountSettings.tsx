@@ -166,8 +166,8 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
     ];
 
     return (
-        <section className="bg-white/5 border border-white/10 rounded-3xl p-6 sticky top-24">
-            <h3 className="text-lg font-black italic tracking-tighter uppercase text-white mb-4">
+        <section className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 lg:sticky lg:top-24">
+            <h3 className="text-base sm:text-lg font-black italic tracking-tighter uppercase text-white mb-4">
                 ⚙️ Account
             </h3>
 

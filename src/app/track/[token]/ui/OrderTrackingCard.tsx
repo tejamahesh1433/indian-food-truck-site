@@ -46,7 +46,7 @@ export default function OrderTrackingCard({ order: initialOrder }: { order: any 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-md space-y-8"
+                className="p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-md space-y-6 sm:space-y-8"
             >
                 {/* Header Info */}
                 <div className="flex flex-wrap items-start justify-between gap-6">
@@ -105,7 +105,7 @@ export default function OrderTrackingCard({ order: initialOrder }: { order: any 
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="relative p-8 rounded-[2rem] bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 overflow-hidden group"
+                        className="relative p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 overflow-hidden group"
                     >
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                             <svg className="w-24 h-24 text-orange-500 rotate-12" fill="currentColor" viewBox="0 0 20 20">

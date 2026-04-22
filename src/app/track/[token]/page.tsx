@@ -29,8 +29,8 @@ export default async function OrderTrackingPage({
     return (
         <main className="min-h-screen bg-[#0b0b0b] pb-20">
             <Navbar />
-            <div className="pt-32 px-6 max-w-2xl mx-auto">
-                <header className="mb-12 text-center">
+            <div className="pt-20 sm:pt-28 md:pt-32 px-4 sm:px-6 max-w-2xl mx-auto">
+                <header className="mb-8 sm:mb-12 text-center">
                     <div className="inline-block px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-black uppercase tracking-widest mb-4">
                         Order Live Tracker
                     </div>

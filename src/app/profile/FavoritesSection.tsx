@@ -9,8 +9,8 @@ interface FavoritesSectionProps {
 
 export default function FavoritesSection({ favorites }: FavoritesSectionProps) {
     return (
-        <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h3 className="text-lg font-black italic tracking-tighter uppercase text-white mb-4 flex items-center gap-2">
+        <section className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6">
+            <h3 className="text-base sm:text-lg font-black italic tracking-tighter uppercase text-white mb-4 flex items-center gap-2">
                 <span className="text-xl">❤️</span>
                 Your Favorites
             </h3>

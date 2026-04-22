@@ -17,11 +17,11 @@ export default function InvoicesSection({ orders }: InvoicesSectionProps) {
     }
 
     return (
-        <section className="bg-white/5 border border-white/10 rounded-3xl p-8">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-black italic tracking-tighter uppercase text-white flex items-center gap-3">
-                    <span className="text-2xl">📄</span>
-                    Invoices & Receipts
+        <section className="bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
+            <div className="flex items-center justify-between mb-5 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-black italic tracking-tighter uppercase text-white flex items-center gap-2 sm:gap-3">
+                    <span className="text-xl sm:text-2xl">📄</span>
+                    Invoices
                 </h2>
             </div>
 
@@ -29,29 +29,26 @@ export default function InvoicesSection({ orders }: InvoicesSectionProps) {
                 {invoiceableOrders.slice(0, 5).map((order) => (
                     <div
                         key={order.id}
-                        className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:border-orange-500/30 transition group"
+                        className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-white/5 border border-white/10 rounded-xl hover:border-orange-500/30 transition group"
                     >
-                        <div>
-                            <p className="font-bold text-white group-hover:text-orange-400 transition">
-                                Order #{order.id.slice(-6).toUpperCase()}
+                        <div className="min-w-0">
+                            <p className="font-bold text-white text-sm group-hover:text-orange-400 transition">
+                                #{order.id.slice(-6).toUpperCase()}
                             </p>
                             <p className="text-xs text-gray-400">
                                 {new Date(order.createdAt).toLocaleDateString()}
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <div className="text-right">
-                                <p className="font-bold text-orange-400">
-                                    ${(order.totalAmount / 100).toFixed(2)}
-                                </p>
-                                <p className="text-xs text-gray-400">{order.status}</p>
-                            </div>
+                        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                            <p className="font-bold text-orange-400 text-sm">
+                                ${(order.totalAmount / 100).toFixed(2)}
+                            </p>
 
                             <Link
                                 href={`/invoice/${order.id}`}
                                 target="_blank"
-                                className="px-4 py-2 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-500 transition"
+                                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-500 transition"
                             >
                                 View
                             </Link>
