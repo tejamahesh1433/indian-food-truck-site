@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import CustomCheckbox from "./ui/CustomCheckbox";
 
 export interface CustomizationAddon {
     id: string;
@@ -273,20 +274,11 @@ export default function ItemCustomizationModal({ isOpen, onClose, item, onAdd, u
                                                     : "border-white/5 bg-white/5 hover:bg-white/8 hover:border-white/10"
                                                 }`}
                                             >
-                                                <div className="flex items-center gap-4">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="hidden" 
+                                                <div className="flex items-center gap-2">
+                                                    <CustomCheckbox 
                                                         checked={isSelected} 
                                                         onChange={() => toggleAddon(addon.id)} 
                                                     />
-                                                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${isSelected ? "bg-orange-500 border-orange-500" : "border-white/10"}`}>
-                                                        {isSelected && (
-                                                            <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                        )}
-                                                    </div>
                                                     <span className={`font-semibold text-sm transition-colors ${isSelected ? "text-white" : "text-gray-300"}`}>{cleanName}</span>
                                                 </div>
                                                 <span className={`text-sm font-black transition-colors ${isSelected ? "text-orange-400" : "text-gray-500"}`}>

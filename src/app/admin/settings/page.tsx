@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { normalizePhone } from "@/lib/utils/phone";
 import EmailSettingsClient from "./EmailSettingsClient";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 function PinManager() {
@@ -216,8 +217,9 @@ export default function AdminSettingsPage() {
 
     const isValid = useMemo(() => {
         if (form.publicEmail && !form.publicEmail.includes("@")) return false;
-        if (form.instagramUrl && (!form.instagramUrl.includes("instagram.com/") || form.instagramUrl.endsWith("instagram.com/"))) return false;
-        if (form.bannerEnabled && !form.bannerText.trim()) return false;
+        // Instagram validation: only fail if it's provided AND doesn't look like a URL
+        if (form.instagramUrl && !form.instagramUrl.includes("instagram.com")) return false;
+        // Banner validation: handled via conditional warning rather than blocking whole form
         return true;
     }, [form]);
 
@@ -344,6 +346,22 @@ export default function AdminSettingsPage() {
                                     />
                                 </div>
                             </div>
+                            
+                            {/* Section Save Button */}
+                            <div className="flex justify-end pt-4 border-t border-white/5">
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById('main-save-btn')?.click()}
+                                    disabled={saving || !isValid}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all ${
+                                        (form.businessName !== initialForm?.businessName || form.cityState !== initialForm?.cityState || form.logoUrl !== initialForm?.logoUrl || form.footerMessage !== initialForm?.footerMessage)
+                                        ? 'bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/20'
+                                        : 'bg-white/5 text-gray-500 cursor-default'
+                                    }`}
+                                >
+                                    {(form.businessName !== initialForm?.businessName || form.cityState !== initialForm?.cityState || form.logoUrl !== initialForm?.logoUrl || form.footerMessage !== initialForm?.footerMessage) ? "Save Branding Changes" : "No Changes Detected"}
+                                </button>
+                            </div>
                         </section>
 
                         {/* Contact & Social Section */}
@@ -376,17 +394,33 @@ export default function AdminSettingsPage() {
                                 <div className="md:col-span-2">
                                     <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 flex items-center justify-between">
                                         Instagram handle URL
-                                        {form.instagramUrl && (!form.instagramUrl.includes("instagram.com/") || form.instagramUrl.endsWith("instagram.com/")) && (
-                                            <span className="text-red-400 text-[10px]">Provide full handle URL</span>
+                                        {form.instagramUrl && !form.instagramUrl.includes("instagram.com") && (
+                                            <span className="text-red-400 text-[10px]">Provide full handle URL (instagram.com/...)</span>
                                         )}
                                     </label>
                                     <input
                                         value={form.instagramUrl}
                                         onChange={e => setForm({ ...form, instagramUrl: e.target.value })}
-                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 outline-none transition ${form.instagramUrl && (!form.instagramUrl.includes("instagram.com/") || form.instagramUrl.endsWith("instagram.com/")) ? 'border-red-500/50' : 'border-white/10 focus:border-blue-500/50'}`}
+                                        className={`w-full bg-black/40 border rounded-xl px-4 py-3 outline-none transition ${form.instagramUrl && !form.instagramUrl.includes("instagram.com") ? 'border-red-500/50' : 'border-white/10 focus:border-blue-500/50'}`}
                                         placeholder="https://instagram.com/yourhandle"
                                     />
                                 </div>
+                            </div>
+
+                            {/* Section Save Button */}
+                            <div className="flex justify-end pt-4 border-t border-white/5">
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById('main-save-btn')?.click()}
+                                    disabled={saving || !isValid}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all ${
+                                        (form.phone !== initialForm?.phone || form.publicEmail !== initialForm?.publicEmail || form.instagramUrl !== initialForm?.instagramUrl)
+                                        ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/20'
+                                        : 'bg-white/5 text-gray-500 cursor-default'
+                                    }`}
+                                >
+                                    {(form.phone !== initialForm?.phone || form.publicEmail !== initialForm?.publicEmail || form.instagramUrl !== initialForm?.instagramUrl) ? "Save Contact Details" : "Contact Details Synced"}
+                                </button>
                             </div>
                         </section>
 
@@ -423,6 +457,22 @@ export default function AdminSettingsPage() {
                                     placeholder="e.g. Closed for Diwali!"
                                 />
                             </div>
+
+                            {/* Section Save Button */}
+                            <div className="flex justify-end pt-4 border-t border-white/5">
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById('main-save-btn')?.click()}
+                                    disabled={saving || !isValid || (form.bannerEnabled && !form.bannerText.trim())}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all ${
+                                        (form.bannerEnabled !== initialForm?.bannerEnabled || form.bannerText !== initialForm?.bannerText)
+                                        ? 'bg-orange-600 text-white hover:bg-orange-500 shadow-lg shadow-orange-500/20'
+                                        : 'bg-white/5 text-gray-500 cursor-default'
+                                    }`}
+                                >
+                                    {(form.bannerEnabled !== initialForm?.bannerEnabled || form.bannerText !== initialForm?.bannerText) ? "Save Banner Status" : "Banner Settings Synced"}
+                                </button>
+                            </div>
                         </section>
                         
                         {/* ── Email Features Toggle (Redesigned & Prominent) ── */}
@@ -442,17 +492,55 @@ export default function AdminSettingsPage() {
                         <div className="pt-4 flex items-center gap-4">
                             <button
                                 type="submit"
+                                id="main-save-btn"
                                 disabled={saving || !hasChanges || !isValid}
-                                className="bg-white text-black px-10 py-4 rounded-2xl font-bold hover:bg-gray-200 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3 shadow-xl"
+                                className="bg-orange-500 text-black px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-orange-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3 shadow-xl shadow-orange-500/20"
                             >
-                                {saving ? "Saving..." : "Save Settings"}
-                                {!saving && hasChanges && <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />}
+                                {saving ? "Saving Changes..." : "Save All Settings"}
+                                {!saving && hasChanges && <span className="w-2 h-2 rounded-full bg-white animate-pulse" />}
                             </button>
-                            {status === "saved" && <span className="text-green-400 text-sm font-medium">Settings Updated!</span>}
-                            {status === "error" && <span className="text-red-400 text-sm font-medium">Error saving changes.</span>}
+                            {status === "saved" && <span className="text-green-400 text-xs font-bold uppercase tracking-widest">✓ Success</span>}
+                            {status === "error" && <span className="text-red-400 text-xs font-bold uppercase tracking-widest">⚠️ Save Failed</span>}
                         </div>
                     </form>
                 </div>
+
+                {/* Sticky Bottom Save Bar */}
+                <AnimatePresence>
+                    {hasChanges && (
+                        <motion.div 
+                            initial={{ y: 100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 100, opacity: 0 }}
+                            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[150] w-[90%] max-w-2xl"
+                        >
+                            <div className="bg-zinc-900/90 backdrop-blur-xl border border-orange-500/30 rounded-3xl p-4 shadow-2xl flex items-center justify-between gap-6 px-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-orange-500 animate-ping" />
+                                    <span className="text-xs font-black uppercase tracking-widest text-white">Unsaved Changes Detected</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={handleReset}
+                                        className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition px-4"
+                                    >
+                                        Discard
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            const btn = document.getElementById('main-save-btn');
+                                            btn?.click();
+                                        }}
+                                        disabled={saving || !isValid}
+                                        className="bg-orange-500 text-black px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-orange-400 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-30"
+                                    >
+                                        {saving ? "Saving..." : "Save Now"}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Previews Sidebar */}
                 <div className="w-full lg:w-96 space-y-8">

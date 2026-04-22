@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import Link from "next/link";
 import { isWellRecognizedEmail, EMAIL_DOMAIN_ERROR } from "@/lib/validation";
+import CustomCheckbox from "@/components/ui/CustomCheckbox";
 
 // ── Spring configs ───────────────────────────────────────────────────────────
 const SPRING = { type: "spring", stiffness: 380, damping: 30 } as const;
@@ -91,6 +92,7 @@ function LoginForm() {
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
 
     const passwordChecks = CHECKS.map((c) => ({ ...c, met: c.test(formData.password) }));
     const passwordStrong = passwordChecks.every((c) => c.met);
@@ -106,6 +108,12 @@ function LoginForm() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+
+        if (isSignUp && !acceptedTerms) {
+            setError("You must accept the Privacy Policy and Terms to continue.");
+            setIsLoading(false);
+            return;
+        }
 
         if (!isWellRecognizedEmail(formData.email)) {
             setError(EMAIL_DOMAIN_ERROR);
@@ -373,6 +381,30 @@ function LoginForm() {
                                 </div>
                             </motion.div>
 
+                            {/* Privacy Policy Checkbox — only in sign-up mode */}
+                            <motion.div
+                                initial={false}
+                                animate={{
+                                    height: isSignUp ? "auto" : 0,
+                                    opacity: isSignUp ? 1 : 0,
+                                    marginTop: isSignUp ? 24 : 0
+                                }}
+                                transition={SPRING_SOFT}
+                                className="overflow-hidden"
+                            >
+                                <div className="px-1 flex items-start gap-3">
+                                    <div className="shrink-0">
+                                        <CustomCheckbox 
+                                            checked={acceptedTerms}
+                                            onChange={setAcceptedTerms}
+                                        />
+                                    </div>
+                                    <div className="text-[10px] pt-1.5 leading-relaxed text-gray-500 font-medium">
+                                        I agree to the <Link href="/privacy-policy" className="text-orange-500 hover:text-orange-400 underline underline-offset-2 decoration-orange-500/20">Privacy Policy</Link> and <Link href="/terms" className="text-orange-500 hover:text-orange-400 underline underline-offset-2 decoration-orange-500/20">Terms of Service</Link>.
+                                    </div>
+                                </div>
+                            </motion.div>
+
                             {/* Forgot password — only in login */}
                             <motion.div
                                 initial={false}
@@ -414,7 +446,7 @@ function LoginForm() {
                             <motion.button
                                 layout
                                 type="submit"
-                                disabled={isLoading || (isSignUp && !passwordStrong)}
+                                disabled={isLoading || (isSignUp && (!passwordStrong || !acceptedTerms))}
                                 whileHover={{ scale: isLoading ? 1 : 1.015 }}
                                 whileTap={{ scale: 0.985 }}
                                 transition={SPRING}

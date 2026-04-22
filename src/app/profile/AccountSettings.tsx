@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface User {
     id: string;
@@ -22,6 +23,13 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
     const [name, setName] = useState(user.name || "");
     const [emailNotifications, setEmailNotifications] = useState(user.emailNotifications ?? true);
     const [marketingEmails, setMarketingEmails] = useState(user.marketingEmails ?? false);
+    
+    // Track initial values for change detection
+    const initialName = user.name || "";
+    const initialEmailNotifications = user.emailNotifications ?? true;
+    const initialMarketingEmails = user.marketingEmails ?? false;
+
+    const hasProfileChanges = name !== initialName || emailNotifications !== initialEmailNotifications || marketingEmails !== initialMarketingEmails;
     
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -187,13 +195,14 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
                         >
                             <div className="flex items-center gap-3">
                                 <span className="text-lg">{setting.icon}</span>
-                                <div>
+                                <div className="flex items-center gap-2">
                                     <p className="font-bold text-white text-sm">
                                         {setting.label}
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                        {setting.description}
-                                    </p>
+                                    {((setting.id === 'profile' && name !== initialName) || 
+                                      (setting.id === 'notifications' && (emailNotifications !== initialEmailNotifications || marketingEmails !== initialMarketingEmails))) && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" title="Unsaved changes" />
+                                    )}
                                 </div>
                             </div>
                             <svg
@@ -390,6 +399,29 @@ export default function AccountSettings({ user }: AccountSettingsProps) {
                     </button>
                 )}
             </div>
+
+            <AnimatePresence>
+                {hasProfileChanges && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="mt-6 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-between gap-4"
+                    >
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Unsaved Changes</span>
+                        </div>
+                        <button
+                            onClick={handleUpdateProfile}
+                            disabled={isSubmitting}
+                            className="bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg transition shadow-lg shadow-orange-900/20 disabled:opacity-50"
+                        >
+                            {isSubmitting ? "Saving..." : "Save All Now"}
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </section>
     );
 }

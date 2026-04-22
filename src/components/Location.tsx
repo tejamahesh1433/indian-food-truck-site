@@ -133,7 +133,8 @@ export default function Location() {
                                     className="w-full h-[450px]"
                                     loading="lazy"
                                     referrerPolicy="no-referrer-when-downgrade"
-                                    src={`https://maps.google.com/maps?q=${encodeURIComponent(today.mapsQuery)}&output=embed`}
+                                    src={`https://www.google.com/maps?q=${encodeURIComponent(today.mapsQuery)}&output=embed`}
+                                    suppressHydrationWarning
                                 />
                             </div>
                         ) : (

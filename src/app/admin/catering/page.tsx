@@ -35,9 +35,18 @@ export default async function CateringInboxPage() {
 
             <div className="flex flex-col gap-1 mb-8">
                 <h1 className="text-3xl font-semibold mb-2 text-white">Catering Inbox</h1>
-                <p className="text-gray-400 text-sm">
-                    Review incoming quotes and mark them as contacted or completed.
-                </p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2">
+                    <p className="text-gray-400 text-sm">
+                        Review incoming quotes and mark them as contacted or completed.
+                    </p>
+                    <a 
+                        href="/admin/catering-menu" 
+                        className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition flex items-center gap-2"
+                    >
+                        <span className="text-base">📑</span>
+                        Manage Catering Menu
+                    </a>
+                </div>
 
                 <div className="max-w-md mt-4">
                     <CateringAvailabilityToggle initialEnabled={cateringEnabled} />

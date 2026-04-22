@@ -12,7 +12,7 @@ const cspHeader = `
     object-src 'none';
     base-uri 'self';
     frame-ancestors 'self';
-    upgrade-insecure-requests;
+    ${isDev ? "" : "upgrade-insecure-requests;"}
 `.replace(/\s{2,}/g, ' ').trim();
 
 const securityHeaders = [

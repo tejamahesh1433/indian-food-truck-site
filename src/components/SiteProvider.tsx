@@ -92,7 +92,7 @@ export function SiteProvider({ children, settings: initialSettings }: { children
             }
         };
 
-        const settingsTimer = setInterval(pollSettings, 10000);
+        const settingsTimer = setInterval(pollSettings, 30000);
 
         // Initial fetch on mount to ensure client is in sync with latest DB state immediately 
         pollSettings();

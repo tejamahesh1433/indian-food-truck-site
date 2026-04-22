@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import CustomCheckbox from "@/components/ui/CustomCheckbox";
+import LottieDeleteButton from "@/components/ui/LottieDeleteButton";
 
 interface SpecialDish {
     id: string;
@@ -186,23 +188,27 @@ export default function TodaysSpecialAdminPage() {
                             />
                         </div>
 
-                        <div className="flex flex-wrap gap-6 border-y border-white/5 py-6">
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" checked={editingItem.isVeg || false} onChange={(e) => setEditingItem({ ...editingItem, isVeg: e.target.checked })} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition">Veg</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" checked={editingItem.isNonVeg || false} onChange={(e) => setEditingItem({ ...editingItem, isNonVeg: e.target.checked })} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition">Non-Veg</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" checked={editingItem.isSpicy || false} onChange={(e) => setEditingItem({ ...editingItem, isSpicy: e.target.checked })} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition">Spicy</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" checked={editingItem.isPopular || false} onChange={(e) => setEditingItem({ ...editingItem, isPopular: e.target.checked })} className="rounded border-white/10 bg-black/40 w-4 h-4 cursor-pointer" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-white transition">Popular</span>
-                            </label>
+                        <div className="flex flex-wrap gap-8 border-y border-white/5 py-6 px-2">
+                            <CustomCheckbox 
+                                label="Veg"
+                                checked={editingItem.isVeg || false} 
+                                onChange={(val) => setEditingItem({ ...editingItem, isVeg: val })} 
+                            />
+                            <CustomCheckbox 
+                                label="Non-Veg"
+                                checked={editingItem.isNonVeg || false} 
+                                onChange={(val) => setEditingItem({ ...editingItem, isNonVeg: val })} 
+                            />
+                            <CustomCheckbox 
+                                label="Spicy"
+                                checked={editingItem.isSpicy || false} 
+                                onChange={(val) => setEditingItem({ ...editingItem, isSpicy: val })} 
+                            />
+                            <CustomCheckbox 
+                                label="Popular"
+                                checked={editingItem.isPopular || false} 
+                                onChange={(val) => setEditingItem({ ...editingItem, isPopular: val })} 
+                            />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -316,15 +322,10 @@ export default function TodaysSpecialAdminPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                     </svg>
                                 </button>
-                                <button
+                                <LottieDeleteButton
                                     onClick={() => handleDelete(s.id)}
-                                    className="p-3 rounded-xl bg-white/5 text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition"
-                                    title="Delete"
-                                >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
+                                    className="hover:!bg-red-500/10"
+                                />
                             </div>
                         </div>
                     ))
