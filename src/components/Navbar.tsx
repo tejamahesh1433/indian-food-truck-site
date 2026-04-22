@@ -99,6 +99,15 @@ export default function Navbar() {
                                 Login
                             </Link>
                         )}
+
+                        {session?.user && (
+                            <Link 
+                                href="/api/auth/signout" 
+                                className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-red-400 transition-colors py-2 px-3 border border-white/5 hover:border-red-500/20 rounded-lg bg-white/5"
+                            >
+                                Sign Out
+                            </Link>
+                        )}
                     </div>
 
                     {/* Right: Actions (Mobile) */}

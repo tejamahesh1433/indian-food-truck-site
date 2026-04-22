@@ -260,16 +260,28 @@ const PillNav = ({
           
           <li className="mt-4 pt-4 border-t border-white/10 px-4 flex flex-col gap-3">
             {session?.user ? (
-              <Link 
-                href="/profile" 
-                className="flex items-center gap-3 text-white font-bold uppercase text-sm"
-                onClick={() => toggleMobileMenu()}
-              >
-                <div className="h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                  <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                </div>
-                Profile
-              </Link>
+              <>
+                <Link 
+                  href="/profile" 
+                  className="flex items-center gap-3 text-white font-bold uppercase text-sm"
+                  onClick={() => toggleMobileMenu()}
+                >
+                  <div className="h-8 w-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  </div>
+                  Profile
+                </Link>
+                <Link 
+                  href="/api/auth/signout" 
+                  className="flex items-center gap-3 text-red-400 font-bold uppercase text-sm mt-2"
+                  onClick={() => toggleMobileMenu()}
+                >
+                  <div className="h-8 w-8 rounded-full bg-red-500/5 border border-red-500/10 flex items-center justify-center">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  </div>
+                  Sign Out
+                </Link>
+              </>
             ) : (
               <Link 
                 href="/login" 
