@@ -9,6 +9,7 @@ import React, {
     useRef,
 } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import gsap from "gsap";
 import { MotionPathPlugin } from "gsap/dist/MotionPathPlugin";
 import "./cartAnimation.css";
@@ -164,10 +165,13 @@ function FlyingItem({ item, onDone }: { item: FlyItem; onDone: () => void }) {
         >
             {/* The actual item image */}
             {item.imageUrl ? (
-                <img
+                <Image
                     src={item.imageUrl}
                     alt=""
+                    width={64}
+                    height={64}
                     className="flying-item-image"
+                    unoptimized={true}
                 />
             ) : (
                 <div className="flying-item-fallback">

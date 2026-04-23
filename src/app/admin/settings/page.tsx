@@ -124,6 +124,11 @@ type SettingsForm = {
     bannerEnabled: boolean;
     bannerText: string;
     logoUrl: string;
+    todayLat: string;
+    todayLng: string;
+    nextLat: string;
+    nextLng: string;
+    lowStockThreshold: number;
 };
 
 export default function AdminSettingsPage() {
@@ -148,6 +153,11 @@ export default function AdminSettingsPage() {
         bannerEnabled: false,
         bannerText: "",
         logoUrl: "",
+        todayLat: "",
+        todayLng: "",
+        nextLat: "",
+        nextLng: "",
+        lowStockThreshold: 5,
     });
 
     useEffect(() => {
@@ -171,6 +181,11 @@ export default function AdminSettingsPage() {
                         bannerEnabled: data.bannerEnabled ?? false,
                         bannerText: data.bannerText || "",
                         logoUrl: data.logoUrl || "",
+                        todayLat: data.todayLat?.toString() || "",
+                        todayLng: data.todayLng?.toString() || "",
+                        nextLat: data.nextLat?.toString() || "",
+                        nextLng: data.nextLng?.toString() || "",
+                        lowStockThreshold: data.lowStockThreshold ?? 5,
                     };
                     setForm(f);
                     setInitialForm(f);
@@ -211,7 +226,12 @@ export default function AdminSettingsPage() {
             form.footerMessage !== initialForm.footerMessage ||
             form.bannerEnabled !== initialForm.bannerEnabled ||
             form.bannerText !== initialForm.bannerText ||
-            form.logoUrl !== initialForm.logoUrl
+            form.logoUrl !== initialForm.logoUrl ||
+            form.todayLat !== initialForm.todayLat ||
+            form.todayLng !== initialForm.todayLng ||
+            form.nextLat !== initialForm.nextLat ||
+            form.nextLng !== initialForm.nextLng ||
+            form.lowStockThreshold !== initialForm.lowStockThreshold
         );
     }, [form, initialForm]);
 
@@ -474,7 +494,136 @@ export default function AdminSettingsPage() {
                                 </button>
                             </div>
                         </section>
-                        
+
+                        {/* Truck Location & Map Section */}
+                        <section className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
+                                <span className="w-1 h-4 bg-green-500 rounded-full" />
+                                Truck Location & Live Map
+                            </h2>
+
+                            <div className="space-y-8">
+                                <div className="p-4 bg-black/40 rounded-2xl border border-white/5">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-orange-500 mb-4 flex items-center gap-2">
+                                        📍 Today&apos;s Pin
+                                        <span className="text-[9px] text-gray-600 font-bold">(Appears on Homepage)</span>
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Today Latitude</label>
+                                            <input
+                                                value={form.todayLat}
+                                                onChange={e => setForm({ ...form, todayLat: e.target.value })}
+                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-green-500/50 transition font-mono"
+                                                placeholder="e.g. 41.7637"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Today Longitude</label>
+                                            <input
+                                                value={form.todayLng}
+                                                onChange={e => setForm({ ...form, todayLng: e.target.value })}
+                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-green-500/50 transition font-mono"
+                                                placeholder="e.g. -72.6851"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 text-[9px] text-gray-600 font-medium italic">
+                                        Tip: Find coordinates on Google Maps by right-clicking a location.
+                                    </p>
+                                </div>
+
+                                <div className="p-4 bg-black/40 rounded-2xl border border-white/5 opacity-60 hover:opacity-100 transition-opacity">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                                        🗓️ Next Location Pin
+                                        <span className="text-[9px] text-gray-700 font-bold">(Optional Pre-load)</span>
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Next Latitude</label>
+                                            <input
+                                                value={form.nextLat}
+                                                onChange={e => setForm({ ...form, nextLat: e.target.value })}
+                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-white/20 transition font-mono"
+                                                placeholder="e.g. 41.7637"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">Next Longitude</label>
+                                            <input
+                                                value={form.nextLng}
+                                                onChange={e => setForm({ ...form, nextLng: e.target.value })}
+                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-white/20 transition font-mono"
+                                                placeholder="e.g. -72.6851"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section Save Button */}
+                            <div className="flex justify-end pt-4 border-t border-white/5">
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById('main-save-btn')?.click()}
+                                    disabled={saving || !isValid}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all ${
+                                        (form.todayLat !== initialForm?.todayLat || form.todayLng !== initialForm?.todayLng || form.nextLat !== initialForm?.nextLat || form.nextLng !== initialForm?.nextLng)
+                                        ? 'bg-green-600 text-white hover:bg-green-500 shadow-lg shadow-green-500/20'
+                                        : 'bg-white/5 text-gray-500 cursor-default'
+                                    }`}
+                                >
+                                    {(form.todayLat !== initialForm?.todayLat || form.todayLng !== initialForm?.todayLng || form.nextLat !== initialForm?.nextLat || form.nextLng !== initialForm?.nextLng) ? "Save Location Pin" : "Coordinates Synced"}
+                                </button>
+                            </div>
+                        </section>
+
+                        {/* Inventory & Stock Alerts Section */}
+                        <section className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6">
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
+                                <span className="w-1 h-4 bg-orange-500 rounded-full" />
+                                Inventory & Stock Alerts
+                            </h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                <div>
+                                    <h3 className="text-white font-bold mb-1">Low Stock Threshold</h3>
+                                    <p className="text-xs text-gray-500">
+                                        Trigger admin alerts when a tracked item&apos;s stock falls below this number.
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <input
+                                        id="lowStockThreshold"
+                                        aria-label="Low Stock Threshold"
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={form.lowStockThreshold}
+                                        onChange={e => setForm({ ...form, lowStockThreshold: parseInt(e.target.value) || 0 })}
+                                        className="w-24 bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500/50 transition font-mono text-center"
+                                    />
+                                    <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">Units remaining</span>
+                                </div>
+                            </div>
+
+                            {/* Section Save Button */}
+                            <div className="flex justify-end pt-4 border-t border-white/5">
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById('main-save-btn')?.click()}
+                                    disabled={saving || !isValid}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all ${
+                                        (form.lowStockThreshold !== initialForm?.lowStockThreshold)
+                                        ? 'bg-orange-600 text-white hover:bg-orange-500 shadow-lg shadow-orange-500/20'
+                                        : 'bg-white/5 text-gray-500 cursor-default'
+                                    }`}
+                                >
+                                    {(form.lowStockThreshold !== initialForm?.lowStockThreshold) ? "Save Inventory Settings" : "Inventory Synced"}
+                                </button>
+                            </div>
+                        </section>
+
                         {/* ── Email Features Toggle (Redesigned & Prominent) ── */}
                         <section className="bg-gradient-to-br from-orange-900/10 to-orange-800/10 border border-orange-500/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_20px_50px_rgba(249,115,22,0.1)]">
                             <div className="flex items-center justify-between mb-4">
@@ -622,13 +771,6 @@ export default function AdminSettingsPage() {
                                 </div>
                             </div>
                         </section>
-
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex gap-3">
-                            <svg className="w-5 h-5 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <div className="text-[10px] text-blue-300 leading-relaxed">
-                                <strong>System Logic:</strong> Previews show exactly how links will resolve on mobile versus desktop. Normalized phone links ensure one-tap dialing works.
-                            </div>
-                        </div>
 
                         {/* ── Security: Admin Access PIN ── */}
                         <PinManager />

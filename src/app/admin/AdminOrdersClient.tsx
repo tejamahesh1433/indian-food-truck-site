@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import OrderStatusActions from "./orders/OrderStatusActions";
 import AdminOrderChat from "./orders/AdminOrderChat";
-import { Order, OrderItem } from "@prisma/client";
+import { Order, OrderItem, PromoCode, OrderStatus } from "@prisma/client";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
-type OrderWithItems = Order & { items: OrderItem[] };
+type OrderWithItems = Order & { items: OrderItem[], promoCode?: PromoCode | null };
 
-function OrderCard({ order }: { order: OrderWithItems }) {
+function OrderCard({ order, mounted, onStatusUpdate }: { order: OrderWithItems, mounted: boolean, onStatusUpdate?: (orderId: string, newStatus: OrderStatus) => void }) {
     return (
         <div className="w-[340px] min-h-[500px] border border-white/10 rounded-2xl bg-zinc-900 overflow-hidden flex flex-col hover:border-white/20 transition-all shadow-xl shrink-0 snap-start">
             {/* Card Header */}
@@ -31,11 +32,18 @@ function OrderCard({ order }: { order: OrderWithItems }) {
                     </div>
                     <div className="font-medium text-gray-400 text-[11px] flex items-center gap-1.5 pt-0.5">
                         <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                        {mounted ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "..."}
                     </div>
                 </div>
                 <div className="text-right flex flex-col items-end">
                     <div className="text-lg font-bold text-orange-400">${(order.totalAmount / 100).toFixed(2)}</div>
+                    {order.promoCode && (
+                        <div className="flex items-center gap-1 mt-1">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/20">
+                                {order.promoCode.code}
+                            </span>
+                        </div>
+                    )}
                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
                         {order.items.reduce((acc, item) => acc + item.quantity, 0)} Items
                     </div>
@@ -55,7 +63,11 @@ function OrderCard({ order }: { order: OrderWithItems }) {
             {/* Call to action row */}
             <div className="p-3 bg-zinc-950 flex flex-col gap-3">
                 <div className="w-full">
-                    <OrderStatusActions orderId={order.id} currentStatus={order.status} />
+                    <OrderStatusActions 
+                        orderId={order.id} 
+                        currentStatus={order.status} 
+                        onStatusUpdate={(newStatus) => onStatusUpdate?.(order.id, newStatus)}
+                    />
                 </div>
                 
                 <div className="flex items-center justify-between border-t border-white/5 pt-3">
@@ -77,16 +89,40 @@ function OrderCard({ order }: { order: OrderWithItems }) {
 }
 
 export default function AdminOrdersClient({ initialOrders }: { initialOrders: OrderWithItems[] }) {
+    const [mounted, setMounted] = useState(false);
     const [orders, setOrders] = useState<OrderWithItems[]>(initialOrders);
     const [activeTab, setActiveTab] = useState<string>("NEW");
 
     useEffect(() => {
+        setMounted(true);
+        
+        // Initialize audio (simple clean notification "Ding")
+        const newOrderSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTdvT18AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//w==");
+        // Note: The above is a placeholder very short click. For a real ding, a longer base64 or public URL is better.
+        // Let's use a slightly better sounding short beep/ding URL if possible, or just a more robust base64.
+        const bellSound = new Audio("https://cdn.pixabay.com/audio/2022/03/10/audio_c3523a5460.mp3");
+
+        // Keep track of IDs we've already seen to avoid double-dinging on page load
+        const seenIds = new Set(initialOrders.map(o => o.id));
+
         // Heartbeat polling
         const heartbeat = setInterval(async () => {
             try {
                 const res = await fetch('/api/admin/orders/live', { cache: 'no-store' });
                 if (res.ok) {
-                    const freshOrders = await res.json();
+                    const freshOrders: OrderWithItems[] = await res.json();
+                    
+                    // Check for new orders that weren't in the seenIds set
+                    const hasNewOrder = freshOrders.some(o => 
+                        !seenIds.has(o.id) && (o.status === "PAID" || o.status === "PENDING")
+                    );
+
+                    if (hasNewOrder) {
+                        bellSound.play().catch(e => console.log("Audio play blocked by browser:", e));
+                        // Update seenIds
+                        freshOrders.forEach(o => seenIds.add(o.id));
+                    }
+
                     setOrders(freshOrders);
                 }
             } catch (err) {
@@ -95,7 +131,11 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Or
         }, 8000); // 8 seconds heartbeat
         
         return () => clearInterval(heartbeat);
-    }, []);
+    }, [initialOrders]);
+
+    const handleStatusUpdate = (orderId: string, newStatus: OrderStatus) => {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    };
 
     const columns = [
         { 
@@ -139,6 +179,21 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Or
                         </span>
                         Live Auto-Refresh Active
                     </p>
+                </div>
+
+                {/* Dashboard Quick Stats */}
+                <div className="flex gap-4">
+                    <Link href="/admin/promo-codes" className="group">
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-all flex items-center gap-4 min-w-[200px]">
+                            <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20 group-hover:scale-110 transition">
+                                🏷️
+                            </div>
+                            <div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-0.5">Promo Codes</div>
+                                <div className="text-sm font-bold text-white group-hover:text-orange-400 transition">Manage & Track</div>
+                            </div>
+                        </div>
+                    </Link>
                 </div>
 
                 {/* Centered Tab Navigation */}
@@ -221,7 +276,7 @@ export default function AdminOrdersClient({ initialOrders }: { initialOrders: Or
                                     transition={{ duration: 0.3 }}
                                     className="shrink-0 snap-start"
                                 >
-                                    <OrderCard order={order} />
+                                    <OrderCard order={order} mounted={mounted} onStatusUpdate={handleStatusUpdate} />
                                 </motion.div>
                             ))}
                         </div>

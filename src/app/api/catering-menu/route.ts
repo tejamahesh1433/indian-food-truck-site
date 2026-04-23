@@ -14,14 +14,11 @@ export async function GET() {
             orderBy: { sortOrder: "asc" },
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const sections = categories.map((cat: any) => {
+        const sections = categories.map((cat) => {
             const seenNames = new Set<string>();
             const filteredItems = items
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .filter((item: any) => item.category === cat.name)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .filter((item: any) => {
+                .filter((item) => item.category === cat.name)
+                .filter((item) => {
                     const normalized = item.name.trim().toLowerCase();
                     if (seenNames.has(normalized)) return false;
                     seenNames.add(normalized);
@@ -31,8 +28,7 @@ export async function GET() {
             return {
                 title: cat.name,
                 subtitle: cat.subtitle,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                items: filteredItems.map((item: any) => ({
+                items: filteredItems.map((item) => ({
                     id: item.id,
                     name: item.name,
                     description: item.description,
@@ -40,8 +36,7 @@ export async function GET() {
                         item.isVeg && "VEG",
                         item.isSpicy && "SPICY",
                         item.isPopular && "POPULAR",
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ].filter(Boolean) as any[],
+                    ].filter(Boolean) as string[],
                     price: (() => {
                         switch (item.priceKind) {
                             case "PER_PERSON":

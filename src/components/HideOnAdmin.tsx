@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import React from "react";
 
-const HIDDEN_ROUTES = ["/admin", "/truckadmin", "/verify-email", "/reset-password"];
+const HIDDEN_ROUTES = ["/admin", "/truckadmin", "/verify-email", "/reset-password", "/checkout", "/order-success"];
 
 export default function HideOnAdmin({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();

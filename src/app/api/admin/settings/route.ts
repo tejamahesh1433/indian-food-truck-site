@@ -56,6 +56,12 @@ export async function PUT(req: Request) {
             todayStatus: body.todayStatus,
             todayNotes: body.todayNotes,
             
+            todayLat: body.todayLat ? parseFloat(body.todayLat) : null,
+            todayLng: body.todayLng ? parseFloat(body.todayLng) : null,
+            nextLat: body.nextLat ? parseFloat(body.nextLat) : null,
+            nextLng: body.nextLng ? parseFloat(body.nextLng) : null,
+            lowStockThreshold: body.lowStockThreshold !== undefined ? parseInt(body.lowStockThreshold) : 5,
+
             weeklySchedule: body.weeklySchedule ?? null,
             ...(body.adminAccessPin !== undefined && { adminAccessPin: body.adminAccessPin?.trim() || "" }),
         },
@@ -80,6 +86,12 @@ export async function PUT(req: Request) {
             todayStatus: body.todayStatus || "CLOSED",
             todayNotes: body.todayNotes || "",
             
+            todayLat: body.todayLat ? parseFloat(body.todayLat) : null,
+            todayLng: body.todayLng ? parseFloat(body.todayLng) : null,
+            nextLat: body.nextLat ? parseFloat(body.nextLat) : null,
+            nextLng: body.nextLng ? parseFloat(body.nextLng) : null,
+            lowStockThreshold: body.lowStockThreshold !== undefined ? parseInt(body.lowStockThreshold) : 5,
+
             weeklySchedule: body.weeklySchedule ?? null,
         }
     });

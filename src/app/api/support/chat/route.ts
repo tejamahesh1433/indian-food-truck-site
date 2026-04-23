@@ -59,10 +59,21 @@ export async function GET() {
                 messages: {
                     orderBy: { createdAt: "desc" },
                     take: 1
+                },
+                _count: {
+                    select: {
+                        messages: {
+                            where: {
+                                sender: "CUSTOMER",
+                                isRead: false
+                            }
+                        }
+                    }
                 }
             }
         });
 
+        // Map to a cleaner structure if needed, but Prisma's _count is fine
         return NextResponse.json({ chats });
     } catch (error) {
         console.error("DEBUG [SUPPORT CHAT GET]:", error);

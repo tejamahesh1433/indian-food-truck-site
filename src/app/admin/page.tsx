@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
             }
         },
         orderBy: { createdAt: "asc" }, // Oldest first
-        include: { items: true }
+        include: { items: true, promoCode: true }
     });
 
     const recentInactiveOrders = await prisma.order.findMany({
@@ -29,7 +29,7 @@ export default async function AdminDashboardPage() {
         },
         orderBy: { createdAt: "desc" },
         take: 50,
-        include: { items: true }
+        include: { items: true, promoCode: true }
     });
     
     // Sort all orders so oldest is first (left) and newest is last (right)

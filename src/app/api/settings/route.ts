@@ -15,7 +15,6 @@ export async function GET() {
 
         // Sanitize sensitive data before sending to the client
         // Use a type cast to ensure we can destructure the PIN even if the client type is stale
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { adminAccessPin: _, ...publicSettings } = settings as { adminAccessPin?: string };
 
         return NextResponse.json(publicSettings);

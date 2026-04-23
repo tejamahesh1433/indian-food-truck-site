@@ -40,12 +40,17 @@ export default function PosSyncDashboard({
     initialItems: PosItem[];
     initialStatus: PosStatus;
 }) {
+    const [mounted, setMounted] = useState(false);
     const [items] = useState<PosItem[]>(initialItems);
     const [status, setStatus] = useState<PosStatus>(initialStatus);
     const [isSyncing, setIsSyncing] = useState(false);
     const [logs, setLogs] = useState<SyncLog[]>([]);
     const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
     const [syncingItems, setSyncingItems] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Sorting & Filtering State
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection }>({ 
@@ -181,6 +186,7 @@ export default function PosSyncDashboard({
 
     const formatDate = (date: Date | string | undefined) => {
         if (!date) return "Never";
+        if (!mounted) return "Loading...";
         const d = new Date(date);
         return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     };

@@ -11,6 +11,7 @@ const OrderSchema = z.object({
     customerEmail: z.string().email(),
     customerPhone: z.string().min(10),
     notes: z.string().optional(),
+    promoCode: z.string().optional(),
     items: z.array(z.object({
         id: z.string(),
         menuItemId: z.string(),
@@ -95,9 +96,41 @@ export async function POST(req: Request) {
             return acc + (itemTotal * item.quantity);
         }, 0);
 
-        const taxAmount = Math.round(subtotalAmount * 0.0635); // 6.35% CT Sales Tax
+        // Calculate Discount
+        let discountAmount = 0;
+        let appliedPromoId = null;
+        let activePromo: any = null;
+
+        if (validatedData.promoCode) {
+            const promo = await prisma.promoCode.findUnique({
+                where: { code: validatedData.promoCode.toUpperCase() }
+            });
+
+            if (promo && promo.isActive) {
+                const isExpired = promo.expiresAt && new Date() > promo.expiresAt;
+                const isUsageLimitReached = promo.maxUsage && promo.currentUsage >= promo.maxUsage;
+                const isMinAmountMet = subtotalAmount >= promo.minOrderAmount;
+
+                if (!isExpired && !isUsageLimitReached && isMinAmountMet) {
+                    appliedPromoId = promo.id;
+                    activePromo = promo;
+                    if (promo.discountType === "PERCENTAGE") {
+                        discountAmount = Math.round(subtotalAmount * (promo.discountValue / 100));
+                        // Apply max discount cap if it exists
+                        if (promo.maxDiscountAmount && discountAmount > promo.maxDiscountAmount) {
+                            discountAmount = promo.maxDiscountAmount;
+                        }
+                    } else {
+                        discountAmount = promo.discountValue;
+                    }
+                }
+            }
+        }
+
+        const discountedSubtotal = Math.max(0, subtotalAmount - discountAmount);
+        const taxAmount = Math.round(discountedSubtotal * 0.0635); // 6.35% CT Sales Tax
         const serviceFeeAmount = 0;
-        const totalAmount = subtotalAmount + taxAmount;
+        const totalAmount = discountedSubtotal + taxAmount;
 
         // Idempotency Check: Prevent duplicate orders within 10 seconds
         const tenSecondsAgo = new Date(Date.now() - 10000);
@@ -132,6 +165,8 @@ export async function POST(req: Request) {
                 subtotalAmount,
                 taxAmount,
                 serviceFeeAmount,
+                discountAmount,
+                promoCodeId: appliedPromoId,
                 totalAmount,
                 status: "PENDING",
                 chatToken: crypto.randomUUID(), // Secure tracking token
@@ -161,16 +196,28 @@ export async function POST(req: Request) {
             }
         });
 
-        // Decrement stock
-        await Promise.all(validatedData.items.map(async (item) => {
-            const dbItem = dbItemMap.get(item.menuItemId);
-            if (dbItem && dbItem.isStockTracked) {
-                await prisma.menuItem.update({
-                    where: { id: item.menuItemId },
-                    data: { stockCount: { decrement: item.quantity } }
-                });
-            }
-        }));
+        // Decrement stock & increment promo usage
+        await Promise.all([
+            ...validatedData.items.map(async (item) => {
+                const dbItem = dbItemMap.get(item.menuItemId);
+                if (dbItem && dbItem.isStockTracked) {
+                    await prisma.menuItem.update({
+                        where: { id: item.menuItemId },
+                        data: { stockCount: { decrement: item.quantity } }
+                    });
+                }
+            }),
+            appliedPromoId ? prisma.promoCode.update({
+                where: { 
+                    id: appliedPromoId,
+                    OR: [
+                        { maxUsage: null },
+                        { currentUsage: { lt: (activePromo?.maxUsage || 0) } }
+                    ]
+                },
+                data: { currentUsage: { increment: 1 } }
+            }) : Promise.resolve()
+        ]);
 
         // Create Stripe PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({

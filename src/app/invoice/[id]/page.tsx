@@ -9,7 +9,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
     const order = await prisma.order.findUnique({
         where: { id },
-        include: { items: true },
+        include: { 
+            items: true,
+            promoCode: true
+        },
     });
 
     if (!order) {
@@ -128,6 +131,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                             <span className="font-medium">Subtotal</span>
                             <span className="font-semibold">${(order.subtotalAmount / 100).toFixed(2)}</span>
                         </div>
+                        {order.discountAmount > 0 && (
+                            <div className="flex justify-between text-orange-600 font-medium bg-orange-50 px-3 py-1 rounded-lg">
+                                <span className="text-[10px] uppercase font-black tracking-tighter">
+                                    Promo {order.promoCode?.code ? `(${order.promoCode.code})` : ""}
+                                </span>
+                                <span>-${(order.discountAmount / 100).toFixed(2)}</span>
+                            </div>
+                        )}
                         {order.taxAmount > 0 && (
                             <div className="flex justify-between text-neutral-600">
                                 <span className="font-medium">Tax</span>

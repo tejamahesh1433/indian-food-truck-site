@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
 import OrderModal from "@/components/OrderModal";
 import { useCart, type CartItem } from "@/lib/cart";
@@ -12,6 +13,7 @@ import PillNav from "./PillNav";
 import Magnet from "./Magnet";
 
 export default function Navbar() {
+    const pathname = usePathname();
     const [atLocation, setAtLocation] = useState(false);
     const [orderOpen, setOrderOpen] = useState(false);
     const site = useSite();
@@ -36,6 +38,11 @@ export default function Navbar() {
         { label: "About", href: "/about" },
         { label: "Find the Truck", href: "/#location", forceActive: atLocation },
     ], [atLocation]);
+
+    // Hide Navbar on checkout and order success pages
+    if (pathname.startsWith("/checkout") || pathname.startsWith("/order-success") || pathname.startsWith("/admin")) {
+        return null;
+    }
 
     return (
         <>

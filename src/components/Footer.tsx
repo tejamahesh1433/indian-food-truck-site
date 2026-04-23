@@ -9,7 +9,7 @@ export default function Footer() {
     const site = useSite();
     const pathname = usePathname();
 
-    if (pathname.startsWith("/admin")) return null;
+    if (pathname.startsWith("/admin") || pathname.startsWith("/checkout") || pathname.startsWith("/order-success")) return null;
 
     return (
         <footer className="mt-10 border-t border-white/10 bg-black/30 print:hidden">
@@ -116,10 +116,10 @@ export default function Footer() {
                 <div className="mt-12 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
                 <div className="mt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-sm text-gray-400">
-                    <div>
+                    <div suppressHydrationWarning>
                         {site.footer.message || (
-                            <span suppressHydrationWarning>
-                                © {new Date().getFullYear()} {site.brand.businessName}. All rights reserved.
+                            <span>
+                                © 2026 {site.brand.businessName}. All rights reserved.
                             </span>
                         )}
                     </div>

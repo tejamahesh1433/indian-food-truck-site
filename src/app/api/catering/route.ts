@@ -120,7 +120,6 @@ export async function POST(req: Request) {
             location: created.location || "TBD",
             notes: created.notes || undefined,
             businessPhone: settings?.phone || "",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selections: (created.selections as any[]) || [],
         }).then(() => {
             console.log("CATERING_SUBMIT: sendChatLinkEmail finished.");

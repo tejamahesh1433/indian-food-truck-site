@@ -53,7 +53,8 @@ export default function SupportAdminClient({ initialChats }: { initialChats: Cha
 
         const fetchMessages = async () => {
             try {
-                const res = await fetch(`/api/support/messages?chatId=${selectedChatId}`);
+                // When admin views messages, mark them as read
+                const res = await fetch(`/api/support/messages?chatId=${selectedChatId}&markAsRead=true`);
                 if (res.ok) {
                     const data = await res.json();
                     setMessages(data.messages);
@@ -120,13 +121,20 @@ export default function SupportAdminClient({ initialChats }: { initialChats: Cha
                     {chats.length === 0 ? (
                         <div className="p-10 text-center text-sm text-gray-500">No active support chats.</div>
                     ) : (
-                        chats.map((c) => (
+                        chats.map((c: any) => (
                             <button
                                 key={c.id}
                                 onClick={() => setSelectedChatId(c.id)}
                                 className={`w-full p-4 text-left border-b border-white/5 transition hover:bg-white/5 ${selectedChatId === c.id ? "bg-white/10" : ""}`}
                             >
-                                <div className="font-bold text-sm truncate">{c.name}</div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <div className="font-bold text-sm truncate">{c.name}</div>
+                                    {c._count?.messages > 0 && (
+                                        <div className="h-4 min-w-[16px] px-1 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-black text-white animate-pulse">
+                                            {c._count.messages}
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="text-[10px] text-gray-400 truncate mb-2">{c.email}</div>
                                 <div className="text-xs text-gray-500 line-clamp-1 italic">
                                     {c.messages[0]?.text || "No messages yet"}

@@ -33,6 +33,18 @@ export async function GET(req: Request) {
             orderBy: { createdAt: "asc" },
         });
 
+        // If requested, mark these messages as read (typically called by Admin)
+        if (searchParams.get("markAsRead") === "true") {
+            await prisma.supportMessage.updateMany({
+                where: {
+                    chatId,
+                    sender: "CUSTOMER",
+                    isRead: false
+                },
+                data: { isRead: true }
+            });
+        }
+
         return NextResponse.json({ messages });
     } catch (error) {
         console.error("DEBUG [SUPPORT MESSAGES GET]:", error);

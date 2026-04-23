@@ -469,7 +469,6 @@ export default function MenuTabs({ initialItems = [], initialCategories = ["All"
                                         addons: [],
                                         notes: ""
                                     });
-                                    toast.success(`Added ${m.name} to cart`);
                                 }}
                             />
                         ))}
@@ -498,7 +497,6 @@ export default function MenuTabs({ initialItems = [], initialCategories = ["All"
                             addons: [],
                             notes: "Quick add"
                         });
-                        toast.success(`Added ${u.name} to cart`);
                     }}
                     onAdd={(payload) => {
                         for (let i = 0; i < payload.quantity; i++) {

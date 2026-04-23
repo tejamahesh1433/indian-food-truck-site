@@ -16,6 +16,7 @@ const NAVIGATION = [
     { name: "Reviews", href: "/admin/reviews", icon: "⭐" },
     { name: "Truck Schedule", href: "/admin/locations", icon: "📍" },
     { name: "Newsletter", href: "/admin/newsletter", icon: "📧" },
+    { name: "Promo Codes", href: "/admin/promo-codes", icon: "🏷️" },
     { name: "POS Sync", href: "/admin/pos-sync", icon: "🔄" },
     { name: "Today's Special", href: "/admin/todays-special", icon: "🔥" },
     { name: "Settings", href: "/admin/settings", icon: "⚙️" },
@@ -23,6 +24,7 @@ const NAVIGATION = [
 
 export default function AdminLayoutClient({ children, businessName }: { children: React.ReactNode, businessName: string }) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [unreadCounts, setUnreadCounts] = useState<{ support: number; lowStock: number }>({ support: 0, lowStock: 0 });
     const pathname = usePathname();
 
     useEffect(() => {
@@ -33,6 +35,25 @@ export default function AdminLayoutClient({ children, businessName }: { children
             }
         }, 0);
         return () => clearTimeout(t);
+    }, []);
+
+    // Polling for unread counts
+    useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const res = await fetch("/api/admin/unread-counts");
+                if (res.ok) {
+                    const data = await res.json();
+                    setUnreadCounts(data);
+                }
+            } catch (err) {
+                console.error("Error fetching unread counts:", err);
+            }
+        };
+
+        fetchCounts();
+        const interval = setInterval(fetchCounts, 15000); // Check every 15 seconds
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -63,6 +84,12 @@ export default function AdminLayoutClient({ children, businessName }: { children
                 <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                     {NAVIGATION.map((item) => {
                         const isActive = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+                        const isSupport = item.name === "Support Chat";
+                        const isInventory = item.name === "Menu Management";
+                        
+                        const badgeCount = isSupport ? unreadCounts.support : isInventory ? unreadCounts.lowStock : 0;
+                        const hasBadge = badgeCount > 0;
+                        
                         return (
                             <Link 
                                 key={item.name} 
@@ -72,10 +99,18 @@ export default function AdminLayoutClient({ children, businessName }: { children
                                         setSidebarOpen(false);
                                     }
                                 }}
-                                className={"flex items-center gap-3 px-3 py-2.5 rounded-lg transition font-medium text-sm " + (isActive ? "bg-orange-500/10 text-orange-400" : "text-gray-400 hover:bg-white/5 hover:text-white")}
+                                className={"flex items-center justify-between px-3 py-2.5 rounded-lg transition font-medium text-sm " + (isActive ? "bg-orange-500/10 text-orange-400" : "text-gray-400 hover:bg-white/5 hover:text-white")}
                             >
-                                <span className="text-lg">{item.icon}</span>
-                                {item.name}
+                                <div className="flex items-center gap-3">
+                                    <span className="text-lg">{item.icon}</span>
+                                    {item.name}
+                                </div>
+                                
+                                {hasBadge && (
+                                    <span className={`h-5 min-w-[20px] px-1.5 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg ${isInventory ? 'bg-amber-600 shadow-amber-600/20' : 'bg-red-600 shadow-red-600/20 animate-pulse'}`}>
+                                        {badgeCount}
+                                    </span>
+                                )}
                             </Link>
                         );
                     })}

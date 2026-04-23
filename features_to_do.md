@@ -1,49 +1,36 @@
-# 🔴 High Priority — Real functional gaps
+# 🔴 High Priority — Functional gaps & Operational needs
 
-**1. No "Forgot Password" flow** — The login page has no password reset option. Any user who forgets their password is permanently locked out with no way to recover.
+**1. No Promo/Discount Code system** — There is no ability to offer discount codes (e.g., "TRUCK10"). This requires a new `PromoCode` model, a validation API, and a UI field in the Cart/Checkout.
 
-**2. Admin kitchen orders: No auto-refresh / real-time polling** — The kitchen display (`/admin/orders`) is a static server-rendered page. A new order coming in requires a full manual page reload to appear. For a live truck, this is a serious gap.
+**2. Kitchen Display: No Audio Alerts** — While the kitchen display auto-refreshes, there is no sound notification when a new order arrives. Chefs need an audible "Ding" to know an order is in without staring at the screen.
 
-**3. No order-level special instructions** — Customers can't type notes like "no onions," "extra spicy," or allergen warnings anywhere on the cart or checkout page. There's no `notes` field on the `Order` model either.
+**3. Admin Sidebar: No Support Chat Unread Badges** — The unread count API exists, but the badges are not integrated into the main admin sidebar. The admin has to manually check the support page for new messages.
 
-**4. No email notifications to customers for order status changes** — The `mail.ts` lib exists in the project, but there's no email sent when an order becomes PREPARING, READY, or COMPLETED. Customers have to track manually via the tracking URL.
+**4. Social Login (Google/Facebook)** — The database models support social accounts, but `auth.ts` is only configured for Credentials and the Login UI is missing the social buttons.
 
-**5. No admin alert when a new order arrives** — Admin has to sit on the orders page or manually reload. No email ping, no sound, no browser notification.
-
-**6. Admin orders: No filter or search** — All orders load in one big list with no way to filter by status (show only PAID ones), by date (show today's only), or search by customer name/phone/order ID.
+**5. Order "Cancel & Refund" for Admin** — While customers can self-cancel, the Admin needs a one-click button to cancel an order AND trigger the Stripe refund automatically from the dashboard.
 
 ---
 
-## 🟡 Medium Priority — Noticeable missing pieces
+## 🟡 Medium Priority — Polish and Engagement
 
-**7. Invoice not linked from profile** — The `/invoice/[id]` page exists and the admin has a "Print Invoice" button — but customers have zero way to access it from their order history. No download receipt button on the profile page.
+**6. Automated Review Prompt** — When an order status is changed to `COMPLETED`, there is no automated nudge (email or tracking page pop-up) to ask the customer for a review.
 
-**8. Newsletter: Can view/export but can't send** — The newsletter admin shows subscribers and exports CSV, but there's no "compose and send" functionality. You'd need to paste emails into Mailchimp etc. manually.
+**7. Loyalty / Digital Punch-Card** — No system to reward frequent customers (e.g., "Buy 10, Get 1 Free"). This was a roadmap item that is still outstanding.
 
-**9. No "Cancel Order" for customers** — A customer who places an order and immediately wants to cancel has no self-serve option. Only the admin can change status. This will generate support chat volume.
+**8. Dynamic Wait Time Estimation** — Customers don't see an estimated prep time. This could be calculated based on the number of active orders in the kitchen.
 
-**10. No admin notification badge for new support messages** — The dashboard shows "N ACTIVE" total chats, but once you've opened support chat admin, there's no unread indicator on individual conversations.
-
-**11. Analytics covers online orders only** — Catering revenue is quote-based so exact amounts aren't tracked, but catering request counts, conversion rates (NEW → CONFIRMED), and response times could be shown in analytics. Right now the analytics page is blind to that entire side of the business.
-
-**12. Admin orders: No pagination** — 500+ orders will all load on a single page. No page limit or "Load more."
+**9. Real-time Support Chat "Typing" Indicators** — The support chat uses polling, but lacks "Typing..." indicators or read receipts for a premium feel.
 
 ---
 
-## 🟢 Lower Priority — Polish and nice-to-haves
+## 🟢 Lower Priority — Long-term Analytics & Operations
 
-**13. No promo/discount codes** — Listed in the roadmap. No coupon system, no ability to offer a "TRUCK10" code at events.
+**10. Integrated Truck Map** — The homepage uses text for location. A live Google/Apple Maps integration showing the truck's precise GPS location (or pinned location) would be a major upgrade.
 
-**14. No review prompt after order completion** — When an order is marked COMPLETED, no email or link nudges the customer to leave a review. The review form exists on the site but customers have to find it themselves.
+**11. Low Stock Alerts** — Automated email notifications to admin when a menu item's `stockCount` drops below a certain threshold (e.g., 5 items left).
 
-**15. Password strength not enforced** — Signup accepts "123456" as a valid password with no minimum complexity requirements.
+**12. Analytics: CSV/PDF Export for All Sections** — While newsletter subscribers can be exported, other analytics (orders, catering performance) lack a "Download Report" button for bookkeeping.
 
-**16. No email verification on signup** — Users can register with typo emails or fake addresses with no verification step. Listed in roadmap under Phase 10.
+**13. Multi-Truck Support** — If the business expands to a second truck, the settings/orders logic would currently need significant refactoring.
 
-**17. Checkout has no Terms/Privacy links** — Standard practice to link ToS and Privacy Policy on the payment screen.
-
-**18. No "quick availability toggle" on the orders page** — If Butter Chicken sells out mid-service, admin has to navigate to Menu Management → find the item → toggle availability. No quick "86 this item" button from the kitchen view.
-
-**19. Guest checkout** — Currently requires a full account to place an order. This adds friction; some customers will abandon.
-
-**20. No loyalty/punch-card system** — Roadmap item, not built.

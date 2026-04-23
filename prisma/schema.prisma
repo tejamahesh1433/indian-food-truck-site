@@ -104,6 +104,10 @@ model SiteSettings {
   todayNotes      String   @default("")
   todayStart      String   @default("")
   todayStatus     String   @default("CLOSED")
+  todayLat        Float?
+  todayLng        Float?
+  nextLat         Float?
+  nextLng         Float?
   bannerEnabled   Boolean  @default(false)
   bannerText      String?  @default("")
   businessName    String?  @default("Catch the Cravings")
@@ -114,6 +118,7 @@ model SiteSettings {
   cateringEnabled Boolean  @default(true)
   weeklySchedule  Json?
   adminAccessPin  String?  @default("")
+  lowStockThreshold Int    @default(5)
 
   // Email feature toggles (for free Resend limits)
   emailOrderStatusUpdates Boolean @default(true)
@@ -261,6 +266,9 @@ model Order {
   serviceFeeAmount    Int            @default(0)
   subtotalAmount      Int            @default(0)
   taxAmount           Int            @default(0)
+  discountAmount      Int            @default(0)
+  promoCodeId         String?
+  promoCode           PromoCode?     @relation(fields: [promoCodeId], references: [id])
   user                User?          @relation(fields: [userId], references: [id])
   items               OrderItem[]
   messages            OrderMessage[]
@@ -373,8 +381,25 @@ model SupportMessage {
   chatId    String
   sender    ChatSender
   text      String
+  isRead    Boolean     @default(false)
   createdAt DateTime    @default(now())
   chat      SupportChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@index([chatId, createdAt])
+}
+model PromoCode {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  description   String?
+  discountType  String    // "PERCENTAGE" or "FIXED"
+  discountValue Int       
+  minOrderAmount Int      @default(0)
+  maxDiscountAmount Int?
+  maxUsage      Int?      
+  currentUsage  Int       @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
 }

@@ -146,14 +146,17 @@ export default function Location() {
                         </GlassSurface>
 
                         {today.mapsQuery ? (
-                            <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.12)]">
-                                {today.mapsQuery ? (
-                                    <MapFrame query={today.mapsQuery} />
-                                ) : (
-                                    <div className="w-full h-[450px] bg-white/5 animate-pulse rounded-2xl flex items-center justify-center">
-                                        <p className="text-gray-500 font-medium tracking-wide">Loading location map...</p>
+                            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.12)] group">
+                                {today.lat && today.lng && (
+                                    <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-black/80 backdrop-blur-md rounded-xl border border-orange-500/30 flex items-center gap-2 animate-bounce-subtle">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                        </span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">Live Pin Active</span>
                                     </div>
                                 )}
+                                <MapFrame query={today.mapsQuery} />
                             </div>
                         ) : (
                             <div className="rounded-3xl border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(255,140,0,0.04)] flex flex-col items-center justify-center h-[450px] gap-4">

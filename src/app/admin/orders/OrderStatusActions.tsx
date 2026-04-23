@@ -9,10 +9,12 @@ import { useToast } from "@/components/ui/Toast";
 
 export default function OrderStatusActions({
     orderId,
-    currentStatus
+    currentStatus,
+    onStatusUpdate
 }: {
     orderId: string;
-    currentStatus: OrderStatus
+    currentStatus: OrderStatus;
+    onStatusUpdate?: (newStatus: OrderStatus) => void;
 }) {
     const { confirm } = useConfirm();
     const { toast } = useToast();
@@ -22,6 +24,7 @@ export default function OrderStatusActions({
         setLoading(true);
         try {
             await updateOrderStatus(orderId, newStatus);
+            if (onStatusUpdate) onStatusUpdate(newStatus);
         } catch (err) {
             console.error("Failed to update status", err);
             toast.error("Failed to update order status.");

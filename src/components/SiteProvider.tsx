@@ -25,6 +25,8 @@ export type DbSettings = {
     todayEnd?: string | null;
     todayStatus?: string | null;
     todayNotes?: string | null;
+    todayLat?: number | null;
+    todayLng?: number | null;
 
     // Advanced Next
     nextLocation?: string | null;
@@ -32,6 +34,8 @@ export type DbSettings = {
     nextStart?: string | null;
     nextEnd?: string | null;
     nextNotes?: string | null;
+    nextLat?: number | null;
+    nextLng?: number | null;
 
     cateringEnabled?: boolean | null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -236,10 +240,14 @@ export function useSite() {
                 status: activeStatus,
                 notes: activeNotes,
                 remainingMins,
+                lat: dbSettings.todayLat,
+                lng: dbSettings.todayLng,
                 hours: activeStart && activeEnd
                     ? `${formatTime12h(activeStart)} – ${formatTime12h(activeEnd)}`
                     : activeStatus === "CLOSED" ? "Closed" : defaultSite.truck.today.hours,
-                mapsQuery: dbSettings.truckToday || dbSettings.todayLocation || defaultSite.truck.today.mapsQuery,
+                mapsQuery: (dbSettings.todayLat && dbSettings.todayLng) 
+                    ? `${dbSettings.todayLat},${dbSettings.todayLng}`
+                    : (dbSettings.truckToday || dbSettings.todayLocation || defaultSite.truck.today.mapsQuery),
             },
             next: {
                 ...defaultSite.truck.next,
@@ -248,6 +256,8 @@ export function useSite() {
                 start: nextStart,
                 end: nextEnd,
                 notes: dbSettings.nextNotes || "",
+                lat: dbSettings.nextLat,
+                lng: dbSettings.nextLng,
                 hours: nextStart && nextEnd
                     ? (nextDayName ? `${nextDayName} · ${formatTime12h(nextStart)} – ${formatTime12h(nextEnd)}` : `${formatTime12h(nextStart)} – ${formatTime12h(nextEnd)}`)
                     : defaultSite.truck.next.hours,

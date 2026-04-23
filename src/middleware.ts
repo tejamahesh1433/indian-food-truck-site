@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getAdminCookieName, verifyAdminToken } from "@/lib/adminAuth";
 import { getToken } from "next-auth/jwt";
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     // ── ADMIN PROTECTION ───────────────────────────────────────────────────

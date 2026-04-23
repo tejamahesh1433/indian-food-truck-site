@@ -7,7 +7,7 @@
  *  - API routes & admin pages: Network-only (always fresh, never cached)
  */
 
-const CACHE_VERSION = "v1.0.9";
+const CACHE_VERSION = "v1.0.10";
 const STATIC_CACHE = `c2c-static-${CACHE_VERSION}`;
 const PAGES_CACHE = `c2c-pages-${CACHE_VERSION}`;
 /** Pages to pre-cache at install time (the "app shell") */
