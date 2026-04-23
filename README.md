@@ -43,14 +43,21 @@ The **Indian Food Truck Management System** is a premium, full-stack platform de
 
 ## 📚 Documentation
 
-Detailed documentation is available in the `docs/` folder:
+### Quick-Start Documentation
+Start here for essential information:
+
+1. [**API.md**](./docs/API.md) - Complete API endpoint documentation with request/response examples (40+ endpoints)
+2. [**FEATURES.md**](./docs/FEATURES.md) - Comprehensive feature list (130+ implemented features with status)
+3. [**SETUP.md**](./docs/SETUP.md) - Development setup, deployment guide, and troubleshooting
+
+### Detailed Documentation
+Comprehensive guides in the `docs/` folder:
 
 1. [**Project Presentation**](https://tejamahesh1433.github.io/indian-food-truck-site/indian-food-truck-presentation.html) - Slide deck overview of the project.
 2. [**Project Overview**](./docs/PROJECT_OVERVIEW.md) - Problem statement and objectives.
-2. [**System Architecture**](./docs/SYSTEM_ARCHITECTURE.md) - Tech stack and component roles.
-3. [**Database Design**](./docs/DATABASE_DESIGN.md) - Schema definitions and ER diagrams.
-4. [**Data Flow**](./docs/DATA_FLOW.md) - How data moves through the system.
-5. [**API Reference**](./docs/API_REFERENCE.md) - All REST endpoints documented.
+3. [**System Architecture**](./docs/SYSTEM_ARCHITECTURE.md) - Tech stack and component roles.
+4. [**Database Design**](./docs/DATABASE_DESIGN.md) - Schema definitions and ER diagrams.
+5. [**Data Flow**](./docs/DATA_FLOW.md) - How data moves through the system.
 6. [**Component Library**](./docs/COMPONENT_LIBRARY.md) - UI component breakdown.
 7. [**Admin Modules**](./docs/ADMIN_MODULES.md) - Guide to the dashboard features.
 8. [**User Manual**](./docs/USER_MANUAL.md) - How to use the site as a customer or owner.
