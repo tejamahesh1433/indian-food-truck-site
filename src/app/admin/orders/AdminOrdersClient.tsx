@@ -5,6 +5,7 @@ import { OrderStatus } from "@prisma/client";
 import Link from "next/link";
 import OrderStatusActions from "./OrderStatusActions";
 import AdminOrderChat from "./AdminOrderChat";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Order {
     id: string;
@@ -40,6 +41,7 @@ export default function AdminOrdersClient() {
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // Fetch orders with filters
     const fetchOrders = useCallback(async () => {
@@ -158,40 +160,76 @@ export default function AdminOrdersClient() {
 
             {/* Filter Bar */}
             <div className="space-y-4 mb-8 p-6 bg-white/5 border border-white/10 rounded-2xl">
-                {/* Status Filter */}
-                <div>
+                {/* Status Filter Dropdown */}
+                <div className="relative">
                     <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Filter by Status</label>
-                    <div className="flex gap-2 flex-wrap">
-                        <button
-                            onClick={() => handleStatusChange("ALL")}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition ${
-                                statusFilter === "ALL"
-                                    ? "bg-white text-black"
-                                    : "bg-white/10 text-gray-300 hover:bg-white/20"
-                            }`}
-                        >
-                            All ({totalCount})
-                        </button>
-                        {statuses.map((status) => (
-                            <button
-                                key={status}
-                                onClick={() => handleStatusChange(status)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition ${
-                                    statusFilter === status
-                                        ? `${statusColors[status]} border`
-                                        : "bg-white/10 text-gray-300 hover:bg-white/20"
-                                }`}
-                            >
-                                {status}
-                            </button>
-                        ))}
-                    </div>
+                    <button
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                        title="Open status filter menu"
+                        className="flex items-center justify-between w-full md:w-64 bg-white/10 border border-white/20 p-2.5 px-4 rounded-xl hover:bg-white/15 transition-all group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <svg className={`w-4 h-4 transition-colors ${isFilterOpen ? 'text-orange-400' : 'text-gray-500 group-hover:text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <title>Filter Icon</title>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            <span className="text-xs font-black uppercase tracking-widest text-white">
+                                {statusFilter === "ALL" ? `All Orders (${totalCount})` : statusFilter}
+                            </span>
+                        </div>
+                        <svg className={`w-4 h-4 text-gray-600 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <title>Dropdown Arrow</title>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <AnimatePresence>
+                        {isFilterOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)} />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute top-full mt-2 left-0 w-full md:w-64 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-2xl p-1.5"
+                                >
+                                    <button
+                                        onClick={() => {
+                                            handleStatusChange("ALL");
+                                            setIsFilterOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200 text-left
+                                            ${statusFilter === "ALL" ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}
+                                    >
+                                        <span className="text-[10px] font-black uppercase tracking-widest">All Orders</span>
+                                        <span className="text-[10px] opacity-50">{totalCount}</span>
+                                    </button>
+                                    <div className="h-px bg-white/5 my-1" />
+                                    {statuses.map((status) => (
+                                        <button
+                                            key={status}
+                                            onClick={() => {
+                                                handleStatusChange(status);
+                                                setIsFilterOpen(false);
+                                            }}
+                                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left
+                                                ${statusFilter === status ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}
+                                        >
+                                            <span className={`w-2 h-2 rounded-full ${statusColors[status].split(' ')[0]}`} />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">{status}</span>
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Search */}
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Search by Name, Email, Phone, or Order ID</label>
+                    <label htmlFor="order-search" className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Search by Name, Email, Phone, or Order ID</label>
                     <input
+                        id="order-search"
                         type="text"
                         placeholder="e.g., John Doe, john@example.com, 555-1234, abc123"
                         value={searchTerm}
@@ -203,8 +241,9 @@ export default function AdminOrdersClient() {
                 {/* Date Range */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">From Date</label>
+                        <label htmlFor="date-from" className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">From Date</label>
                         <input
+                            id="date-from"
                             type="date"
                             value={dateFrom}
                             onChange={(e) => handleDateChange(e.target.value, dateTo)}
@@ -212,8 +251,9 @@ export default function AdminOrdersClient() {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">To Date</label>
+                        <label htmlFor="date-to" className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">To Date</label>
                         <input
+                            id="date-to"
                             type="date"
                             value={dateTo}
                             onChange={(e) => handleDateChange(dateFrom, e.target.value)}
